@@ -90,7 +90,7 @@
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-03-04-15-45-38.png">
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-03-04-15-50-41.png">
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-03-04-15-51-58.png">
-<meta property="og:updated_time" content="2019-03-05T02:05:03.258Z">
+<meta property="og:updated_time" content="2019-03-05T07:51:20.164Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spark学习">
 <meta name="twitter:description" content="spark 学习1spark 作为主流的实时计算引擎,需要高度掌握 spark介绍Apache Spark是一用于实时处理的开源集群计算框架.持多种语言编程,Spark Streaming有高吞吐量和容错能力强等特点.数据输入后可以用Spark的高度抽象原语如：map、reduce、join、window等进行运算,而结果也能保存在很多地方，如HDFS，数据库等。另外Spark Streaming">
@@ -314,6 +314,7 @@
 </ul>
 <p><img src="http://img.wqkenqing.ren/2019-03-04-15-45-38.png" alt="spark&amp;storm对比"></p>
 <h2 id="RDD详解"><a href="#RDD详解" class="headerlink" title="RDD详解"></a>RDD详解</h2><h3 id="RDD是什么"><a href="#RDD是什么" class="headerlink" title="RDD是什么"></a>RDD是什么</h3><p>RDD：Spark的核心概念是RDD (resilientdistributed dataset)，指的是一个只读的，可分区的分布式数据集，这个数据集的全部或部分可以缓存在内存中，在多次计算间重用。</p>
+<p>另:RDD即弹性分布式数据集，有容错机制并可以被并行操作的元素集合，具有只读、分区、容错、高效、无需物化、可以缓存、RDD依赖等特征。RDD只是数据集的抽象，分区内部并不会存储具体的数据。</p>
 <p>RDD的五个特性</p>
 <ol>
 <li>有一个分片列表。就是能被切分，和hadoop一样的，能够切分的数据才能并行计算。 </li>
@@ -323,11 +324,22 @@
 <li>可选：每一个分片的优先计算位置（preferred locations），比如HDFS的block的所在位置应该是优先计算的位置。(存储的是一个表，可以将处理的分区“本地化”).</li>
 </ol>
 <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//只计算一次  </span></span><br><span class="line">  <span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">getPartitions</span></span>: <span class="type">Array</span>[<span class="type">Partition</span>]  </span><br><span class="line">  <span class="comment">//对一个分片进行计算，得出一个可遍历的结果</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">compute</span></span>(split: <span class="type">Partition</span>, context: <span class="type">TaskContext</span>): <span class="type">Iterator</span>[<span class="type">T</span>]</span><br><span class="line">  <span class="comment">//只计算一次，计算RDD对父RDD的依赖</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">getDependencies</span></span>: <span class="type">Seq</span>[<span class="type">Dependency</span>[_]] = deps</span><br><span class="line">  <span class="comment">//可选的，分区的方法，针对第4点，类似于mapreduce当中的Paritioner接口，控制key分到哪个reduce</span></span><br><span class="line">  <span class="meta">@transient</span> <span class="keyword">val</span> partitioner: <span class="type">Option</span>[<span class="type">Partitioner</span>] = <span class="type">None</span></span><br><span class="line">  <span class="comment">//可选的，指定优先位置，输入参数是split分片，输出结果是一组优先的节点位置</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">getPreferredLocations</span></span>(split: <span class="type">Partition</span>): <span class="type">Seq</span>[<span class="type">String</span>] = <span class="type">Nil</span></span><br></pre></td></tr></table></figure>
-<h3 id="为什么会产生RDD"><a href="#为什么会产生RDD" class="headerlink" title="为什么会产生RDD"></a>为什么会产生RDD</h3><h2 id="DStream"><a href="#DStream" class="headerlink" title="DStream"></a>DStream</h2><h3 id="什么是DStream"><a href="#什么是DStream" class="headerlink" title="什么是DStream"></a>什么是DStream</h3><p>Discretized Stream :代表持续性的数据流和经过各种Spark原语操作后的结果数据流,在内部实现上是一系列连续的RDD来表示.每个RDD含有一段时间间隔内的数据,如下图<br><img src="http://img.wqkenqing.ren/2019-03-04-15-50-41.png" alt="DStream"></p>
+<h3 id="为什么会产生RDD"><a href="#为什么会产生RDD" class="headerlink" title="为什么会产生RDD"></a>为什么会产生RDD</h3><h3 id="RDD数据集"><a href="#RDD数据集" class="headerlink" title="RDD数据集"></a>RDD数据集</h3><ol>
+<li>并行集合</li>
+</ol>
+<p>接收一个已经存在的集合,然后进行各种并行计算.并行化集合是通过调用SparkContext的parallelize方法，在一个已经存在的Scala集合上创建（一个Seq对象）。集合的对象将会被拷贝，创建出一个可以被并行操作的分布式数据集。</p>
+<ol start="2">
+<li>Hadoop数据集</li>
+</ol>
+<p>Spark可以将任何Hadoop所支持的存储资源转化成RDD，只要文件系统是HDFS，或者Hadoop支持的任意存储系统即可，如本地文件（需要网络文件系统，所有的节点都必须能访问到）、HDFS、Cassandra、HBase、Amazon S3等，Spark支持文本文件、SequenceFiles和任何Hadoop InputFormat格式。</p>
+<p>此两种类型的RDD都可以通过相同的方式进行操作，从而获得子RDD等一系列拓展，形成lineage血统关系图。</p>
+<h3 id="Spark-RDD算子"><a href="#Spark-RDD算子" class="headerlink" title="Spark RDD算子"></a>Spark RDD算子</h3><ol>
+<li>Transformation<br>不触发提交作业，完成作业中间处理过程。</li>
+</ol>
+<h2 id="DStream"><a href="#DStream" class="headerlink" title="DStream"></a>DStream</h2><h3 id="什么是DStream"><a href="#什么是DStream" class="headerlink" title="什么是DStream"></a>什么是DStream</h3><p>Discretized Stream :代表持续性的数据流和经过各种Spark原语操作后的结果数据流,在内部实现上是一系列连续的RDD来表示.每个RDD含有一段时间间隔内的数据,如下图<br><img src="http://img.wqkenqing.ren/2019-03-04-15-50-41.png" alt="DStream"></p>
 <p>计算则由spark engine来完成<br><img src="http://img.wqkenqing.ren/2019-03-04-15-51-58.png" alt="spark engine流程"></p>
 <h2 id="spark-java"><a href="#spark-java" class="headerlink" title="spark java"></a>spark java</h2><p>因为我是主要掌握的语言是java,从效率上来考虑,这里</p>
-<h2 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h2><p><a href="https://blog.csdn.net/wangxiaotongfan/article/details/51395769" target="_blank" rel="noopener">https://blog.csdn.net/wangxiaotongfan/article/details/51395769</a> RDD详解<br><a href="https://blog.csdn.net/zuochang_liu/article/details/81459185" target="_blank" rel="noopener">https://blog.csdn.net/zuochang_liu/article/details/81459185</a>  spark streaming学习<br><a href="https://blog.csdn.net/hellozhxy/article/details/81672845" target="_blank" rel="noopener">https://blog.csdn.net/hellozhxy/article/details/81672845</a> spark java 使用指南</p>
-<p><a href="https://blog.csdn.net/t1dmzks/article/details/70198430" target="_blank" rel="noopener">https://blog.csdn.net/t1dmzks/article/details/70198430</a> sparkRDD算子介绍</p>
+<h2 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h2><p><a href="https://blog.csdn.net/wangxiaotongfan/article/details/51395769" target="_blank" rel="noopener">https://blog.csdn.net/wangxiaotongfan/article/details/51395769</a> RDD详解<br><a href="https://blog.csdn.net/zuochang_liu/article/details/81459185" target="_blank" rel="noopener">https://blog.csdn.net/zuochang_liu/article/details/81459185</a>  spark streaming学习<br><a href="https://blog.csdn.net/hellozhxy/article/details/81672845" target="_blank" rel="noopener">https://blog.csdn.net/hellozhxy/article/details/81672845</a> spark java 使用指南<br><a href="https://blog.csdn.net/t1dmzks/article/details/70198430" target="_blank" rel="noopener">https://blog.csdn.net/t1dmzks/article/details/70198430</a> sparkRDD算子介绍<br><a href="https://blog.csdn.net/wxycx11111/article/details/79123482" target="_blank" rel="noopener">https://blog.csdn.net/wxycx11111/article/details/79123482</a> <strong>sparkRDD入门介绍</strong><br><a href="https://github.com/zhaikaishun/spark_tutorial" target="_blank" rel="noopener">https://github.com/zhaikaishun/spark_tutorial</a> <strong>RDD算子介绍</strong></p>
 
       
     </div>
@@ -367,6 +379,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/05/日常总结/spark算子/" rel="prev" title="spark算子">
+                spark算子 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -443,7 +459,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -456,7 +472,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -489,7 +505,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#spark-学习"><span class="nav-number">1.</span> <span class="nav-text">spark 学习</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#spark介绍"><span class="nav-number">1.1.</span> <span class="nav-text">spark介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RDD详解"><span class="nav-number">1.2.</span> <span class="nav-text">RDD详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RDD是什么"><span class="nav-number">1.2.1.</span> <span class="nav-text">RDD是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么会产生RDD"><span class="nav-number">1.2.2.</span> <span class="nav-text">为什么会产生RDD</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DStream"><span class="nav-number">1.3.</span> <span class="nav-text">DStream</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是DStream"><span class="nav-number">1.3.1.</span> <span class="nav-text">什么是DStream</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#spark-java"><span class="nav-number">1.4.</span> <span class="nav-text">spark java</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考博客"><span class="nav-number">1.5.</span> <span class="nav-text">参考博客</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#spark-学习"><span class="nav-number">1.</span> <span class="nav-text">spark 学习</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#spark介绍"><span class="nav-number">1.1.</span> <span class="nav-text">spark介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RDD详解"><span class="nav-number">1.2.</span> <span class="nav-text">RDD详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RDD是什么"><span class="nav-number">1.2.1.</span> <span class="nav-text">RDD是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么会产生RDD"><span class="nav-number">1.2.2.</span> <span class="nav-text">为什么会产生RDD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RDD数据集"><span class="nav-number">1.2.3.</span> <span class="nav-text">RDD数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Spark-RDD算子"><span class="nav-number">1.2.4.</span> <span class="nav-text">Spark RDD算子</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DStream"><span class="nav-number">1.3.</span> <span class="nav-text">DStream</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是DStream"><span class="nav-number">1.3.1.</span> <span class="nav-text">什么是DStream</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#spark-java"><span class="nav-number">1.4.</span> <span class="nav-text">spark java</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考博客"><span class="nav-number">1.5.</span> <span class="nav-text">参考博客</span></a></li></ol></li></ol></div>
             
 
           </div>
