@@ -598,6 +598,24 @@
 <p>HashMap，链表法存储，entry[]数组，线程不安全，可能死锁 concurrentHashMap，segment数组，每个segent下维护一组entry[]数组，每个segment是一把锁，线程安全 LinkedHashMap</p>
 <hr>
 <h2 id="Object若不重写hashCode-的话，hashCode-如何计算出来的？"><a href="#Object若不重写hashCode-的话，hashCode-如何计算出来的？" class="headerlink" title="Object若不重写hashCode()的话，hashCode()如何计算出来的？"></a>Object若不重写hashCode()的话，hashCode()如何计算出来的？</h2><p>hashcode采用的是</p>
+<h2 id="spark"><a href="#spark" class="headerlink" title="spark"></a>spark</h2><h3 id="1-spark的有几种部署模式，每种模式特点？"><a href="#1-spark的有几种部署模式，每种模式特点？" class="headerlink" title="1. spark的有几种部署模式，每种模式特点？"></a>1. spark的有几种部署模式，每种模式特点？</h3><h4 id="本地模式"><a href="#本地模式" class="headerlink" title="本地模式"></a>本地模式</h4><p>本地模式分三类</p>
+<ul>
+<li>local：只启动一个executor</li>
+<li>local[k]: 启动k个executor</li>
+<li>local[*]：启动跟cpu数目相同的 executor</li>
+</ul>
+<h3 id="cluster模式"><a href="#cluster模式" class="headerlink" title="cluster模式"></a>cluster模式</h3><p>cluster模式肯定就是运行很多机器上了，但是它又分为以下三种模式，区别在于谁去管理资源调度。（说白了，就好像后勤管家，哪里需要资源，后勤管家要负责调度这些资源）</p>
+<h4 id="standalone模式"><a href="#standalone模式" class="headerlink" title="standalone模式"></a>standalone模式</h4><p>分布式部署集群，自带完整的服务，资源管理和任务监控是Spark自己监控，这个模式也是其他模式的基础</p>
+<h4 id="Spark-on-yarn模式"><a href="#Spark-on-yarn模式" class="headerlink" title="Spark on yarn模式"></a>Spark on yarn模式</h4><p>分布式部署集群，资源和任务监控交给yarn管理<br>粗粒度资源分配方式，包含cluster和client运行模式<br>cluster 适合生产，driver运行在集群子节点，具有容错功能<br>client 适合调试，dirver运行在客户端</p>
+<h3 id="2-Spark技术栈有哪些组件，每个组件都有什么功能，适合什么应用场景？"><a href="#2-Spark技术栈有哪些组件，每个组件都有什么功能，适合什么应用场景？" class="headerlink" title="2. Spark技术栈有哪些组件，每个组件都有什么功能，适合什么应用场景？"></a>2. Spark技术栈有哪些组件，每个组件都有什么功能，适合什么应用场景？</h3><h4 id="Spark-core"><a href="#Spark-core" class="headerlink" title="Spark core"></a>Spark core</h4><p>是其它组件的基础，spark的内核<br>主要包含：有向循环图、RDD、Lingage、Cache、broadcast等</p>
+<h4 id="SparkStreaming"><a href="#SparkStreaming" class="headerlink" title="SparkStreaming"></a>SparkStreaming</h4><p>是一个对实时数据流进行高通量、容错处理的流式处理系统<br>将流式计算分解成一系列短小的批处理作业</p>
+<h4 id="Spark-sql："><a href="#Spark-sql：" class="headerlink" title="Spark sql："></a>Spark sql：</h4><p>能够统一处理关系表和RDD，使得开发人员可以轻松地使用SQL命令进行外部查询</p>
+<h4 id="MLBase"><a href="#MLBase" class="headerlink" title="MLBase"></a>MLBase</h4><p>是Spark生态圈的一部分专注于机器学习，让机器学习的门槛更低<br>MLBase分为四部分：MLlib、MLI、ML Optimizer和MLRuntime。</p>
+<h4 id="GraphX"><a href="#GraphX" class="headerlink" title="GraphX"></a>GraphX</h4><p>是Spark中用于图和图并行计算</p>
+<h4 id="spark有哪些组件"><a href="#spark有哪些组件" class="headerlink" title="spark有哪些组件"></a>spark有哪些组件</h4><p>master：管理集群和节点，不参与计算。<br>worker：计算节点，进程本身不参与计算，和master汇报。<br>Driver：运行程序的main方法，创建spark context对象。<br>spark context：控制整个application的生命周期，包括dagsheduler和task scheduler等组件。<br>client：用户提交程序的入口。</p>
+<ul>
+<li><a href="https://blog.csdn.net/yirenboy/article/details/47441465" target="_blank" rel="noopener">https://blog.csdn.net/yirenboy/article/details/47441465</a></li>
+</ul>
 
           
         
@@ -1171,7 +1189,9 @@
 <p>以上操作形式有个问题就是rowkey是随机生成的,虽起到了散列存储,避免了热点堆积,但因为加盐的缘故,想要直接的获取某行数据较为困难.若针对的是高频使用的数据,则会出现问题.</p>
 <p>2.1.4 hash分区</p>
 <p>在原先预分区的基础上,通过相关规则将原数据hash,从而获得这个原数据对应在哪个分区,使当拿到相关原数据,就能推演出相关rowkey.从而能准确的get数据.</p>
-<h3 id="hbase原理"><a href="#hbase原理" class="headerlink" title="hbase原理"></a>hbase原理</h3>
+<h3 id="hbase优化"><a href="#hbase优化" class="headerlink" title="hbase优化"></a>hbase优化</h3><h4 id="确定优化目标"><a href="#确定优化目标" class="headerlink" title="确定优化目标"></a>确定优化目标</h4><p>沟通交流后，业务方更看重降低成本。数据量梳理后略有降低，保证吞吐，无长期请求堆积前提下可以放宽延时要求。为了更快的进行优化，放宽稳定性可以要求接受短期波动。<br>另外，该分组的RegionServer之前存在不稳定的问题，这次优化也一并解决。</p>
+<hr>
+
           
         
       

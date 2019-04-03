@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="wong&#39;s bolg">
 <meta property="og:description" content="hbase积累细节点1.Rowkey设计原则1.1 长度原则 rowkey 在hbase以二进制码流,可以是任意字符串,  最大长度是64kb,实际应用主要是100~100bytes 长度尽量为8的整数倍,因为现在的系统主要是64位,内存8字节对齐.控制在16字节,符合操作系统特性  1.2 散列原则:因为hbase是分布式存储,rowkey的高位尽量是散列字段,散列性弱的尽量放在低位段.如Tim">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-03-04T03:04:25.360Z">
+<meta property="og:updated_time" content="2019-04-01T07:10:48.789Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="hbase积累.md">
 <meta name="twitter:description" content="hbase积累细节点1.Rowkey设计原则1.1 长度原则 rowkey 在hbase以二进制码流,可以是任意字符串,  最大长度是64kb,实际应用主要是100~100bytes 长度尽量为8的整数倍,因为现在的系统主要是64位,内存8字节对齐.控制在16字节,符合操作系统特性  1.2 散列原则:因为hbase是分布式存储,rowkey的高位尽量是散列字段,散列性弱的尽量放在低位段.如Tim">
@@ -318,7 +318,9 @@
 <p>以上操作形式有个问题就是rowkey是随机生成的,虽起到了散列存储,避免了热点堆积,但因为加盐的缘故,想要直接的获取某行数据较为困难.若针对的是高频使用的数据,则会出现问题.</p>
 <p>2.1.4 hash分区</p>
 <p>在原先预分区的基础上,通过相关规则将原数据hash,从而获得这个原数据对应在哪个分区,使当拿到相关原数据,就能推演出相关rowkey.从而能准确的get数据.</p>
-<h3 id="hbase原理"><a href="#hbase原理" class="headerlink" title="hbase原理"></a>hbase原理</h3>
+<h3 id="hbase优化"><a href="#hbase优化" class="headerlink" title="hbase优化"></a>hbase优化</h3><h4 id="确定优化目标"><a href="#确定优化目标" class="headerlink" title="确定优化目标"></a>确定优化目标</h4><p>沟通交流后，业务方更看重降低成本。数据量梳理后略有降低，保证吞吐，无长期请求堆积前提下可以放宽延时要求。为了更快的进行优化，放宽稳定性可以要求接受短期波动。<br>另外，该分组的RegionServer之前存在不稳定的问题，这次优化也一并解决。</p>
+<hr>
+
       
     </div>
     
@@ -483,7 +485,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#hbase积累"><span class="nav-number">1.</span> <span class="nav-text">hbase积累</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#细节点"><span class="nav-number">1.1.</span> <span class="nav-text">细节点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Rowkey设计原则"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.Rowkey设计原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Hbase的Regeion热点问题解决"><span class="nav-number">1.1.2.</span> <span class="nav-text">2.Hbase的Regeion热点问题解决</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-预分区"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">2.1 预分区</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hbase原理"><span class="nav-number">1.1.3.</span> <span class="nav-text">hbase原理</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#hbase积累"><span class="nav-number">1.</span> <span class="nav-text">hbase积累</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#细节点"><span class="nav-number">1.1.</span> <span class="nav-text">细节点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Rowkey设计原则"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.Rowkey设计原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Hbase的Regeion热点问题解决"><span class="nav-number">1.1.2.</span> <span class="nav-text">2.Hbase的Regeion热点问题解决</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-预分区"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">2.1 预分区</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hbase优化"><span class="nav-number">1.1.3.</span> <span class="nav-text">hbase优化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#确定优化目标"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">确定优化目标</span></a></li></ol></li></ol></li></ol></li></ol></div>
             
 
           </div>
