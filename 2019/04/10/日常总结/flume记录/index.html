@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="bigdata,">
+  <meta name="keywords" content="Hexo, NexT">
 
 
 
@@ -79,21 +79,17 @@
 
 
 
-<meta name="description" content="mapreduce组件总结相关组件大致有  Inputformat Inputsplit ReadRecorder mapper Combiner Partioner Reduce GroupComparator Reduce  shuffle 1shuffle 被称为mapreduce的核心,一个真正让奇迹发生的地方.但它到底是什么呢?简练的讲,它就是 map out 到 reduce in">
-<meta name="keywords" content="bigdata">
+<meta name="description" content="flume记录from kafka123456789101112131415161718192021222324252627282930313233343536373839a1.sources = source1a1.sources.source1.type = org.apache.flume.source.kafka.KafkaSourcea1.sources.source1.channels">
 <meta property="og:type" content="article">
-<meta property="og:title" content="mapreduce组件总结">
-<meta property="og:url" content="http://www.wqkenqing.ren/2019/03/19/日常总结/mapreduce组件总结/index.html">
+<meta property="og:title" content="wong&#39;s bolg">
+<meta property="og:url" content="http://www.wqkenqing.ren/2019/04/10/日常总结/flume记录/index.html">
 <meta property="og:site_name" content="wong&#39;s bolg">
-<meta property="og:description" content="mapreduce组件总结相关组件大致有  Inputformat Inputsplit ReadRecorder mapper Combiner Partioner Reduce GroupComparator Reduce  shuffle 1shuffle 被称为mapreduce的核心,一个真正让奇迹发生的地方.但它到底是什么呢?简练的讲,它就是 map out 到 reduce in">
+<meta property="og:description" content="flume记录from kafka123456789101112131415161718192021222324252627282930313233343536373839a1.sources = source1a1.sources.source1.type = org.apache.flume.source.kafka.KafkaSourcea1.sources.source1.channels">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://img.wqkenqing.ren/2019-03-19-15-39-59.png">
-<meta property="og:image" content="http://img.wqkenqing.ren/2019-03-19-16-46-06.png">
-<meta property="og:updated_time" content="2019-04-08T03:42:35.815Z">
+<meta property="og:updated_time" content="2019-04-15T00:55:23.983Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="mapreduce组件总结">
-<meta name="twitter:description" content="mapreduce组件总结相关组件大致有  Inputformat Inputsplit ReadRecorder mapper Combiner Partioner Reduce GroupComparator Reduce  shuffle 1shuffle 被称为mapreduce的核心,一个真正让奇迹发生的地方.但它到底是什么呢?简练的讲,它就是 map out 到 reduce in">
-<meta name="twitter:image" content="http://img.wqkenqing.ren/2019-03-19-15-39-59.png">
+<meta name="twitter:title" content="wong&#39;s bolg">
+<meta name="twitter:description" content="flume记录from kafka123456789101112131415161718192021222324252627282930313233343536373839a1.sources = source1a1.sources.source1.type = org.apache.flume.source.kafka.KafkaSourcea1.sources.source1.channels">
 
 
 
@@ -123,13 +119,13 @@
 
 
 
-  <link rel="canonical" href="http://www.wqkenqing.ren/2019/03/19/日常总结/mapreduce组件总结/">
+  <link rel="canonical" href="http://www.wqkenqing.ren/2019/04/10/日常总结/flume记录/">
 
 
 
 
 
-  <title>mapreduce组件总结 | wong's bolg</title>
+  <title> | wong's bolg</title>
   
 
 
@@ -236,7 +232,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/03/19/日常总结/mapreduce组件总结/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/04/10/日常总结/flume记录/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -253,7 +249,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">mapreduce组件总结</h1>
+          <h1 class="post-title" itemprop="name headline"></h1>
         
 
         <div class="post-meta">
@@ -265,8 +261,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-03-19T14:59:23+08:00">
-                2019-03-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-10T13:58:05+08:00">
+                2019-04-10
               </time>
             
 
@@ -303,43 +299,10 @@
       
 
       
-        <a id="more"></a>
-<h1 id="mapreduce组件总结"><a href="#mapreduce组件总结" class="headerlink" title="mapreduce组件总结"></a>mapreduce组件总结</h1><p>相关组件大致有</p>
-<ol>
-<li>Inputformat</li>
-<li>Inputsplit</li>
-<li>ReadRecorder</li>
-<li>mapper</li>
-<li>Combiner</li>
-<li>Partioner</li>
-<li>Reduce</li>
-<li>GroupComparator</li>
-<li>Reduce</li>
-</ol>
-<h1 id="shuffle"><a href="#shuffle" class="headerlink" title="shuffle"></a>shuffle</h1><p><img src="http://img.wqkenqing.ren/2019-03-19-15-39-59.png" alt="2019-03-19-15-39-59"><br><img src="http://img.wqkenqing.ren/2019-03-19-16-46-06.png" alt="2019-03-19-16-46-06"></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shuffle 被称为mapreduce的核心,一个真正让奇迹发生的地方.但它到底是什么呢?简练的讲,它就是 map out 到 reduce in 这段过程中对数据的处理过程.</span><br></pre></td></tr></table></figure>
-<p>shuffle过程中主要发生的操作有,Partion,Sort,spill,merge,copy,sort,merge.(还有可能有combine操作)</p>
-<p>具体流程是<br>map out后,Collector 对out后的数据进行处理. 数据将会写入到内存缓冲区,该内存缓冲区的数据达到80%后,会开启一个溢写线程,在磁盘本地创建一个文件.如果reduce设置了多个分区,写入buffer区的数据,会被打上一个分区标记.通过sortAndSpill()方法进行指对数据按分区号,key排序.最后溢出的文件是分区的,按key有序的文件.若buffer区中的20%一直未被填满,buffer写入进程不会断.但若达到100%,Buffer写入进程则会阻塞.并在buffer区中的数据全部spill完后才会再开启. (buffer区的内存默认是100M),spill过程中,若设置过combiner.则会对数据先进行combiner逻辑处理,再将处理后的数据写出</p>
-<p>spill完成后则会对本地的spill后的文件进行Merge.即把多个spill后的文件进行合并,并排序.最后会行成一个有序文件</p>
-<p>当1个Map Task 完成后,reduce 就会开启copy进程(默认是5个线程).这个过程中会通过http请求去各taskTracker(nodemanager),拉取相应的spill&amp;merge后的文件.<br>当copy完成后,则又会对数据进行merge.这个过程中同样有个类似map shuffle 中的buffer 溢写的阶段. 这个过程同样会触发combiner组件.这里的merge数据源有三种</p>
-<ol>
-<li>memory to memory</li>
-<li>memory to disk</li>
-<li>disk   to disk<br>默认1是不开启的.</li>
-</ol>
-<p>copy phase 完成后,是reduceTask 中的 sort phase<br>即对merge 中的文件继续进行sort and group .</p>
-<p>当sort phase 完成.则开启reduce phase .到此shuffle正式完成.</p>
-<p>##二次排序</p>
-<pre><code>
-</code></pre><p>mapreduce 常见的辅助排序</p>
-<ol>
-<li>partitioner</li>
-<li>key的比较Comparator</li>
-<li>分组函数Grouping Comparator</li>
-</ol>
-<h2 id="join"><a href="#join" class="headerlink" title="join"></a>join</h2><p>map join ,semi join ,reduce join</p>
-<p>## </p>
-
+        <h1 id="flume记录"><a href="#flume记录" class="headerlink" title="flume记录"></a>flume记录</h1><h2 id="from-kafka"><a href="#from-kafka" class="headerlink" title="from kafka"></a>from kafka</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">a1.sources = source1</span><br><span class="line"></span><br><span class="line">a1.sources.source1.type = org.apache.flume.source.kafka.KafkaSource</span><br><span class="line"></span><br><span class="line">a1.sources.source1.channels = c1</span><br><span class="line"></span><br><span class="line">a1.sources.source1.batchSize = 5000</span><br><span class="line"></span><br><span class="line">a1.sources.source1.batchDurationMillis = 2000</span><br><span class="line">a1.sources.source1.zookeeperConnect = localhost:2181</span><br><span class="line"></span><br><span class="line">#a1.sources.source1.kafka.brokerList = localhost:9092</span><br><span class="line">a1.sources.source1.kafka.bootstrap.servers = localhost:9092</span><br><span class="line">a1.sources.source1.topic = flumetest</span><br><span class="line">a1.sources.source1.kafka.consumer.group.id = custom.g.id</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a1.channels = c1</span><br><span class="line"></span><br><span class="line">a1.channels.c1.type = memory</span><br><span class="line"></span><br><span class="line">a1.channels.c1.capacity = 10000</span><br><span class="line"></span><br><span class="line">a1.channels.c1.transactionCapacity = 10000</span><br><span class="line"></span><br><span class="line">a1.channels.c1.byteCapacityBufferPercentage = 20</span><br><span class="line"></span><br><span class="line">a1.channels.c1.byteCapacity = 800000</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a1.sinks = k1</span><br><span class="line"></span><br><span class="line">a1.sinks.k1.type = file_roll</span><br><span class="line"></span><br><span class="line">a1.sinks.k1.channel = c1</span><br><span class="line"></span><br><span class="line">a1.sinks.k1.sink.directory = /home/hadoop/testfile/flume</span><br></pre></td></tr></table></figure>
+<p>这里也有版本匹配的问题.经过多番尝试,这里的组合版本是flume1.6+kafka_2.11-2.2.0.tgz<br>其它版本可能会有request header 问题.<br>另外还遇到了指定topic 和 zookeeper的问题.</p>
+<p>执行语句:flume-ng agent -n a1 -c conf -f kafka.properties -Dflume.root.logger=INFO,console</p>
+<h2 id="flume-采集到kafka"><a href="#flume-采集到kafka" class="headerlink" title="flume 采集到kafka"></a>flume 采集到kafka</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">agent.sources=r1</span><br><span class="line">agent.sinks=k1</span><br><span class="line">agent.channels=c1</span><br><span class="line"></span><br><span class="line">agent.sources.r1.type=exec</span><br><span class="line">agent.sources.r1.command=tail /root/tomcat/logs/catalina.out</span><br><span class="line">agent.sources.r1.restart=true</span><br><span class="line">agent.sources.r1.batchSize=1000</span><br><span class="line">agent.sources.r1.batchTimeout=3000</span><br><span class="line">agent.sources.r1.channels=c1</span><br><span class="line"></span><br><span class="line">agent.channels.c1.type=memory</span><br><span class="line">agent.channels.c1.capacity=102400</span><br><span class="line">agent.channels.c1.transactionCapacity=1000</span><br><span class="line"></span><br><span class="line">agent.channels.c1.byteCapacity=134217728</span><br><span class="line">agent.channels.c1.byteCapacityBufferPercentage=80</span><br><span class="line"></span><br><span class="line">agent.sinks.k1.channel=c1</span><br><span class="line">agent.sinks.k1.type=org.apache.flume.sink.kafka.KafkaSink</span><br><span class="line">agent.sinks.k1.kafka.topic=sparkstreaming</span><br><span class="line">agent.sinks.k1.kafka.zookeeperConnect=47.102.199.215:2181</span><br><span class="line">#agent.sinks.k1.kafka.bootstrap.servers=47.102.199.215:9092</span><br><span class="line">agent.sinks.k1.kafka.brokerList =47.102.199.215:9092</span><br><span class="line">agent.sinks.k1.serializer.class=kafka.serializer.StringEncoder</span><br><span class="line">agent.sinks.k1.flumeBatchSize=1000</span><br><span class="line">agent.sinks.k1.useFlumeEventFormat=true</span><br></pre></td></tr></table></figure>
       
     </div>
     
@@ -354,12 +317,6 @@
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/bigdata/" rel="tag"># bigdata</a>
-          
-        </div>
-      
 
       
       
@@ -369,8 +326,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/03/14/日常总结/准备小结/" rel="next" title="准备小结">
-                <i class="fa fa-chevron-left"></i> 准备小结
+              <a href="/2019/04/10/日常总结/spark集群操作记录/" rel="next" title="">
+                <i class="fa fa-chevron-left"></i> 
               </a>
             
           </div>
@@ -379,8 +336,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/03/21/spark实战/" rel="prev" title="spark实战">
-                spark实战 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/04/11/日常总结/spark学习2/" rel="prev" title="">
+                 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -504,7 +461,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#mapreduce组件总结"><span class="nav-number">1.</span> <span class="nav-text">mapreduce组件总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#shuffle"><span class="nav-number">2.</span> <span class="nav-text">shuffle</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#join"><span class="nav-number">2.1.</span> <span class="nav-text">join</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#flume记录"><span class="nav-number">1.</span> <span class="nav-text">flume记录</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#from-kafka"><span class="nav-number">1.1.</span> <span class="nav-text">from kafka</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#flume-采集到kafka"><span class="nav-number">1.2.</span> <span class="nav-text">flume 采集到kafka</span></a></li></ol></li></ol></div>
             
 
           </div>
