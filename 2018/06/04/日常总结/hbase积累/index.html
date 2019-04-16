@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="hbase积累细节点1.Rowkey设计原则1.1 长度原则 rowkey 在hbase以二进制码流,可以是任意字符串,  最大长度是64kb,实际应用主要是100~100bytes 长度尽量为8的整数倍,因为现在的系统主要是64位,内存8字节对齐.控制在16字节,符合操作系统特性  1.2 散列原则:因为hbase是分布式存储,rowkey的高位尽量是散列字段,散列性弱的尽量放在低位段.如Ti">
+<meta name="description" content="hbase积累">
 <meta name="keywords" content="日常总结">
 <meta property="og:type" content="article">
 <meta property="og:title" content="hbase积累.md">
 <meta property="og:url" content="http://www.wqkenqing.ren/2018/06/04/日常总结/hbase积累/index.html">
 <meta property="og:site_name" content="wong&#39;s bolg">
-<meta property="og:description" content="hbase积累细节点1.Rowkey设计原则1.1 长度原则 rowkey 在hbase以二进制码流,可以是任意字符串,  最大长度是64kb,实际应用主要是100~100bytes 长度尽量为8的整数倍,因为现在的系统主要是64位,内存8字节对齐.控制在16字节,符合操作系统特性  1.2 散列原则:因为hbase是分布式存储,rowkey的高位尽量是散列字段,散列性弱的尽量放在低位段.如Ti">
+<meta property="og:description" content="hbase积累">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-16T09:50:15.199Z">
+<meta property="og:updated_time" content="2019-04-16T10:07:51.733Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="hbase积累.md">
-<meta name="twitter:description" content="hbase积累细节点1.Rowkey设计原则1.1 长度原则 rowkey 在hbase以二进制码流,可以是任意字符串,  最大长度是64kb,实际应用主要是100~100bytes 长度尽量为8的整数倍,因为现在的系统主要是64位,内存8字节对齐.控制在16字节,符合操作系统特性  1.2 散列原则:因为hbase是分布式存储,rowkey的高位尽量是散列字段,散列性弱的尽量放在低位段.如Ti">
+<meta name="twitter:description" content="hbase积累">
 
 
 
@@ -300,8 +300,9 @@
       
 
       
-        <a id="more"></a>
-<h1 id="hbase积累"><a href="#hbase积累" class="headerlink" title="hbase积累"></a>hbase积累</h1><h2 id="细节点"><a href="#细节点" class="headerlink" title="细节点"></a>细节点</h2><h3 id="1-Rowkey设计原则"><a href="#1-Rowkey设计原则" class="headerlink" title="1.Rowkey设计原则"></a>1.Rowkey设计原则</h3><p>1.1 <strong>长度原则</strong> rowkey 在hbase以二进制码流,可以是任意字符串,</p>
+        <h1 id="hbase积累"><a href="#hbase积累" class="headerlink" title="hbase积累"></a>hbase积累</h1><a id="more"></a>
+<h2 id="细节点"><a href="#细节点" class="headerlink" title="细节点"></a>细节点</h2><h3 id="1-Rowkey设计原则"><a href="#1-Rowkey设计原则" class="headerlink" title="1.Rowkey设计原则"></a>1.Rowkey设计原则</h3><!-- more -->
+<p>1.1 <strong>长度原则</strong> rowkey 在hbase以二进制码流,可以是任意字符串,</p>
 <ul>
 <li><strong>最大长度是64kb</strong>,实际应用主要是100~100bytes</li>
 <li>长度尽量为8的整数倍,因为现在的系统主要是64位,内存8字节对齐.控制在16字节,符合操作系统特性</li>

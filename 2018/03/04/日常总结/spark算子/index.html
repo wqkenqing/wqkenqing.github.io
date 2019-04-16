@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="spark 算子123sparkRDD封装的函数方法又称算子,通过这些算子可以对RDD进行相关处理,从而获我们想要的结果,因为可能涉及的算子较多.因此单独开篇进行粒度更细,更集中的总结.总得来讲spark的算子,本就是scala集合的一些高阶用法. Transformation(转换)不触发提交作业，完成作业中间处理过程。 parallelize (并行化)将一个存在的集合，变成一个RDD ,返">
+<meta name="description" content="spark 算子">
 <meta name="keywords" content="spark学习">
 <meta property="og:type" content="article">
 <meta property="og:title" content="spark算子">
 <meta property="og:url" content="http://www.wqkenqing.ren/2018/03/04/日常总结/spark算子/index.html">
 <meta property="og:site_name" content="wong&#39;s bolg">
-<meta property="og:description" content="spark 算子123sparkRDD封装的函数方法又称算子,通过这些算子可以对RDD进行相关处理,从而获我们想要的结果,因为可能涉及的算子较多.因此单独开篇进行粒度更细,更集中的总结.总得来讲spark的算子,本就是scala集合的一些高阶用法. Transformation(转换)不触发提交作业，完成作业中间处理过程。 parallelize (并行化)将一个存在的集合，变成一个RDD ,返">
+<meta property="og:description" content="spark 算子">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-16T09:50:51.637Z">
+<meta property="og:updated_time" content="2019-04-16T10:05:31.679Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spark算子">
-<meta name="twitter:description" content="spark 算子123sparkRDD封装的函数方法又称算子,通过这些算子可以对RDD进行相关处理,从而获我们想要的结果,因为可能涉及的算子较多.因此单独开篇进行粒度更细,更集中的总结.总得来讲spark的算子,本就是scala集合的一些高阶用法. Transformation(转换)不触发提交作业，完成作业中间处理过程。 parallelize (并行化)将一个存在的集合，变成一个RDD ,返">
+<meta name="twitter:description" content="spark 算子">
 
 
 
@@ -300,8 +300,8 @@
       
 
       
-        <a id="more"></a>
-<h1 id="spark-算子"><a href="#spark-算子" class="headerlink" title="spark 算子"></a>spark 算子</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sparkRDD封装的函数方法又称算子,通过这些算子可以对RDD进行相关处理,从而获我们想要的结果,因为可能涉及的算子较多.因此单独开篇进行粒度更细,更集中的总结.</span><br><span class="line"></span><br><span class="line">总得来讲spark的算子,本就是scala集合的一些高阶用法.</span><br></pre></td></tr></table></figure>
+        <h1 id="spark-算子"><a href="#spark-算子" class="headerlink" title="spark 算子"></a>spark 算子</h1><a id="more"></a>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sparkRDD封装的函数方法又称算子,通过这些算子可以对RDD进行相关处理,从而获我们想要的结果,因为可能涉及的算子较多.因此单独开篇进行粒度更细,更集中的总结.</span><br><span class="line"></span><br><span class="line">总得来讲spark的算子,本就是scala集合的一些高阶用法.</span><br></pre></td></tr></table></figure>
 <h2 id="Transformation-转换"><a href="#Transformation-转换" class="headerlink" title="Transformation(转换)"></a>Transformation(转换)</h2><p>不触发提交作业，完成作业中间处理过程。</p>
 <h3 id="parallelize-并行化"><a href="#parallelize-并行化" class="headerlink" title="parallelize (并行化)"></a>parallelize (并行化)</h3><p>将一个存在的集合，变成一个RDD ,返回的是一个JavaRDD[T]<br><strong> in scala </strong><br><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sc.parallelize(<span class="type">List</span>(<span class="string">"shenzhen"</span>, <span class="string">"is a beautiful city"</span>))</span><br></pre></td></tr></table></figure></p>
 <p> <strong> in java </strong><br> <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">JavaRDD&lt;String&gt; javaStringRDD = sc.parallelize(Arrays.asList(<span class="string">"shenzhen"</span>, <span class="string">"is a beautiful city"</span>));</span><br></pre></td></tr></table></figure></p>

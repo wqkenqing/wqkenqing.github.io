@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="准备小结hdfs存储机制是怎样的?client端发送写文件请求，namenode检查文件是否存在，如果已存在，直接返回错误信息，否则，发送给client一些可用namenode节点client将文件分块，并行存储到不同节点上datanode上，发送完成后，client同时发送信息给namenode和datanodenamenode收到的client信息后，发送确信信息给datanodedatano">
+<meta name="description" content="准备小结">
 <meta name="keywords" content="小结">
 <meta property="og:type" content="article">
 <meta property="og:title" content="准备小结">
 <meta property="og:url" content="http://www.wqkenqing.ren/2019/03/14/日常总结/准备小结/index.html">
 <meta property="og:site_name" content="wong&#39;s bolg">
-<meta property="og:description" content="准备小结hdfs存储机制是怎样的?client端发送写文件请求，namenode检查文件是否存在，如果已存在，直接返回错误信息，否则，发送给client一些可用namenode节点client将文件分块，并行存储到不同节点上datanode上，发送完成后，client同时发送信息给namenode和datanodenamenode收到的client信息后，发送确信信息给datanodedatano">
+<meta property="og:description" content="准备小结">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-02T13:05:19.357Z">
+<meta property="og:updated_time" content="2019-04-16T10:06:46.753Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="准备小结">
-<meta name="twitter:description" content="准备小结hdfs存储机制是怎样的?client端发送写文件请求，namenode检查文件是否存在，如果已存在，直接返回错误信息，否则，发送给client一些可用namenode节点client将文件分块，并行存储到不同节点上datanode上，发送完成后，client同时发送信息给namenode和datanodenamenode收到的client信息后，发送确信信息给datanodedatano">
+<meta name="twitter:description" content="准备小结">
 
 
 
@@ -300,7 +300,8 @@
       
 
       
-        <h1 id="准备小结"><a href="#准备小结" class="headerlink" title="准备小结"></a>准备小结</h1><h2 id="hdfs存储机制是怎样的"><a href="#hdfs存储机制是怎样的" class="headerlink" title="hdfs存储机制是怎样的?"></a>hdfs存储机制是怎样的?</h2><p>client端发送写文件请求，namenode检查文件是否存在，如果已存在，直接返回错误信息，否则，发送给client一些可用namenode节点<br>client将文件分块，并行存储到不同节点上datanode上，发送完成后，client同时发送信息给namenode和datanode<br>namenode收到的client信息后，发送确信信息给datanode<br>datanode同时收到namenode和datanode的确认信息后，提交写操作。</p>
+        <h1 id="准备小结"><a href="#准备小结" class="headerlink" title="准备小结"></a>准备小结</h1><a id="more"></a>
+<h2 id="hdfs存储机制是怎样的"><a href="#hdfs存储机制是怎样的" class="headerlink" title="hdfs存储机制是怎样的?"></a>hdfs存储机制是怎样的?</h2><p>client端发送写文件请求，namenode检查文件是否存在，如果已存在，直接返回错误信息，否则，发送给client一些可用namenode节点<br>client将文件分块，并行存储到不同节点上datanode上，发送完成后，client同时发送信息给namenode和datanode<br>namenode收到的client信息后，发送确信信息给datanode<br>datanode同时收到namenode和datanode的确认信息后，提交写操作。</p>
 <h2 id="hadoop中combiner的作用是什么"><a href="#hadoop中combiner的作用是什么" class="headerlink" title="hadoop中combiner的作用是什么?"></a>hadoop中combiner的作用是什么?</h2><p>当map生成的数据过大时，带宽就成了瓶颈，怎样精简压缩传给Reduce的数据，又不影响最终的结果呢。有一种方法就是使用Combiner，Combiner号称本地的Reduce，Reduce最终的输入，是Combiner的输出。</p>
 <h2 id="你们数据库怎么导入hive-的-有没有出现问题"><a href="#你们数据库怎么导入hive-的-有没有出现问题" class="headerlink" title="你们数据库怎么导入hive 的,有没有出现问题"></a>你们数据库怎么导入hive 的,有没有出现问题</h2><p>在导入hive的时候，如果数据库中有blob或者text字段，会报错，解决方案在sqoop笔记中。在将数据由Oracle数据库导入到Hive时，发现带有clob字段的表的数据会错乱，出现一些字段全为NULL的空行。由于在项目中CLOB字段没有实际的分析用途，因此考虑将CLOB字段去掉。</p>
 <h2 id="hdfs-site-xml的3个主要属性"><a href="#hdfs-site-xml的3个主要属性" class="headerlink" title="hdfs-site.xml的3个主要属性?"></a>hdfs-site.xml的3个主要属性?</h2><p>dfs.name.dir决定的是元数据存储的路径以及DFS的存储方式(磁盘或是远端)<br>dfs.data.dir决定的是数据存储的路径<br>fs.checkpoint.dir用于第二Namenode</p>

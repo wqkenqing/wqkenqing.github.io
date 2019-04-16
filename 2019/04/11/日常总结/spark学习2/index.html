@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="spark学习2spark 运行的四种模式本地模式如1./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 standlone模式client./bin/spark-submit –class org.">
+<meta name="description" content="spark学习2spark 运行的四种模式">
 <meta property="og:type" content="article">
 <meta property="og:title" content="wong&#39;s bolg">
 <meta property="og:url" content="http://www.wqkenqing.ren/2019/04/11/日常总结/spark学习2/index.html">
 <meta property="og:site_name" content="wong&#39;s bolg">
-<meta property="og:description" content="spark学习2spark 运行的四种模式本地模式如1./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 standlone模式client./bin/spark-submit –class org.">
+<meta property="og:description" content="spark学习2spark 运行的四种模式">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-12T09:54:12.743Z">
+<meta property="og:updated_time" content="2019-04-16T10:08:08.668Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="wong&#39;s bolg">
-<meta name="twitter:description" content="spark学习2spark 运行的四种模式本地模式如1./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 standlone模式client./bin/spark-submit –class org.">
+<meta name="twitter:description" content="spark学习2spark 运行的四种模式">
 
 
 
@@ -299,7 +299,8 @@
       
 
       
-        <h1 id="spark学习2"><a href="#spark学习2" class="headerlink" title="spark学习2"></a>spark学习2</h1><h2 id="spark-运行的四种模式"><a href="#spark-运行的四种模式" class="headerlink" title="spark 运行的四种模式"></a>spark 运行的四种模式</h2><h3 id="本地模式"><a href="#本地模式" class="headerlink" title="本地模式"></a>本地模式</h3><p>如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</span><br></pre></td></tr></table></figure></p>
+        <h1 id="spark学习2"><a href="#spark学习2" class="headerlink" title="spark学习2"></a>spark学习2</h1><h2 id="spark-运行的四种模式"><a href="#spark-运行的四种模式" class="headerlink" title="spark 运行的四种模式"></a>spark 运行的四种模式</h2><a id="more"></a>
+<h3 id="本地模式"><a href="#本地模式" class="headerlink" title="本地模式"></a>本地模式</h3><p>如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</span><br></pre></td></tr></table></figure></p>
 <h3 id="standlone模式"><a href="#standlone模式" class="headerlink" title="standlone模式"></a>standlone模式</h3><h4 id="client"><a href="#client" class="headerlink" title="client"></a>client</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</p>
 <h4 id="cluster"><a href="#cluster" class="headerlink" title="cluster"></a>cluster</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –deploy-mode cluster –supervise –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100</p>
 <h3 id="Yarn模式"><a href="#Yarn模式" class="headerlink" title="Yarn模式"></a>Yarn模式</h3><h4 id="client模式"><a href="#client模式" class="headerlink" title="client模式"></a>client模式</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">client模式：</span><br><span class="line">结果xshell可见：</span><br><span class="line">./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --executor-memory 1G --num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100</span><br></pre></td></tr></table></figure>

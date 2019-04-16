@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="将Mysql数据导入Hive中命令:12345678sqoop import  -Dorg.apache.sqoop.splitter.allow_text_splitter=true       --connect jdbc:mysql://211.159.172.76:3306/solo--username root --password 125323Wkq --table  tablenam">
+<meta name="description" content="将Mysql数据导入Hive中">
 <meta name="keywords" content="日常总结">
 <meta property="og:type" content="article">
 <meta property="og:title" content="sqoop记录">
 <meta property="og:url" content="http://www.wqkenqing.ren/2018/03/04/日常总结/sqoop记录/index.html">
 <meta property="og:site_name" content="wong&#39;s bolg">
-<meta property="og:description" content="将Mysql数据导入Hive中命令:12345678sqoop import  -Dorg.apache.sqoop.splitter.allow_text_splitter=true       --connect jdbc:mysql://211.159.172.76:3306/solo--username root --password 125323Wkq --table  tablenam">
+<meta property="og:description" content="将Mysql数据导入Hive中">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-16T09:49:58.837Z">
+<meta property="og:updated_time" content="2019-04-16T10:05:42.155Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="sqoop记录">
-<meta name="twitter:description" content="将Mysql数据导入Hive中命令:12345678sqoop import  -Dorg.apache.sqoop.splitter.allow_text_splitter=true       --connect jdbc:mysql://211.159.172.76:3306/solo--username root --password 125323Wkq --table  tablenam">
+<meta name="twitter:description" content="将Mysql数据导入Hive中">
 
 
 
@@ -300,7 +300,8 @@
       
 
       
-        <h2 id="将Mysql数据导入Hive中"><a href="#将Mysql数据导入Hive中" class="headerlink" title="将Mysql数据导入Hive中"></a>将Mysql数据导入Hive中</h2><p>命令:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sqoop import  </span><br><span class="line">-Dorg.apache.sqoop.splitter.allow_text_splitter=true       </span><br><span class="line">--connect jdbc:mysql://211.159.172.76:3306/solo</span><br><span class="line">--username root </span><br><span class="line">--password 125323Wkq </span><br><span class="line">--table  tablename </span><br><span class="line">--hive-import </span><br><span class="line">--hive-table tablename</span><br></pre></td></tr></table></figure></p>
+        <h2 id="将Mysql数据导入Hive中"><a href="#将Mysql数据导入Hive中" class="headerlink" title="将Mysql数据导入Hive中"></a>将Mysql数据导入Hive中</h2><a id="more"></a>
+<p>命令:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sqoop import  </span><br><span class="line">-Dorg.apache.sqoop.splitter.allow_text_splitter=true       </span><br><span class="line">--connect jdbc:mysql://211.159.172.76:3306/solo</span><br><span class="line">--username root </span><br><span class="line">--password 125323Wkq </span><br><span class="line">--table  tablename </span><br><span class="line">--hive-import </span><br><span class="line">--hive-table tablename</span><br></pre></td></tr></table></figure></p>
 <h3 id="整库导入"><a href="#整库导入" class="headerlink" title="整库导入"></a>整库导入</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sqoop import-all-tables --connect jdbc:mysql://211.159.172.76:3306/ --username root --password 125323Wkq --hive-database solo  -m 10  </span><br><span class="line">--create-hive-table  </span><br><span class="line">--fields-terminated-by &quot;\t&quot;</span><br><span class="line">--hive-import --hive-database qianyang --hive-overwrite</span><br></pre></td></tr></table></figure>
 <p>sqoop  import-all-tables -Dorg.apache.sqoop.splitter.allow_text_splitter=true –connect jdbc:mysql://211.159.172.76:3306/solo –username root –password 125323Wkq –hive-database blog  –create-hive-table  –hive-import –hive-overwrite -m 10 </p>
 <h3 id="单表导入"><a href="#单表导入" class="headerlink" title="单表导入"></a>单表导入</h3><p>sqoop import  –connect   jdbc:mysql://211.159.172.76:3306/solo –username root     –password 125323Wkq    –table b3_solo_article –target-dir /blog/article   –hive-import  –hive-database blog<br>–fields-terminated-by “\t” –hive-table article  –hive-overwrite<br>–m 10  </p>
