@@ -95,10 +95,12 @@
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-04-15-11-59-56.png">
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-04-16-15-06-25.png">
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-04-16-10-42-08.png">
+<meta property="og:image" content="http://img.wqkenqing.ren/2019-04-17-09-23-07.png">
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-04-16-11-01-33.png">
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-04-16-11-04-52.png">
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-04-16-16-15-42.png">
-<meta property="og:updated_time" content="2019-04-16T10:05:07.217Z">
+<meta property="og:image" content="http://img.wqkenqing.ren/2019-04-17-09-09-00.png">
+<meta property="og:updated_time" content="2019-04-17T01:24:39.344Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="大数据分享">
 <meta name="twitter:description" content="工欲善其事，必先利其器">
@@ -410,7 +412,7 @@
 <h2 id="其它类-zookeeper-yarn等"><a href="#其它类-zookeeper-yarn等" class="headerlink" title="其它类 zookeeper ,yarn等"></a>其它类 zookeeper ,yarn等</h2><p>zookeeper在集中基础环境中主要作为配置分享中心,与kafka,hbase等组件集成.yarn则作为资源管理组件,可以与mapreduce ,spark等集成</p>
 <h2 id="各类组件架构"><a href="#各类组件架构" class="headerlink" title="各类组件架构"></a>各类组件架构</h2><p>以上,已经大致介绍了各类工具,基本了解了相应的特性和使用场景,而根据它们的特性,进行合理的配备,架构,从而实现一个功能全面,稳定的大数据环境.</p>
 <p>于我个人经历与平时了解来讲,一般的架构主要如下</p>
-<p><img src="http://img.wqkenqing.ren/2019-04-16-10-42-08.png" alt="2019-04-16-10-42-08"></p>
+<p><img src="http://img.wqkenqing.ren/2019-04-16-10-42-08.png" alt="2019-04-16-10-42-08"><br>另:<br><img src="http://img.wqkenqing.ren/2019-04-17-09-23-07.png" alt="2019-04-17-09-23-07"></p>
 <p>总得来说,各类组件供选型一般来讲都不是单一的.所以,我们的大数据环境各部份组件都是插销式可插拔的.所以不同公司可能不一而同,具体看自身需求和实际情况.比如上图中的storm流式计算模块,就可以替换成spark-streaming等.</p>
 <p>通过对上图的架构的拆解,再组合,可能还会有以下组织架构.</p>
 <p>数据仓库<br>可以理解为上图中间部份.作为一个数据集市的存在,算作数据中心的一部份.</p>
@@ -426,7 +428,7 @@
 <li>大数据基础平台</li>
 <li>数据仓库</li>
 <li>DMP平台</li>
-<li>相关应用平台如推荐系统,报表系统,可视化平台等.<br>产品集合组中.</li>
+<li>相关应用平台如推荐系统,报表系统,可视化平台等.</li>
 </ul>
 <p>数据中台:<br>这个是由阿里于15年率先提出.主导思想是大中台,小前台.这块暂无特别明确的解释说法,但现在也有不少公司效仿.我个人从它的主导思想”大中台,小前台”的理解是,这个可能是体量更大,壁垒更少的一个数据集成体.比如阿里系的旗下公司,数据流都会归集到中台,同时阿里系下的公司也能获得不仅自己公司数据中心归集的数据反馈,还能获得阿里中台整合后流出的反馈数据.</p>
 <h2 id="应用落地"><a href="#应用落地" class="headerlink" title="应用落地"></a>应用落地</h2><h3 id="公共服务"><a href="#公共服务" class="headerlink" title="公共服务"></a>公共服务</h3><ul>
@@ -443,6 +445,8 @@
 </ul>
 <h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>以上,就是我今天分享的主要内容.今天的主题是”器”,但对这些工具的讲解浅尝辄止,在实际的开发实战中涉及的情况是更为复杂,需要掌握的内容更多,深度也更深.我这里主要是想抛砖引玉,为大家提供一点自己的理解,若能有所帮助,不胜荣幸.</p>
 <p>另外,工具始终是工具,菜刀再利也要厨子好,才能做好菜.所以如何利用这些工具,与我们的业务结合,实现我们想要的价值,这是我一直在探索的,也愿与各位同仁一同前行.</p>
+<p>附上图中涉及到的技术栈</p>
+<p><img src="http://img.wqkenqing.ren/2019-04-17-09-09-00.png" alt="2019-04-17-09-09-00"></p>
 
       
     </div>
