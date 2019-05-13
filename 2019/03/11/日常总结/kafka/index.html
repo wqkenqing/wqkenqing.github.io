@@ -88,7 +88,7 @@
 <meta property="og:description" content="kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic sparkstreamingkafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-03-12-11-02-43.png">
-<meta property="og:updated_time" content="2019-04-16T10:07:11.170Z">
+<meta property="og:updated_time" content="2019-05-13T06:04:24.890Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafka">
 <meta name="twitter:description" content="kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic sparkstreamingkafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic">
@@ -308,7 +308,8 @@
 <h1 id="Kafka相关小结"><a href="#Kafka相关小结" class="headerlink" title="Kafka相关小结"></a>Kafka相关小结</h1><h2 id="kafka-相关指令"><a href="#kafka-相关指令" class="headerlink" title="kafka 相关指令"></a>kafka 相关指令</h2><p>kafka-server-start.sh config/server.properties &amp; 启动<br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic topic_name  :创建topic<br>kafka-console-producer.sh –broker-list localhost:9092 –topic topic_name :创建生产者</p>
 <p>kafka-console-consumer.sh –bootstrap-server localhost:9092 –topic topic_name :创建消费者</p>
 <p>kafka-console-producer.sh –broker-list namenode:9092 –topic sparkstreaming</p>
-<h2 id="kafka-java-api"><a href="#kafka-java-api" class="headerlink" title="kafka java api"></a>kafka java api</h2><p>kafka 虽然搭建较为简单,但想要对针它编程体验还是有些问题.初步使用下来明显感觉对版本的强约束性.以我线上版本<br><img src="http://img.wqkenqing.ren/2019-03-12-11-02-43.png" alt="2019-03-12-11-02-43">为例,我java项目对应的版本则是<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka_2.10&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;0.8.1&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;0.8.2.1&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure></p>
+<h2 id="kafka-java-api"><a href="#kafka-java-api" class="headerlink" title="kafka java api"></a>kafka java api</h2><p>kafka 虽然搭建较为简单,但想要对针它编程体验还是有些问题.初步使用下来明显感觉对版本的强约束性.以我线上版本</p>
+<p><img src="http://img.wqkenqing.ren/2019-03-12-11-02-43.png" alt="2019-03-12-11-02-43">为例,我java项目对应的版本则是<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka_2.10&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;0.8.1&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;0.8.2.1&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure></p>
 <p>以上版本搭配经由我亲测通过</p>
 
       
@@ -429,7 +430,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-count">18</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

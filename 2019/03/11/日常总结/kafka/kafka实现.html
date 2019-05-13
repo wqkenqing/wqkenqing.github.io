@@ -1,0 +1,9 @@
+<hr>
+<p>title: kafka学习<br>date:<br>tags: kafka</p>
+<h2 id="abstract-kafka-high-level"><a href="#abstract-kafka-high-level" class="headerlink" title="abstract: kafka high level"></a>abstract: kafka high level</h2><p>[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。</p>
+<h2 id="kafka-发送模式"><a href="#kafka-发送模式" class="headerlink" title="kafka 发送模式"></a>kafka 发送模式</h2><p>通过producer.type设置,可以设置producer的发送模式,具体参数据有<br>producer.type=false即同步(默认就是同步),设置为true为异步,即以batch形式像broker发送信息.(这里的batch可以设置)<br>还有一种oneway.即通过对ack的设置即可实现,ack=0时,即为oneway,只管发,不管是否接收成功.-1则是全部副本接收成功才算成功.</p>
+<h2 id="kakfa消费模式"><a href="#kakfa消费模式" class="headerlink" title="kakfa消费模式"></a>kakfa消费模式</h2><ol>
+<li>at last one</li>
+<li>at most one</li>
+<li>exactly one</li>
+</ol>
