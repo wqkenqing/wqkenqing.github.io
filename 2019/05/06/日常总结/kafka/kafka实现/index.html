@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。 kafka 发送模式通过producer.type设置,可以设置producer的发送模式,具体参数据有producer.type=false即同步(默认就是同步),设置为true为异步,即以batch形式像b">
+<meta name="description" content="[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。">
 <meta name="keywords" content="kafka">
 <meta property="og:type" content="article">
 <meta property="og:title" content="kafka学习">
 <meta property="og:url" content="http://www.wqkenqing.ren/2019/05/06/日常总结/kafka/kafka实现/index.html">
 <meta property="og:site_name" content="wong&#39;s bolg">
-<meta property="og:description" content="[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。 kafka 发送模式通过producer.type设置,可以设置producer的发送模式,具体参数据有producer.type=false即同步(默认就是同步),设置为true为异步,即以batch形式像b">
+<meta property="og:description" content="[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-05-08T08:19:38.228Z">
+<meta property="og:updated_time" content="2019-05-14T06:19:17.826Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafka学习">
-<meta name="twitter:description" content="[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。 kafka 发送模式通过producer.type设置,可以设置producer的发送模式,具体参数据有producer.type=false即同步(默认就是同步),设置为true为异步,即以batch形式像b">
+<meta name="twitter:description" content="[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。">
 
 
 
@@ -300,7 +300,7 @@
       
 
       
-        <p>[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。</p>
+        <p>[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。<br><a id="more"></a></p>
 <h2 id="kafka-发送模式"><a href="#kafka-发送模式" class="headerlink" title="kafka 发送模式"></a>kafka 发送模式</h2><p>通过producer.type设置,可以设置producer的发送模式,具体参数据有<br>producer.type=false即同步(默认就是同步),设置为true为异步,即以batch形式像broker发送信息.(这里的batch可以设置)<br>还有一种oneway.即通过对ack的设置即可实现,ack=0时,即为oneway,只管发,不管是否接收成功.-1则是全部副本接收成功才算成功.</p>
 <h2 id="kakfa消费模式"><a href="#kakfa消费模式" class="headerlink" title="kakfa消费模式"></a>kakfa消费模式</h2><ol>
 <li>at last one</li>
