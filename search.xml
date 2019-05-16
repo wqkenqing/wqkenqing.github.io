@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Lambda&Stream.md]]></title>
+    <url>%2F2019%2F05%2F15%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2FLamda%E7%A7%AF%E7%B4%AF%2F</url>
+    <content type="text"><![CDATA[Lambda&amp;Stream积累 LambdaLambda主要是一个类语法长糖,尽量为java引入函数编程等实现,细节后续再补充 ##Streamjava8提拱的新特性之一就有stream.stream主要是针对集合的处理类.提供了一系列集合处理方式.配合使用lambda写出简介优美的代码 ###Stream的使用 通过如123456List&lt;Integer&gt; list = new ArrayList&lt;&gt;();list.stream();//即可以开启串行流;list.parallelStream().filter(a -&gt; &#123; return a &gt; 20; &#125;);//开启并行流 串行流即内部单线程顺序执行,并行则是启用多线程执行.后者并不一定效率就比前者高.因为并行执行启用分配线程资源时同样要消耗时间和资源,在一定量级下,前者的执行效率一度要高过后者. 我这里对三种对集合的处理形式的比较,可以简单参考一下 stream 串行流 parallelStream 并行流 常规循环式 12345678910111213141516171819202122232425262728293031List&lt;Integer&gt; list = new ArrayList&lt;&gt;(); for (int i = 0; i &lt; 100000; i++) &#123; list.add(getRandomNum()); &#125; DateUtil.setBegin(); list.stream().filter(a -&gt; &#123; return a &gt; 20; &#125;); DateUtil.setStop(); System.out.println("串行耗时"+DateUtil.calCostTime()); DateUtil.setBegin(); list.parallelStream().filter(a -&gt; &#123; return a &gt; 20; &#125;); DateUtil.setStop(); System.out.println("并行耗时"+DateUtil.calCostTime()); int count = 0; DateUtil.setBegin(); for (int l : list) &#123; if (l &gt; 20) &#123; count++; &#125; &#125; DateUtil.setStop(); System.out.println("循环耗时"+DateUtil.calCostTime()); 经由相当量次的测试后,我觉得如果要对集合中的数据进行遍历操作,根据量级的不同,建议低量级还是采用普通循环,量级特别大,可考虑用并行流.书写方便,又不是大批量数据处理操作可以直接采用串行流 ###Stream的操作分类 Intermediate Terminal Short-circuiting]]></content>
+      <tags>
+        <tag>日常总结</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[kafka学习]]></title>
     <url>%2F2019%2F05%2F06%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fkafka%2Fkafka%E5%AE%9E%E7%8E%B0%2F</url>
     <content type="text"><![CDATA[[ x ] Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。 kafka 发送模式通过producer.type设置,可以设置producer的发送模式,具体参数据有producer.type=false即同步(默认就是同步),设置为true为异步,即以batch形式像broker发送信息.(这里的batch可以设置)还有一种oneway.即通过对ack的设置即可实现,ack=0时,即为oneway,只管发,不管是否接收成功.-1则是全部副本接收成功才算成功. kakfa消费模式 at last one at most one exactly one]]></content>
