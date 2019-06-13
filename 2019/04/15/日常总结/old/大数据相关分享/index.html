@@ -100,7 +100,7 @@
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-04-16-11-04-52.png">
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-04-16-16-15-42.png">
 <meta property="og:image" content="http://img.wqkenqing.ren/2019-04-17-09-09-00.png">
-<meta property="og:updated_time" content="2019-05-13T06:30:05.325Z">
+<meta property="og:updated_time" content="2019-06-13T06:01:45.358Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="大数据分享">
 <meta name="twitter:description" content="开头语工欲善其事，必先利其器">
@@ -346,7 +346,7 @@
       
 
       
-        <h2 id="开头语"><a href="#开头语" class="headerlink" title="开头语"></a>开头语</h2><p><code>工欲善其事，必先利其器</code><br><a id="more"></a><br>本次分享,是我在公司的第一次分享,我考虑后,将本次分享的主要内容分为了三大部块.先是针对相关基础组件分类介绍.再介绍下通过对这些组件进行组织配搭的大数据基础环境架构.再结合我的一些经历,为大家介绍下相关的应用与产品落地.</p>
+        <h2 id="开头语"><a href="#开头语" class="headerlink" title="开头语"></a>开头语</h2><p><code>工欲善其事，必先利其器</code><br><a id="more"></a><br>本次分享,是我在公司的第一次分享,我考虑后,将本次分享的主要内容分为了三大部块.先是针对相关基础组件分类介绍.再介绍下通过对这些组件进行组织配搭的大数据基础环境架构.再结合我的一些经历,为大家介绍下相关的应用与产品落地.</p>
 <h2 id="技术栈简介"><a href="#技术栈简介" class="headerlink" title="技术栈简介"></a>技术栈简介</h2><ul>
 <li>数据采集</li>
 <li>数据存储</li>
@@ -405,11 +405,11 @@
 * 只支持一次写入多次读取，同一时刻只有一个写入者
 * 只能追加，不能修改
 </code></pre><p><img src="http://img.wqkenqing.ren/2019-04-15-11-12-40.png" alt="2019-04-15-11-12-40"></p>
-<h3 id="hbase"><a href="#hbase" class="headerlink" title="hbase"></a>hbase</h3><p>HBase是一个构建在HDFS上的分布式列存储系统；<br>HBase是基于Google BigTable模型开发的，典型的key/value系统；<br>HBase是Apache Hadoop生态系统中的重要一员，主要用于海量结构化数据存储；</p>
+<h3 id="hbase"><a href="#hbase" class="headerlink" title="hbase"></a>hbase</h3><p>Base是一个构建在HDFS上的分布式列存储系统；<br>Base是基于Google BigTable模型开发的，典型的key/value系统；<br>Base是Apache Hadoop生态系统中的重要一员，主要用于海量结构化数据存储；</p>
 <p>大：一个表可以有数十亿行，上百万列；无模式：每行都有一个可排序的主键和任意多的列，列可以根据需要动态的增加，同一张表中不同的行可以有截然不同的列；面向列：面向列（族）的存储和权限控制，列（族）独立检索；稀疏：空（null）列并不占用存储空间，表可以设计的非常稀疏；数据多版本：每个单元中的数据可以有多个版本，默认情况下版本号自动分配，是单元格插入时的时间戳；数据类型单一：Hbase中的数据都是字符串，没有类型</p>
 <h4 id="openTSDB"><a href="#openTSDB" class="headerlink" title="openTSDB"></a>openTSDB</h4><p>基于Hbase的分布式的，可伸缩的时间序列数据库。<br>主要用途，就是做监控系统；譬如收集大规模集群（包括网络设备、操作系统、应用程序）的监控数据并进行存储，查询。<br><img src="http://img.wqkenqing.ren/2019-04-15-11-27-46.png" alt="2019-04-15-11-27-46"></p>
 <h4 id="solr-amp-Phoenix"><a href="#solr-amp-Phoenix" class="headerlink" title="solr &amp; Phoenix"></a>solr &amp; Phoenix</h4><p>二级索引</p>
-<h3 id="hive"><a href="#hive" class="headerlink" title="hive"></a>hive</h3><p>Hive 是一个基于 Hadoop 文件系统之上的数据仓库架构。它可以将结构化的数据文件映射为一张数据库表，并提供简单的 sql 查询功能。还可以将 sql 语句转换为 MapReduce 任务运行。<br>底部计算引擎还可以用用Tez, spark等.<br><img src="http://img.wqkenqing.ren/2019-04-15-11-36-43.png" alt="2019-04-15-11-36-43"></p>
+<h3 id="hive"><a href="#hive" class="headerlink" title="hive"></a>hive</h3><p>ive 是一个基于 Hadoop 文件系统之上的数据仓库架构。它可以将结构化的数据文件映射为一张数据库表，并提供简单的 sql 查询功能。还可以将 sql 语句转换为 MapReduce 任务运行。<br>底部计算引擎还可以用用Tez, spark等.<br><img src="http://img.wqkenqing.ren/2019-04-15-11-36-43.png" alt="2019-04-15-11-36-43"></p>
 <h5 id="Impala"><a href="#Impala" class="headerlink" title="Impala"></a>Impala</h5><p>Impala是Cloudera公司推出，提供对HDFS、Hbase数据的高性能、低延迟的交互式SQL查询功能。</p>
 <ul>
 <li>基于Hive使用内存计算，兼顾数据仓库、具有实时、批处理、多并发等优点</li>
@@ -440,7 +440,7 @@
 <h3 id="flink-blink"><a href="#flink-blink" class="headerlink" title="flink/blink"></a>flink/blink</h3><p>略</p>
 <h2 id="传输类"><a href="#传输类" class="headerlink" title="传输类"></a>传输类</h2><h3 id="kafka"><a href="#kafka" class="headerlink" title="kafka"></a>kafka</h3><p>Kafka是分布式发布-订阅消息系统,一个分布式的，可划分的，冗余备份的持久性的日志服务。它主要用于处理活跃的流式数据。日常中常与spark-streaming结合实用,为其提供无边界数据</p>
 <p><img src="http://img.wqkenqing.ren/2019-04-16-15-06-25.png" alt="2019-04-16-15-06-25"></p>
-<h2 id="管理类-Hue-cloudera-manager"><a href="#管理类-Hue-cloudera-manager" class="headerlink" title="管理类 Hue cloudera-manager"></a>管理类 Hue cloudera-manager</h2><p>hue与cm 都是由cloudera提供,后面cloudera将hue开源给了apache.如果基础集群环境是采用的是开源自主搭建,可考虑引入hue.另一些大数据服务公司,有集成打包自己的一些大数据产品,如cdh等.但这些服务收费,涉及到成本问题.所以如何选用,需要相关斟酌.</p>
+<h2 id="管理类-Hue-cloudera-manager"><a href="#管理类-Hue-cloudera-manager" class="headerlink" title="管理类 Hue cloudera-manager"></a>管理类 Hue cloudera-manager</h2><p>ue与cm 都是由cloudera提供,后面cloudera将hue开源给了apache.如果基础集群环境是采用的是开源自主搭建,可考虑引入hue.另一些大数据服务公司,有集成打包自己的一些大数据产品,如cdh等.但这些服务收费,涉及到成本问题.所以如何选用,需要相关斟酌.</p>
 <h2 id="其它类-zookeeper-yarn等"><a href="#其它类-zookeeper-yarn等" class="headerlink" title="其它类 zookeeper ,yarn等"></a>其它类 zookeeper ,yarn等</h2><p>zookeeper在集中基础环境中主要作为配置分享中心,与kafka,hbase等组件集成.yarn则作为资源管理组件,可以与mapreduce ,spark等集成</p>
 <h2 id="各类组件架构"><a href="#各类组件架构" class="headerlink" title="各类组件架构"></a>各类组件架构</h2><p>以上,已经大致介绍了各类工具,基本了解了相应的特性和使用场景,而根据它们的特性,进行合理的配备,架构,从而实现一个功能全面,稳定的大数据环境.</p>
 <p>于我个人经历与平时了解来讲,一般的架构主要如下<br><img src="http://img.wqkenqing.ren/2019-04-17-09-23-07.png" alt="2019-04-17-09-23-07"><br>另:<br><img src="http://img.wqkenqing.ren/2019-04-16-10-42-08.png" alt="2019-04-16-10-42-08"></p>
