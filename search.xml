@@ -9,6 +9,14 @@
       </tags>
   </entry>
   <entry>
+    <title><![CDATA[hadoop HA搭建]]></title>
+    <url>%2F2019%2F05%2F16%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fhadoop%2FhadoopHA%E6%90%AD%E5%BB%BA%2F</url>
+    <content type="text"><![CDATA[HAlkajdlqj艺术硕士asdafdasdfasd艺术硕士asasd]]></content>
+      <tags>
+        <tag>hadoop</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[kafka学习]]></title>
     <url>%2F2019%2F05%2F06%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fkafka%2Fkafka%E5%AE%9E%E7%8E%B0%2F</url>
     <content type="text"><![CDATA[[ x ] Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。 kafka 发送模式通过producer.type设置,可以设置producer的发送模式,具体参数据有producer.type=false即同步(默认就是同步),设置为true为异步,即以batch形式像broker发送信息.(这里的batch可以设置)还有一种oneway.即通过对ack的设置即可实现,ack=0时,即为oneway,只管发,不管是否接收成功.-1则是全部副本接收成功才算成功. kakfa消费模式 at last one at most one exactly one]]></content>
