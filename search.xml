@@ -6,17 +6,17 @@
     <content type="text"><![CDATA[….. CDH安装准备 ubuntu ulimit]]></content>
   </entry>
   <entry>
+    <title><![CDATA[spark操作.md]]></title>
+    <url>%2F2019%2F05%2F17%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fspark%2Fspark%E6%93%8D%E4%BD%9C%2F</url>
+    <content type="text"><![CDATA[spark编程积累 spark编程Inputhdfs操作hdfs比较常规,直接通过context.textfile(path) //即可实现 hbasehbase 则要通过newAPIHadoopRDD来实现12JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class); 这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.12345Configuration hconf = HbaseOperate.getConf(); Scan scan = new Scan(); hconf.set(TableInputFormat.INPUT_TABLE, "company"); hconf.set(TableInputFormat.SCAN, convertScanToString(scan)); 参考以上这段代码 另1234static String convertScanToString(Scan scan) throws IOException &#123; ClientProtos.Scan proto = ProtobufUtil.toScan(scan); return Base64.encodeBytes(proto.toByteArray()); &#125; 以上是为实现scan指令传输字符的封装.]]></content>
+  </entry>
+  <entry>
     <title><![CDATA[hbaes操作]]></title>
     <url>%2F2019%2F05%2F17%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fhadoop%2Fhbase%2Fhbase%E6%93%8D%E4%BD%9C%2F</url>
     <content type="text"><![CDATA[对hbase常规api进行封装 hbase日常api类封装]]></content>
       <tags>
         <tag>常规api封装</tag>
       </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[spark操作.md]]></title>
-    <url>%2F2019%2F05%2F17%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fspark%2Fspark%E6%93%8D%E4%BD%9C%2F</url>
-    <content type="text"><![CDATA[spark编程积累 spark编程Inputhdfs操作hdfs比较常规,直接通过context.textfile(path) //即可实现 hbasehbase 则要通过newAPIHadoopRDD来实现12JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class); 这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.12345Configuration hconf = HbaseOperate.getConf(); Scan scan = new Scan(); hconf.set(TableInputFormat.INPUT_TABLE, "company"); hconf.set(TableInputFormat.SCAN, convertScanToString(scan)); 参考以上这段代码 另1234static String convertScanToString(Scan scan) throws IOException &#123; ClientProtos.Scan proto = ProtobufUtil.toScan(scan); return Base64.encodeBytes(proto.toByteArray()); &#125; 以上是为实现scan指令传输字符的封装.]]></content>
   </entry>
   <entry>
     <title><![CDATA[Lambda&Stream.md]]></title>
