@@ -1,24 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[flume记录]]></title>
-    <url>%2F2019%2F06%2F13%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fflume%E8%AE%B0%E5%BD%95%2F</url>
-    <content type="text"><![CDATA[此处简介 flume记录from kafka 123456789101112131415161718192021222324252627282930313233343536373839a1.sources = source1a1.sources.source1.type = org.apache.flume.source.kafka.KafkaSourcea1.sources.source1.channels = c1a1.sources.source1.batchSize = 5000a1.sources.source1.batchDurationMillis = 2000a1.sources.source1.zookeeperConnect = localhost:2181#a1.sources.source1.kafka.brokerList = localhost:9092a1.sources.source1.kafka.bootstrap.servers = localhost:9092a1.sources.source1.topic = flumetesta1.sources.source1.kafka.consumer.group.id = custom.g.ida1.channels = c1a1.channels.c1.type = memorya1.channels.c1.capacity = 10000a1.channels.c1.transactionCapacity = 10000a1.channels.c1.byteCapacityBufferPercentage = 20a1.channels.c1.byteCapacity = 800000a1.sinks = k1a1.sinks.k1.type = file_rolla1.sinks.k1.channel = c1a1.sinks.k1.sink.directory = /home/hadoop/testfile/flume 这里也有版本匹配的问题.经过多番尝试,这里的组合版本是flume1.6+kafka_2.11-2.2.0.tgz其它版本可能会有request header 问题.另外还遇到了指定topic 和 zookeeper的问题. 执行语句:flume-ng agent -n a1 -c conf -f kafka.properties -Dflume.root.logger=INFO,console flume 采集到kafka123456789101112131415161718192021222324252627agent.sources=r1agent.sinks=k1agent.channels=c1agent.sources.r1.type=execagent.sources.r1.command=tail /root/tomcat/logs/catalina.outagent.sources.r1.restart=trueagent.sources.r1.batchSize=1000agent.sources.r1.batchTimeout=3000agent.sources.r1.channels=c1agent.channels.c1.type=memoryagent.channels.c1.capacity=102400agent.channels.c1.transactionCapacity=1000agent.channels.c1.byteCapacity=134217728agent.channels.c1.byteCapacityBufferPercentage=80agent.sinks.k1.channel=c1agent.sinks.k1.type=org.apache.flume.sink.kafka.KafkaSinkagent.sinks.k1.kafka.topic=sparkstreamingagent.sinks.k1.kafka.zookeeperConnect=47.102.199.215:2181#agent.sinks.k1.kafka.bootstrap.servers=47.102.199.215:9092agent.sinks.k1.kafka.brokerList =47.102.199.215:9092agent.sinks.k1.serializer.class=kafka.serializer.StringEncoderagent.sinks.k1.flumeBatchSize=1000agent.sinks.k1.useFlumeEventFormat=true]]></content>
-  </entry>
-  <entry>
     <title><![CDATA[Yarn配置细节]]></title>
     <url>%2F2019%2F06%2F13%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2FYarn%E9%85%8D%E7%BD%AE%2F</url>
     <content type="text"><![CDATA[此处简介 Yarn配置细节##内存,核数设置 1234567891011121314151617181920212223242526272829303132 &lt;property&gt; &lt;name&gt;yarn.nodemanager.resource.memory-mb&lt;/name&gt; &lt;value&gt;4096&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.scheduler.minimum-allocation-mb&lt;/name&gt; &lt;value&gt;1024&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.scheduler.maximum-allocation-mb&lt;/name&gt; &lt;value&gt;3072&lt;/value&gt;&lt;/property&gt;&lt;!--该配置用于配置任务请求时的资源. --&gt;&lt;property&gt; &lt;name&gt;yarn.app.mapreduce.am.resource.mb&lt;/name&gt; &lt;value&gt;2048&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.app.mapreduce.am.command-opts&lt;/name&gt; &lt;value&gt;-Xmx3276m&lt;/value&gt;&lt;/property&gt; &lt;property&gt; &lt;name&gt;yarn.nodemanager.resource.cpu-vcores&lt;/name&gt; &lt;value&gt;2&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.scheduler.maximum-allocation-vcores&lt;/name&gt; &lt;value&gt;3&lt;/value&gt;&lt;/property&gt;]]></content>
   </entry>
   <entry>
+    <title><![CDATA[flume记录]]></title>
+    <url>%2F2019%2F06%2F13%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fflume%E8%AE%B0%E5%BD%95%2F</url>
+    <content type="text"><![CDATA[此处简介 flume记录from kafka 123456789101112131415161718192021222324252627282930313233343536373839a1.sources = source1a1.sources.source1.type = org.apache.flume.source.kafka.KafkaSourcea1.sources.source1.channels = c1a1.sources.source1.batchSize = 5000a1.sources.source1.batchDurationMillis = 2000a1.sources.source1.zookeeperConnect = localhost:2181#a1.sources.source1.kafka.brokerList = localhost:9092a1.sources.source1.kafka.bootstrap.servers = localhost:9092a1.sources.source1.topic = flumetesta1.sources.source1.kafka.consumer.group.id = custom.g.ida1.channels = c1a1.channels.c1.type = memorya1.channels.c1.capacity = 10000a1.channels.c1.transactionCapacity = 10000a1.channels.c1.byteCapacityBufferPercentage = 20a1.channels.c1.byteCapacity = 800000a1.sinks = k1a1.sinks.k1.type = file_rolla1.sinks.k1.channel = c1a1.sinks.k1.sink.directory = /home/hadoop/testfile/flume 这里也有版本匹配的问题.经过多番尝试,这里的组合版本是flume1.6+kafka_2.11-2.2.0.tgz其它版本可能会有request header 问题.另外还遇到了指定topic 和 zookeeper的问题. 执行语句:flume-ng agent -n a1 -c conf -f kafka.properties -Dflume.root.logger=INFO,console flume 采集到kafka123456789101112131415161718192021222324252627agent.sources=r1agent.sinks=k1agent.channels=c1agent.sources.r1.type=execagent.sources.r1.command=tail /root/tomcat/logs/catalina.outagent.sources.r1.restart=trueagent.sources.r1.batchSize=1000agent.sources.r1.batchTimeout=3000agent.sources.r1.channels=c1agent.channels.c1.type=memoryagent.channels.c1.capacity=102400agent.channels.c1.transactionCapacity=1000agent.channels.c1.byteCapacity=134217728agent.channels.c1.byteCapacityBufferPercentage=80agent.sinks.k1.channel=c1agent.sinks.k1.type=org.apache.flume.sink.kafka.KafkaSinkagent.sinks.k1.kafka.topic=sparkstreamingagent.sinks.k1.kafka.zookeeperConnect=47.102.199.215:2181#agent.sinks.k1.kafka.bootstrap.servers=47.102.199.215:9092agent.sinks.k1.kafka.brokerList =47.102.199.215:9092agent.sinks.k1.serializer.class=kafka.serializer.StringEncoderagent.sinks.k1.flumeBatchSize=1000agent.sinks.k1.useFlumeEventFormat=true]]></content>
+  </entry>
+  <entry>
     <title><![CDATA[CDH搭建细节]]></title>
     <url>%2F2019%2F05%2F27%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2FCDH%2F%E6%90%AD%E5%BB%BA%2F</url>
     <content type="text"><![CDATA[….. CDH安装准备 ubuntu ulimit]]></content>
-  </entry>
-  <entry>
-    <title><![CDATA[spark操作.md]]></title>
-    <url>%2F2019%2F05%2F17%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fspark%2Fspark%E6%93%8D%E4%BD%9C%2F</url>
-    <content type="text"><![CDATA[spark编程积累 spark编程Inputhdfs操作hdfs比较常规,直接通过context.textfile(path) //即可实现 hbasehbase 则要通过newAPIHadoopRDD来实现12JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class); 这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.12345Configuration hconf = HbaseOperate.getConf(); Scan scan = new Scan(); hconf.set(TableInputFormat.INPUT_TABLE, "company"); hconf.set(TableInputFormat.SCAN, convertScanToString(scan)); 参考以上这段代码 另1234static String convertScanToString(Scan scan) throws IOException &#123; ClientProtos.Scan proto = ProtobufUtil.toScan(scan); return Base64.encodeBytes(proto.toByteArray()); &#125; 以上是为实现scan指令传输字符的封装.]]></content>
   </entry>
   <entry>
     <title><![CDATA[hbaes操作]]></title>
@@ -27,6 +22,11 @@
       <tags>
         <tag>常规api封装</tag>
       </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[spark操作.md]]></title>
+    <url>%2F2019%2F05%2F17%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fspark%2Fspark%E6%93%8D%E4%BD%9C%2F</url>
+    <content type="text"><![CDATA[spark编程积累 spark编程Inputhdfs操作hdfs比较常规,直接通过context.textfile(path) //即可实现 hbasehbase 则要通过newAPIHadoopRDD来实现12JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class); 这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.12345Configuration hconf = HbaseOperate.getConf(); Scan scan = new Scan(); hconf.set(TableInputFormat.INPUT_TABLE, "company"); hconf.set(TableInputFormat.SCAN, convertScanToString(scan)); 参考以上这段代码 另1234static String convertScanToString(Scan scan) throws IOException &#123; ClientProtos.Scan proto = ProtobufUtil.toScan(scan); return Base64.encodeBytes(proto.toByteArray()); &#125; 以上是为实现scan指令传输字符的封装.]]></content>
   </entry>
   <entry>
     <title><![CDATA[Lambda&Stream.md]]></title>
@@ -53,11 +53,6 @@
       <tags>
         <tag>kafka</tag>
       </tags>
-  </entry>
-  <entry>
-    <title></title>
-    <url>%2F2019%2F04%2F22%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fsparkstreaming%E7%AE%97%E5%AD%90%2F</url>
-    <content type="text"></content>
   </entry>
   <entry>
     <title><![CDATA[mapreduce组件总结]]></title>
@@ -124,19 +119,19 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[spark学习2]]></title>
-    <url>%2F2018%2F03%2F04%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fspark%E5%AD%A6%E4%B9%A02%2F</url>
-    <content type="text"><![CDATA[spark学习2spark 运行的四种模式 本地模式如1./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 standlone模式client./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 cluster./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –deploy-mode cluster –supervise –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100 Yarn模式client模式123client模式：结果xshell可见：./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --executor-memory 1G --num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100 cluster模式./bin/spark-submit –class org.apache.spark.examples.SparkPi –master yarn-cluster –executor-memory 1G –num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 spark sql]]></content>
-      <tags>
-        <tag>学习spark2</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[spark学习]]></title>
     <url>%2F2018%2F03%2F04%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fspark%E5%AD%A6%E4%B9%A0%2F</url>
     <content type="text"><![CDATA[spark 学习 1spark 作为主流的实时计算引擎,需要高度掌握 spark介绍Apache Spark是一用于实时处理的开源集群计算框架.持多种语言编程,Spark Streaming有高吞吐量和容错能力强等特点.数据输入后可以用Spark的高度抽象原语如：map、reduce、join、window等进行运算,而结果也能保存在很多地方，如HDFS，数据库等。另外Spark Streaming也能和MLlib（机器学习）以及Graphx完美融合。 优点 易用 容错 spark体系整合 RDD详解RDD是什么RDD：Spark的核心概念是RDD (resilientdistributed dataset)，指的是一个只读的，可分区的分布式数据集，这个数据集的全部或部分可以缓存在内存中，在多次计算间重用。 另:RDD即弹性分布式数据集，有容错机制并可以被并行操作的元素集合，具有只读、分区、容错、高效、无需物化、可以缓存、RDD依赖等特征。RDD只是数据集的抽象，分区内部并不会存储具体的数据。 RDD的五个特性 有一个分片列表。就是能被切分，和hadoop一样的，能够切分的数据才能并行计算。 有一个函数计算每一个分片，这里指的是下面会提到的compute函数. 对其他的RDD的依赖列表，依赖还具体分为宽依赖和窄依赖，但并不是所有的RDD都有依赖. 可选：key-value型的RDD是根据哈希来分区的，类似于mapreduce当中的Paritioner接口，控制key分到哪个reduce。 可选：每一个分片的优先计算位置（preferred locations），比如HDFS的block的所在位置应该是优先计算的位置。(存储的是一个表，可以将处理的分区“本地化”). 12345678910//只计算一次 protected def getPartitions: Array[Partition] //对一个分片进行计算，得出一个可遍历的结果 def compute(split: Partition, context: TaskContext): Iterator[T] //只计算一次，计算RDD对父RDD的依赖 protected def getDependencies: Seq[Dependency[_]] = deps //可选的，分区的方法，针对第4点，类似于mapreduce当中的Paritioner接口，控制key分到哪个reduce @transient val partitioner: Option[Partitioner] = None //可选的，指定优先位置，输入参数是split分片，输出结果是一组优先的节点位置 protected def getPreferredLocations(split: Partition): Seq[String] = Nil 为什么会产生RDDRDD数据集 并行集合 接收一个已经存在的集合,然后进行各种并行计算.并行化集合是通过调用SparkContext的parallelize方法，在一个已经存在的Scala集合上创建（一个Seq对象）。集合的对象将会被拷贝，创建出一个可以被并行操作的分布式数据集。 Hadoop数据集 Spark可以将任何Hadoop所支持的存储资源转化成RDD，只要文件系统是HDFS，或者Hadoop支持的任意存储系统即可，如本地文件（需要网络文件系统，所有的节点都必须能访问到）、HDFS、Cassandra、HBase、Amazon S3等，Spark支持文本文件、SequenceFiles和任何Hadoop InputFormat格式。 此两种类型的RDD都可以通过相同的方式进行操作，从而获得子RDD等一系列拓展，形成lineage血统关系图。 Spark RDD算子 Transformation不触发提交作业，完成作业中间处理过程。 DStream什么是DStreamDiscretized Stream :代表持续性的数据流和经过各种Spark原语操作后的结果数据流,在内部实现上是一系列连续的RDD来表示.每个RDD含有一段时间间隔内的数据,如下图 计算则由spark engine来完成 spark java因为我是主要掌握的语言是java,从效率上来考虑,这里 参考博客https://blog.csdn.net/wangxiaotongfan/article/details/51395769 RDD详解https://blog.csdn.net/zuochang_liu/article/details/81459185 spark streaming学习https://blog.csdn.net/hellozhxy/article/details/81672845 spark java 使用指南https://blog.csdn.net/t1dmzks/article/details/70198430 sparkRDD算子介绍https://blog.csdn.net/wxycx11111/article/details/79123482 sparkRDD入门介绍https://github.com/zhaikaishun/spark_tutorial RDD算子介绍]]></content>
       <tags>
         <tag>学习spark</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[spark学习2]]></title>
+    <url>%2F2018%2F03%2F04%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fspark%E5%AD%A6%E4%B9%A02%2F</url>
+    <content type="text"><![CDATA[spark学习2spark 运行的四种模式 本地模式如1./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 standlone模式client./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 cluster./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –deploy-mode cluster –supervise –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100 Yarn模式client模式123client模式：结果xshell可见：./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --executor-memory 1G --num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100 cluster模式./bin/spark-submit –class org.apache.spark.examples.SparkPi –master yarn-cluster –executor-memory 1G –num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 spark sql]]></content>
+      <tags>
+        <tag>学习spark2</tag>
       </tags>
   </entry>
   <entry>
