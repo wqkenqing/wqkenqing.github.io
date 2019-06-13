@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[flume记录]]></title>
+    <url>%2F2019%2F06%2F13%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fflume%E8%AE%B0%E5%BD%95%2F</url>
+    <content type="text"><![CDATA[此处简介 flume记录from kafka 123456789101112131415161718192021222324252627282930313233343536373839a1.sources = source1a1.sources.source1.type = org.apache.flume.source.kafka.KafkaSourcea1.sources.source1.channels = c1a1.sources.source1.batchSize = 5000a1.sources.source1.batchDurationMillis = 2000a1.sources.source1.zookeeperConnect = localhost:2181#a1.sources.source1.kafka.brokerList = localhost:9092a1.sources.source1.kafka.bootstrap.servers = localhost:9092a1.sources.source1.topic = flumetesta1.sources.source1.kafka.consumer.group.id = custom.g.ida1.channels = c1a1.channels.c1.type = memorya1.channels.c1.capacity = 10000a1.channels.c1.transactionCapacity = 10000a1.channels.c1.byteCapacityBufferPercentage = 20a1.channels.c1.byteCapacity = 800000a1.sinks = k1a1.sinks.k1.type = file_rolla1.sinks.k1.channel = c1a1.sinks.k1.sink.directory = /home/hadoop/testfile/flume 这里也有版本匹配的问题.经过多番尝试,这里的组合版本是flume1.6+kafka_2.11-2.2.0.tgz其它版本可能会有request header 问题.另外还遇到了指定topic 和 zookeeper的问题. 执行语句:flume-ng agent -n a1 -c conf -f kafka.properties -Dflume.root.logger=INFO,console flume 采集到kafka123456789101112131415161718192021222324252627agent.sources=r1agent.sinks=k1agent.channels=c1agent.sources.r1.type=execagent.sources.r1.command=tail /root/tomcat/logs/catalina.outagent.sources.r1.restart=trueagent.sources.r1.batchSize=1000agent.sources.r1.batchTimeout=3000agent.sources.r1.channels=c1agent.channels.c1.type=memoryagent.channels.c1.capacity=102400agent.channels.c1.transactionCapacity=1000agent.channels.c1.byteCapacity=134217728agent.channels.c1.byteCapacityBufferPercentage=80agent.sinks.k1.channel=c1agent.sinks.k1.type=org.apache.flume.sink.kafka.KafkaSinkagent.sinks.k1.kafka.topic=sparkstreamingagent.sinks.k1.kafka.zookeeperConnect=47.102.199.215:2181#agent.sinks.k1.kafka.bootstrap.servers=47.102.199.215:9092agent.sinks.k1.kafka.brokerList =47.102.199.215:9092agent.sinks.k1.serializer.class=kafka.serializer.StringEncoderagent.sinks.k1.flumeBatchSize=1000agent.sinks.k1.useFlumeEventFormat=true]]></content>
+  </entry>
+  <entry>
+    <title><![CDATA[Yarn配置细节]]></title>
+    <url>%2F2019%2F06%2F13%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2FYarn%E9%85%8D%E7%BD%AE%2F</url>
+    <content type="text"><![CDATA[此处简介 Yarn配置细节##内存,核数设置 1234567891011121314151617181920212223242526272829303132 &lt;property&gt; &lt;name&gt;yarn.nodemanager.resource.memory-mb&lt;/name&gt; &lt;value&gt;4096&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.scheduler.minimum-allocation-mb&lt;/name&gt; &lt;value&gt;1024&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.scheduler.maximum-allocation-mb&lt;/name&gt; &lt;value&gt;3072&lt;/value&gt;&lt;/property&gt;&lt;!--该配置用于配置任务请求时的资源. --&gt;&lt;property&gt; &lt;name&gt;yarn.app.mapreduce.am.resource.mb&lt;/name&gt; &lt;value&gt;2048&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.app.mapreduce.am.command-opts&lt;/name&gt; &lt;value&gt;-Xmx3276m&lt;/value&gt;&lt;/property&gt; &lt;property&gt; &lt;name&gt;yarn.nodemanager.resource.cpu-vcores&lt;/name&gt; &lt;value&gt;2&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.scheduler.maximum-allocation-vcores&lt;/name&gt; &lt;value&gt;3&lt;/value&gt;&lt;/property&gt;]]></content>
+  </entry>
+  <entry>
     <title><![CDATA[CDH搭建细节]]></title>
     <url>%2F2019%2F05%2F27%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2FCDH%2F%E6%90%AD%E5%BB%BA%2F</url>
     <content type="text"><![CDATA[….. CDH安装准备 ubuntu ulimit]]></content>
+  </entry>
+  <entry>
+    <title><![CDATA[spark操作.md]]></title>
+    <url>%2F2019%2F05%2F17%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fspark%2Fspark%E6%93%8D%E4%BD%9C%2F</url>
+    <content type="text"><![CDATA[spark编程积累 spark编程Inputhdfs操作hdfs比较常规,直接通过context.textfile(path) //即可实现 hbasehbase 则要通过newAPIHadoopRDD来实现12JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class); 这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.12345Configuration hconf = HbaseOperate.getConf(); Scan scan = new Scan(); hconf.set(TableInputFormat.INPUT_TABLE, "company"); hconf.set(TableInputFormat.SCAN, convertScanToString(scan)); 参考以上这段代码 另1234static String convertScanToString(Scan scan) throws IOException &#123; ClientProtos.Scan proto = ProtobufUtil.toScan(scan); return Base64.encodeBytes(proto.toByteArray()); &#125; 以上是为实现scan指令传输字符的封装.]]></content>
   </entry>
   <entry>
     <title><![CDATA[hbaes操作]]></title>
@@ -12,11 +27,6 @@
       <tags>
         <tag>常规api封装</tag>
       </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[spark操作.md]]></title>
-    <url>%2F2019%2F05%2F17%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fspark%2Fspark%E6%93%8D%E4%BD%9C%2F</url>
-    <content type="text"><![CDATA[spark编程积累 spark编程Inputhdfs操作hdfs比较常规,直接通过context.textfile(path) //即可实现 hbasehbase 则要通过newAPIHadoopRDD来实现12JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class); 这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.12345Configuration hconf = HbaseOperate.getConf(); Scan scan = new Scan(); hconf.set(TableInputFormat.INPUT_TABLE, "company"); hconf.set(TableInputFormat.SCAN, convertScanToString(scan)); 参考以上这段代码 另1234static String convertScanToString(Scan scan) throws IOException &#123; ClientProtos.Scan proto = ProtobufUtil.toScan(scan); return Base64.encodeBytes(proto.toByteArray()); &#125; 以上是为实现scan指令传输字符的封装.]]></content>
   </entry>
   <entry>
     <title><![CDATA[Lambda&Stream.md]]></title>
@@ -66,31 +76,6 @@
       </tags>
   </entry>
   <entry>
-    <title></title>
-    <url>%2F2019%2F04%2F11%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fkafka%26spark%2F</url>
-    <content type="text"><![CDATA[kafka to spark]]></content>
-  </entry>
-  <entry>
-    <title></title>
-    <url>%2F2019%2F04%2F11%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fspark%E5%AD%A6%E4%B9%A02%2F</url>
-    <content type="text"><![CDATA[spark学习2spark 运行的四种模式 本地模式如1./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 standlone模式client./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 cluster./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –deploy-mode cluster –supervise –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100 Yarn模式client模式123client模式：结果xshell可见：./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --executor-memory 1G --num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100 cluster模式./bin/spark-submit –class org.apache.spark.examples.SparkPi –master yarn-cluster –executor-memory 1G –num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 spark sql]]></content>
-  </entry>
-  <entry>
-    <title></title>
-    <url>%2F2019%2F04%2F10%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fflume%E8%AE%B0%E5%BD%95%2F</url>
-    <content type="text"><![CDATA[flume记录from kafka 123456789101112131415161718192021222324252627282930313233343536373839a1.sources = source1a1.sources.source1.type = org.apache.flume.source.kafka.KafkaSourcea1.sources.source1.channels = c1a1.sources.source1.batchSize = 5000a1.sources.source1.batchDurationMillis = 2000a1.sources.source1.zookeeperConnect = localhost:2181#a1.sources.source1.kafka.brokerList = localhost:9092a1.sources.source1.kafka.bootstrap.servers = localhost:9092a1.sources.source1.topic = flumetesta1.sources.source1.kafka.consumer.group.id = custom.g.ida1.channels = c1a1.channels.c1.type = memorya1.channels.c1.capacity = 10000a1.channels.c1.transactionCapacity = 10000a1.channels.c1.byteCapacityBufferPercentage = 20a1.channels.c1.byteCapacity = 800000a1.sinks = k1a1.sinks.k1.type = file_rolla1.sinks.k1.channel = c1a1.sinks.k1.sink.directory = /home/hadoop/testfile/flume 这里也有版本匹配的问题.经过多番尝试,这里的组合版本是flume1.6+kafka_2.11-2.2.0.tgz其它版本可能会有request header 问题.另外还遇到了指定topic 和 zookeeper的问题. 执行语句:flume-ng agent -n a1 -c conf -f kafka.properties -Dflume.root.logger=INFO,console flume 采集到kafka123456789101112131415161718192021222324252627agent.sources=r1agent.sinks=k1agent.channels=c1agent.sources.r1.type=execagent.sources.r1.command=tail /root/tomcat/logs/catalina.outagent.sources.r1.restart=trueagent.sources.r1.batchSize=1000agent.sources.r1.batchTimeout=3000agent.sources.r1.channels=c1agent.channels.c1.type=memoryagent.channels.c1.capacity=102400agent.channels.c1.transactionCapacity=1000agent.channels.c1.byteCapacity=134217728agent.channels.c1.byteCapacityBufferPercentage=80agent.sinks.k1.channel=c1agent.sinks.k1.type=org.apache.flume.sink.kafka.KafkaSinkagent.sinks.k1.kafka.topic=sparkstreamingagent.sinks.k1.kafka.zookeeperConnect=47.102.199.215:2181#agent.sinks.k1.kafka.bootstrap.servers=47.102.199.215:9092agent.sinks.k1.kafka.brokerList =47.102.199.215:9092agent.sinks.k1.serializer.class=kafka.serializer.StringEncoderagent.sinks.k1.flumeBatchSize=1000agent.sinks.k1.useFlumeEventFormat=true]]></content>
-  </entry>
-  <entry>
-    <title></title>
-    <url>%2F2019%2F04%2F10%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fspark%E9%9B%86%E7%BE%A4%E6%93%8D%E4%BD%9C%E8%AE%B0%E5%BD%95%2F</url>
-    <content type="text"><![CDATA[#操作记录 ./spark-submit –master yarn-cluster –class practice.spark.task.SparkTestDemo bigdata-jar-with-dependencies.jar 10]]></content>
-  </entry>
-  <entry>
-    <title></title>
-    <url>%2F2019%2F04%2F10%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2FYarn%E9%85%8D%E7%BD%AE%2F</url>
-    <content type="text"><![CDATA[Yarn配置细节##内存,核数设置 1234567891011121314151617181920212223242526272829303132 &lt;property&gt; &lt;name&gt;yarn.nodemanager.resource.memory-mb&lt;/name&gt; &lt;value&gt;4096&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.scheduler.minimum-allocation-mb&lt;/name&gt; &lt;value&gt;1024&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.scheduler.maximum-allocation-mb&lt;/name&gt; &lt;value&gt;3072&lt;/value&gt;&lt;/property&gt;&lt;!--该配置用于配置任务请求时的资源. --&gt;&lt;property&gt; &lt;name&gt;yarn.app.mapreduce.am.resource.mb&lt;/name&gt; &lt;value&gt;2048&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.app.mapreduce.am.command-opts&lt;/name&gt; &lt;value&gt;-Xmx3276m&lt;/value&gt;&lt;/property&gt; &lt;property&gt; &lt;name&gt;yarn.nodemanager.resource.cpu-vcores&lt;/name&gt; &lt;value&gt;2&lt;/value&gt;&lt;/property&gt;&lt;property&gt; &lt;name&gt;yarn.scheduler.maximum-allocation-vcores&lt;/name&gt; &lt;value&gt;3&lt;/value&gt;&lt;/property&gt;]]></content>
-  </entry>
-  <entry>
     <title><![CDATA[spark实战]]></title>
     <url>%2F2019%2F03%2F21%2Fspark%E5%AE%9E%E6%88%98%2F</url>
     <content type="text"><![CDATA[spark实战spark-core]]></content>
@@ -136,6 +121,14 @@
     <content type="text"><![CDATA[hbase积累 细节点1.Rowkey设计原则 1.1 长度原则 rowkey 在hbase以二进制码流,可以是任意字符串, 最大长度是64kb,实际应用主要是100~100bytes 长度尽量为8的整数倍,因为现在的系统主要是64位,内存8字节对齐.控制在16字节,符合操作系统特性 1.2 散列原则:因为hbase是分布式存储,rowkey的高位尽量是散列字段,散列性弱的尽量放在低位段.如Time AND Device_id的组合,相对而言device_id 应该量级较小,散列性高.而TIME散列性低,如果TIME放在高位,可能造成数据在某个RegeionServer上堆积的情况.所以较合理的rowkey组合应是device_id+time. 1.3 RowKey唯一原则：必须在设计上保证其唯一性.hbase 中以KeyValue形式存储,key若重复,行内容则会被覆盖. 2.Hbase的Regeion热点问题解决因为在创建表是没有提前预分区,创建的表默认就只会有一个region,这个region的rowkey是没有边界的,即没有startkey与stopkey.数据在写入时,都会写入到这个region.随着数据的不断增加,达到某个阈值时,才会split成2个region.在这个过程中就会产生所有数据囤积在一个regionServer上,出现热点问题.另在split时,会占用集群的I/O资源.通过预分区可以解决该问题 2.1 预分区预分区,”预”字是核心.我们在建表时,预先对表中要存放的数据形式和可能的量级,心中必然会有所估量,即这里应预估数据量.若数据量较大,则在建表时又应该预分区.即根据数据形式,量级,事先预设好一定量的region,后面数据写入时,则会写入到相应的分区.从而避免热点,减少split. 2.1.2 salting(加盐)hbase rowkey设计,避免热点,常会用到该操作,这里的加盐本身不是加密操作,而是在原数据前加入一些随机数据,从而起到分散不同region的作用. 2.1.3 预习区具体方案 hbase预分区的相关操作,如shell形式,可直接在hbase shell操作.如 https://blog.csdn.net/xiao_jun_0820/article/details/24419793 java形式https://blog.csdn.net/qq_20641565/article/details/56482407 以上操作形式有个问题就是rowkey是随机生成的,虽起到了散列存储,避免了热点堆积,但因为加盐的缘故,想要直接的获取某行数据较为困难.若针对的是高频使用的数据,则会出现问题. 2.1.4 hash分区 在原先预分区的基础上,通过相关规则将原数据hash,从而获得这个原数据对应在哪个分区,使当拿到相关原数据,就能推演出相关rowkey.从而能准确的get数据. hbase优化确定优化目标沟通交流后，业务方更看重降低成本。数据量梳理后略有降低，保证吞吐，无长期请求堆积前提下可以放宽延时要求。为了更快的进行优化，放宽稳定性可以要求接受短期波动。另外，该分组的RegionServer之前存在不稳定的问题，这次优化也一并解决。]]></content>
       <tags>
         <tag>日常总结</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[spark学习2]]></title>
+    <url>%2F2018%2F03%2F04%2F%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93%2Fold%2Fspark%E5%AD%A6%E4%B9%A02%2F</url>
+    <content type="text"><![CDATA[spark学习2spark 运行的四种模式 本地模式如1./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 standlone模式client./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 cluster./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –deploy-mode cluster –supervise –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100 Yarn模式client模式123client模式：结果xshell可见：./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --executor-memory 1G --num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100 cluster模式./bin/spark-submit –class org.apache.spark.examples.SparkPi –master yarn-cluster –executor-memory 1G –num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100 spark sql]]></content>
+      <tags>
+        <tag>学习spark2</tag>
       </tags>
   </entry>
   <entry>
