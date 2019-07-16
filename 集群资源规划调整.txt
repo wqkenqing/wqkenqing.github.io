@@ -1,9 +1,0 @@
-现有节点hostname
- 192.168.10.100 namenode   cpu 6,mem 16g,500g
- 192.168.10.101 datanode1  cpu 6,mem 10g,500g
- 192.168.10.102 datanode2  cpu 6,mem 10g,500g
- 新增
- 192.168.10.103 datanode3  cpu 6,mem 10g,500g
- 192.168.10.104 datanode2  cpu 6,mem 16,500g
-
- 

@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="sparkstream,">
 
 
 
@@ -79,17 +79,18 @@
 
 
 
-<meta name="description" content="spark学习2spark 运行的四种模式">
+<meta name="description" content="spark中如何实现全局count">
+<meta name="keywords" content="sparkstream">
 <meta property="og:type" content="article">
-<meta property="og:title" content="wong&#39;s bolg">
-<meta property="og:url" content="http://www.wqkenqing.ren/2019/04/11/日常总结/old/spark学习2/index.html">
+<meta property="og:title" content="updateStateByKey&amp;mapStateWithKey">
+<meta property="og:url" content="http://www.wqkenqing.ren/2019/07/15/日常总结/spark/stream/index.html">
 <meta property="og:site_name" content="wong&#39;s bolg">
-<meta property="og:description" content="spark学习2spark 运行的四种模式">
+<meta property="og:description" content="spark中如何实现全局count">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-16T10:08:08.668Z">
+<meta property="og:updated_time" content="2019-07-15T08:09:05.576Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="wong&#39;s bolg">
-<meta name="twitter:description" content="spark学习2spark 运行的四种模式">
+<meta name="twitter:title" content="updateStateByKey&amp;mapStateWithKey">
+<meta name="twitter:description" content="spark中如何实现全局count">
 
 
 
@@ -119,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="http://www.wqkenqing.ren/2019/04/11/日常总结/old/spark学习2/">
+  <link rel="canonical" href="http://www.wqkenqing.ren/2019/07/15/日常总结/spark/stream/">
 
 
 
 
 
-  <title> | wong's bolg</title>
+  <title>updateStateByKey&mapStateWithKey | wong's bolg</title>
   
 
 
@@ -264,7 +265,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/04/11/日常总结/old/spark学习2/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/15/日常总结/spark/stream/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -281,7 +282,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline"></h1>
+          <h1 class="post-title" itemprop="name headline">updateStateByKey&mapStateWithKey</h1>
         
 
         <div class="post-meta">
@@ -293,8 +294,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-11T09:36:54+08:00">
-                2019-04-11
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-15T00:00:00+08:00">
+                2019-07-15
               </time>
             
 
@@ -331,13 +332,15 @@
       
 
       
-        <h1 id="spark学习2"><a href="#spark学习2" class="headerlink" title="spark学习2"></a>spark学习2</h1><h2 id="spark-运行的四种模式"><a href="#spark-运行的四种模式" class="headerlink" title="spark 运行的四种模式"></a>spark 运行的四种模式</h2><a id="more"></a>
-<h3 id="本地模式"><a href="#本地模式" class="headerlink" title="本地模式"></a>本地模式</h3><p>如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</span><br></pre></td></tr></table></figure></p>
-<h3 id="standlone模式"><a href="#standlone模式" class="headerlink" title="standlone模式"></a>standlone模式</h3><h4 id="client"><a href="#client" class="headerlink" title="client"></a>client</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</p>
-<h4 id="cluster"><a href="#cluster" class="headerlink" title="cluster"></a>cluster</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –deploy-mode cluster –supervise –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100</p>
-<h3 id="Yarn模式"><a href="#Yarn模式" class="headerlink" title="Yarn模式"></a>Yarn模式</h3><h4 id="client模式"><a href="#client模式" class="headerlink" title="client模式"></a>client模式</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">client模式：</span><br><span class="line">结果xshell可见：</span><br><span class="line">./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --executor-memory 1G --num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100</span><br></pre></td></tr></table></figure>
-<h4 id="cluster模式"><a href="#cluster模式" class="headerlink" title="cluster模式"></a>cluster模式</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master yarn-cluster –executor-memory 1G –num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</p>
-<h2 id="spark-sql"><a href="#spark-sql" class="headerlink" title="spark sql"></a>spark sql</h2>
+        <p>spark中如何实现全局count</p>
+<a id="more"></a>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>两种方式都可以实现对同一key的累计统计</p>
+<p>区别<br>updateStateByKey会返回无增量数据的状态,所以会相对较大的数据资源开销<br>mapStateWithKey 相当于增量统计</p>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>updateStateByKey :</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Function2&lt;List&lt;Integer&gt;, Optional&lt;Integer&gt;, Optional&lt;Integer&gt;&gt; updateFunctionByUpdate() &#123;</span><br><span class="line">       Function2&lt;List&lt;Integer&gt;, Optional&lt;Integer&gt;, Optional&lt;Integer&gt;&gt; updateFunction = (values, s1) -&gt; &#123;</span><br><span class="line">           Integer newSum = <span class="number">0</span>;</span><br><span class="line">           <span class="keyword">if</span> (s1.isPresent()) &#123;</span><br><span class="line">               newSum = s1.get();</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           Iterator&lt;Integer&gt; i = values.iterator();</span><br><span class="line">           <span class="keyword">while</span> (i.hasNext()) &#123;</span><br><span class="line">               newSum += i.next();</span><br><span class="line">           &#125;</span><br><span class="line">           <span class="keyword">return</span> Optional.of(newSum);</span><br><span class="line">       &#125;;</span><br><span class="line">       <span class="keyword">return</span> updateFunction;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>mapStateWithKey :</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Function3&lt;String, Optional&lt;Integer&gt;, State&lt;Integer&gt;, Tuple2&lt;String, Integer&gt;&gt; updateFunctionByMap() &#123;</span><br><span class="line">       Function3&lt;String, Optional&lt;Integer&gt;, State&lt;Integer&gt;, Tuple2&lt;String, Integer&gt;&gt; updateFunction2 = (word, one,</span><br><span class="line">                                                                                                        state) -&gt; &#123;</span><br><span class="line">           <span class="keyword">int</span> sum = one.or(<span class="number">0</span>) + (state.exists() ? state.get() : <span class="number">0</span>);</span><br><span class="line">           Tuple2&lt;String, Integer&gt; output = <span class="keyword">new</span> Tuple2&lt;String, Integer&gt;(word, sum);</span><br><span class="line">           state.update(sum);</span><br><span class="line">           <span class="keyword">return</span> output;</span><br><span class="line">       &#125;;</span><br><span class="line">       <span class="keyword">return</span> updateFunction2;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
       
     </div>
     
@@ -352,6 +355,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/sparkstream/" rel="tag"># sparkstream</a>
+          
+        </div>
+      
 
       
       
@@ -361,8 +370,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/04/10/日常总结/old/flume记录/" rel="next" title="">
-                <i class="fa fa-chevron-left"></i> 
+              <a href="/2019/07/12/日常总结/old/kafka/" rel="next" title="kafka">
+                <i class="fa fa-chevron-left"></i> kafka
               </a>
             
           </div>
@@ -371,8 +380,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/04/11/日常总结/old/kafka&spark/" rel="prev" title="">
-                 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/07/16/日常总结/spark/宽窄依赖/" rel="prev" title="宽窄依赖">
+                宽窄依赖 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -463,7 +472,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -496,7 +505,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#spark学习2"><span class="nav-number">1.</span> <span class="nav-text">spark学习2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#spark-运行的四种模式"><span class="nav-number">1.1.</span> <span class="nav-text">spark 运行的四种模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#本地模式"><span class="nav-number">1.1.1.</span> <span class="nav-text">本地模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#standlone模式"><span class="nav-number">1.1.2.</span> <span class="nav-text">standlone模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#client"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">client</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cluster"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">cluster</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Yarn模式"><span class="nav-number">1.1.3.</span> <span class="nav-text">Yarn模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#client模式"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">client模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cluster模式"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">cluster模式</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#spark-sql"><span class="nav-number">1.2.</span> <span class="nav-text">spark sql</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#说明"><span class="nav-number">1.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用"><span class="nav-number">2.</span> <span class="nav-text">使用</span></a></li></ol></div>
             
 
           </div>

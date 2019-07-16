@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="spark dependency,">
 
 
 
@@ -79,17 +79,18 @@
 
 
 
-<meta name="description" content="kafka to spark">
+<meta name="description" content="spark依赖说明">
+<meta name="keywords" content="spark dependency">
 <meta property="og:type" content="article">
-<meta property="og:title" content="wong&#39;s bolg">
-<meta property="og:url" content="http://www.wqkenqing.ren/2019/04/11/日常总结/old/kafka&spark/index.html">
+<meta property="og:title" content="宽窄依赖">
+<meta property="og:url" content="http://www.wqkenqing.ren/2019/07/16/日常总结/spark/宽窄依赖/index.html">
 <meta property="og:site_name" content="wong&#39;s bolg">
-<meta property="og:description" content="kafka to spark">
+<meta property="og:description" content="spark依赖说明">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-11T06:44:29.907Z">
+<meta property="og:updated_time" content="2019-07-16T03:25:17.848Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="wong&#39;s bolg">
-<meta name="twitter:description" content="kafka to spark">
+<meta name="twitter:title" content="宽窄依赖">
+<meta name="twitter:description" content="spark依赖说明">
 
 
 
@@ -119,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="http://www.wqkenqing.ren/2019/04/11/日常总结/old/kafka&spark/">
+  <link rel="canonical" href="http://www.wqkenqing.ren/2019/07/16/日常总结/spark/宽窄依赖/">
 
 
 
 
 
-  <title> | wong's bolg</title>
+  <title>宽窄依赖 | wong's bolg</title>
   
 
 
@@ -264,7 +265,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/04/11/日常总结/old/kafka&spark/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/spark/宽窄依赖/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -281,7 +282,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline"></h1>
+          <h1 class="post-title" itemprop="name headline">宽窄依赖</h1>
         
 
         <div class="post-meta">
@@ -293,8 +294,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-11T14:44:17+08:00">
-                2019-04-11
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-16T00:00:00+08:00">
+                2019-07-16
               </time>
             
 
@@ -331,7 +332,20 @@
       
 
       
-        <h1 id="kafka-to-spark"><a href="#kafka-to-spark" class="headerlink" title="kafka to spark"></a>kafka to spark</h1>
+        <p>spark依赖说明</p>
+<a id="more"></a>
+<h2 id="种类"><a href="#种类" class="headerlink" title="种类"></a>种类</h2><p>spark的依赖关系大致有两类</p>
+<ul>
+<li>narrow dependency</li>
+<li>wide dependency</li>
+</ul>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><h3 id="narrow-dependency"><a href="#narrow-dependency" class="headerlink" title="narrow dependency"></a>narrow dependency</h3><p>父Partition ===&gt; 子partition 多对一或一对一   flatMap ,mapToPair ,map ,filter等算子<br>父partition ===&gt; 子partition 一对多          reduce ,group by 等.</p>
+<h3 id="stage"><a href="#stage" class="headerlink" title="stage"></a>stage</h3><p>当一个dag串联遇到宽依赖时形成stage.一个stage对应一个task.这个task的并行度由最后一个依赖决定.应该就是说由wide dependency 的具体并行度决度.如<br>reduce ,partition=3.就3的并行度.这里的参数可以设置.</p>
+<p>wide dependency 必定对应的有shuffle.但shuffle不一定是wide dependency  如sort orderby</p>
+<p>join 即可能发生shuffle也可能不,具体看情况.</p>
+<h3 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h3><p>一个stage划分好后.一条数据的具体运算逻辑是会一直走完所有计算逻辑后才会落地.这是与mapreduce的区别<br>mapreduce是计算逻辑走完落地,再启动,计算又落地.</p>
+<p>所以说spark的效率比mapreduce高也是有这个原因.dag串联后,运算优先.</p>
+
       
     </div>
     
@@ -346,6 +360,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/spark-dependency/" rel="tag"># spark dependency</a>
+          
+        </div>
+      
 
       
       
@@ -355,8 +375,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/04/11/日常总结/old/spark学习2/" rel="next" title="">
-                <i class="fa fa-chevron-left"></i> 
+              <a href="/2019/07/15/日常总结/spark/stream/" rel="next" title="updateStateByKey&mapStateWithKey">
+                <i class="fa fa-chevron-left"></i> updateStateByKey&mapStateWithKey
               </a>
             
           </div>
@@ -364,10 +384,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/04/15/日常总结/old/大数据相关分享/" rel="prev" title="大数据分享">
-                大数据分享 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -457,7 +473,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -490,7 +506,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#kafka-to-spark"><span class="nav-number">1.</span> <span class="nav-text">kafka to spark</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#种类"><span class="nav-number">1.</span> <span class="nav-text">种类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#说明"><span class="nav-number">2.</span> <span class="nav-text">说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#narrow-dependency"><span class="nav-number">2.1.</span> <span class="nav-text">narrow dependency</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stage"><span class="nav-number">2.2.</span> <span class="nav-text">stage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pipeline"><span class="nav-number">2.3.</span> <span class="nav-text">pipeline</span></a></li></ol></li></ol></div>
             
 
           </div>

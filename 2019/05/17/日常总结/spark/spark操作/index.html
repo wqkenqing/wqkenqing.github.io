@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="wong&#39;s bolg">
 <meta property="og:description" content="spark编程积累">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-05-20T01:16:03.688Z">
+<meta property="og:updated_time" content="2019-07-15T08:10:59.191Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spark操作.md">
 <meta name="twitter:description" content="spark编程积累">
@@ -331,13 +331,15 @@
       
 
       
-        <p>spark编程积累<br><a id="more"></a></p>
+        <p>spark编程积累</p>
+<a id="more"></a>
 <h1 id="spark编程"><a href="#spark编程" class="headerlink" title="spark编程"></a>spark编程</h1><h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><h3 id="hdfs"><a href="#hdfs" class="headerlink" title="hdfs"></a>hdfs</h3><p>操作hdfs比较常规,直接通过<br>context.textfile(path) //即可实现</p>
 <h3 id="hbase"><a href="#hbase" class="headerlink" title="hbase"></a>hbase</h3><p>hbase 则要通过newAPIHadoopRDD来实现<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class);</span><br></pre></td></tr></table></figure></p>
 <p>这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Configuration hconf = HbaseOperate.getConf();</span><br><span class="line">    Scan scan = <span class="keyword">new</span> Scan();</span><br><span class="line">    hconf.set(TableInputFormat.INPUT_TABLE, <span class="string">"company"</span>);</span><br><span class="line">    hconf.set(TableInputFormat.SCAN, convertScanToString(scan));</span><br></pre></td></tr></table></figure></p>
 <p>参考以上这段代码</p>
 <p>另<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> String <span class="title">convertScanToString</span><span class="params">(Scan scan)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">     ClientProtos.Scan proto = ProtobufUtil.toScan(scan);</span><br><span class="line">     <span class="keyword">return</span> Base64.encodeBytes(proto.toByteArray());</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
 <p>以上是为实现scan指令传输字符的封装.</p>
+<p>两者底层都是通过persist实现</p>
 
       
     </div>
@@ -451,7 +453,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-count">24</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -464,7 +466,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
