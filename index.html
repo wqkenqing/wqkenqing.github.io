@@ -336,26 +336,18 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /_cluster/healt</span><br></pre></td></tr></table></figure>
 <p>查看节点列表</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GET /_cat/nodes?v</span><br><span class="line"></span><br><span class="line">加v将表头显示出来</span><br></pre></td></tr></table></figure>
-<p> 索引<br>查询所有索引</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /_cat/indices?v</span><br></pre></td></tr></table></figure>
-<p>查看某个索引的映射</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /indeName/mapping</span><br></pre></td></tr></table></figure>
-<p>查看某个索引的设置</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /indeName/mapping</span><br></pre></td></tr></table></figure>
-<p>添加一个索引</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">PUT /indexName</span><br><span class="line">&#123;</span><br><span class="line">  &quot;settings&quot;: &#123;</span><br><span class="line">     &quot;number_of_shards&quot;: 3,</span><br><span class="line">     &quot;number_of_replicas&quot;: 1</span><br><span class="line">   &#125;,</span><br><span class="line">   &quot;mappings&quot;: &#123;</span><br><span class="line">     &quot;man&quot;: &#123;</span><br><span class="line">       &quot;dynamic&quot;: &quot;strict&quot;,</span><br><span class="line">       &quot;properties&quot;: &#123;</span><br><span class="line">         &quot;name&quot;: &#123;</span><br><span class="line">           &quot;type&quot;: &quot;text&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;age&quot;: &#123;</span><br><span class="line">           &quot;type&quot;: &quot;integer&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;birthday&quot;: &#123;</span><br><span class="line">           &quot;type&quot;: &quot;date&quot;,</span><br><span class="line">           &quot;format&quot;: &quot;yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;address&quot;:&#123;</span><br><span class="line">           &quot;dynamic&quot;: &quot;true&quot;,</span><br><span class="line">           &quot;type&quot;: &quot;object&quot;</span><br><span class="line">         &#125;</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h2><h3 id="查询所有索引"><a href="#查询所有索引" class="headerlink" title="查询所有索引"></a>查询所有索引</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /_cat/indices?v</span><br></pre></td></tr></table></figure>
+<h3 id="查看某个索引的映射"><a href="#查看某个索引的映射" class="headerlink" title="查看某个索引的映射"></a>查看某个索引的映射</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /indeName/mapping</span><br></pre></td></tr></table></figure>
+<h3 id="查看某个索引的设置"><a href="#查看某个索引的设置" class="headerlink" title="查看某个索引的设置"></a>查看某个索引的设置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /indeName/mapping</span><br></pre></td></tr></table></figure>
+<h3 id="添加一个索引"><a href="#添加一个索引" class="headerlink" title="添加一个索引"></a>添加一个索引</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">PUT /indexName</span><br><span class="line">&#123;</span><br><span class="line">  &quot;settings&quot;: &#123;</span><br><span class="line">     &quot;number_of_shards&quot;: 3,</span><br><span class="line">     &quot;number_of_replicas&quot;: 1</span><br><span class="line">   &#125;,</span><br><span class="line">   &quot;mappings&quot;: &#123;</span><br><span class="line">     &quot;man&quot;: &#123;</span><br><span class="line">       &quot;dynamic&quot;: &quot;strict&quot;,</span><br><span class="line">       &quot;properties&quot;: &#123;</span><br><span class="line">         &quot;name&quot;: &#123;</span><br><span class="line">           &quot;type&quot;: &quot;text&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;age&quot;: &#123;</span><br><span class="line">           &quot;type&quot;: &quot;integer&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;birthday&quot;: &#123;</span><br><span class="line">           &quot;type&quot;: &quot;date&quot;,</span><br><span class="line">           &quot;format&quot;: &quot;yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;address&quot;:&#123;</span><br><span class="line">           &quot;dynamic&quot;: &quot;true&quot;,</span><br><span class="line">           &quot;type&quot;: &quot;object&quot;</span><br><span class="line">         &#125;</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
 <p>dynamic关键词说明:<br>“dynamic”:”strict”  表示如果遇到陌生field会报错<br>“dynamic”: true  表示如果遇到陌生字段，就进行dynamic mapping<br>“dynamic”: “false”   表示如果遇到陌生字段，就忽略</p>
 <hr>
-<p>删除索引</p>
-<p>删除单个索引</p>
+<h3 id="删除索引"><a href="#删除索引" class="headerlink" title="删除索引"></a>删除索引</h3><p>删除单个索引</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">DELETE /indexName</span><br></pre></td></tr></table></figure>
 <p>删除多个</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">DELETE /indexName1,indexName2</span><br></pre></td></tr></table></figure>
-<p>添加字段映射</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">PUT /indexName/_mapping/Field</span><br><span class="line">&#123;</span><br><span class="line">  &quot;properties&quot;:&#123;</span><br><span class="line">    &quot;Field&quot;:&#123;</span><br><span class="line">      &quot;type&quot;:&quot;text&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>索引的别名</p>
-<p>创建索引别名</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PUT /indeName/_alias/aliasName</span><br></pre></td></tr></table></figure>
+<h3 id="添加字段映射"><a href="#添加字段映射" class="headerlink" title="添加字段映射"></a>添加字段映射</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">PUT /indexName/_mapping/Field</span><br><span class="line">&#123;</span><br><span class="line">  &quot;properties&quot;:&#123;</span><br><span class="line">    &quot;Field&quot;:&#123;</span><br><span class="line">      &quot;type&quot;:&quot;text&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="索引的别名"><a href="#索引的别名" class="headerlink" title="索引的别名"></a>索引的别名</h3><h4 id="创建索引别名"><a href="#创建索引别名" class="headerlink" title="创建索引别名"></a>创建索引别名</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PUT /indeName/_alias/aliasName</span><br></pre></td></tr></table></figure>
 <p>获取索引别名</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /indexName/_alias/*</span><br></pre></td></tr></table></figure>
 <p>查询别名对应的索引</p>
@@ -1269,7 +1261,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog6/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog8/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -1288,7 +1280,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog6/" itemprop="url">反射小结</a></h1>
+                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog8/" itemprop="url">java中的形参与实参的理解</a></h1>
         
 
         <div class="post-meta">
@@ -1342,7 +1334,7 @@
           <p>此处简介</p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog6/#more" rel="contents">
+            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog8/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1393,7 +1385,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog3/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog9/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -1412,7 +1404,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog3/" itemprop="url">java中枚举的使用</a></h1>
+                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog9/" itemprop="url">map总结</a></h1>
         
 
         <div class="post-meta">
@@ -1463,17 +1455,17 @@
 
       
         
-          <p>此处简介<br>
+          <p>此处简介</p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog3/#more" rel="contents">
+            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog9/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
           <!--/noindex-->
         
       
-    </p></div>
+    </div>
     
     
     
@@ -1517,7 +1509,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog4/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog15/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -1536,7 +1528,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog4/" itemprop="url">List学习</a></h1>
+                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog15/" itemprop="url">Vim笔记</a></h1>
         
 
         <div class="post-meta">
@@ -1590,7 +1582,7 @@
           <p>此处简介<br>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog4/#more" rel="contents">
+            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog15/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
