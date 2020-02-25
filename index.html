@@ -352,8 +352,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /indexName/_alias/*</span><br></pre></td></tr></table></figure>
 <p>查询别名对应的索引</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /*/_alias/aliasName</span><br></pre></td></tr></table></figure>
-<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><p>向索引中添加文档</p>
-<ol>
+<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><h3 id="向索引中添加文档"><a href="#向索引中添加文档" class="headerlink" title="向索引中添加文档"></a>向索引中添加文档</h3><ol>
 <li>自定义ID</li>
 </ol>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">PUT /indexName/type/id</span><br><span class="line">&#123;</span><br><span class="line">  &quot;Field1&quot;:&quot;message&quot;,</span><br><span class="line">  &quot;Field2&quot;:&quot;message&quot;,</span><br><span class="line">  &quot;Field3&quot;:&quot;message&quot;,</span><br><span class="line">  &quot;Field4&quot;:&quot;message&quot;</span><br><span class="line">&#125;</span><br><span class="line">```  </span><br><span class="line">2. 随机生成id</span><br></pre></td></tr></table></figure>
@@ -362,13 +361,13 @@
 <p>POST /indexName/type/id/_update<br>{<br>  “doc”: {<br>    “FIELD”: “message”<br>  }<br>}</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">脚本(再深入)</span><br></pre></td></tr></table></figure>
 <p>POST /indexName/type/_id/_update<br>{<br>  “script”: {<br>    “lang”: “painless”,<br>    “source”: “ctx._source.age += 10”<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">在修改document的时候，如果该文档不存在，则使用upsert操作进行初始化</span><br></pre></td></tr></table></figure></p>
-<p>POST people/man/1/_update<br>{<br>  “script”: “ctx._source.age += 10”,<br>  “upsert”: {<br>    “age”: 20<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">删除文档</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">删除单个文档</span><br></pre></td></tr></table></figure></p>
+<p>POST people/man/1/_update<br>{<br>  “script”: “ctx._source.age += 10”,<br>  “upsert”: {<br>    “age”: 20<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">### 删除文档</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">删除单个文档</span><br></pre></td></tr></table></figure></p>
 <p>DELETE /indexName/type/id</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">删除type下所有的文档</span><br></pre></td></tr></table></figure>
 <p>POST /indexName/type/_delete_by_query?conflicts=proceed<br>{<br>  “query”:{<br>    “match_all”:{</p>
 <pre><code>}
 </code></pre><p>  }<br>}</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">查询文档</span><br><span class="line"></span><br><span class="line">查询单个文档</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">### 查询文档</span><br><span class="line"></span><br><span class="line">查询单个文档</span><br></pre></td></tr></table></figure>
 <p>GET /indexName/type/id</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">批量查询文档(待验证)</span><br></pre></td></tr></table></figure>
 <p>GET /_mget<br>{<br>  “docs”: [<br>      {<br>        “_index”: “index1”,<br>        “_type”: “type”,<br>        “_id”: 1<br>      },<br>      {<br>        “_index”: “index2”,<br>        “_type”: “type”,<br>        “_id”: 2<br>      }<br>    ]<br>}</p>
@@ -1261,7 +1260,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog8/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog11/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -1280,7 +1279,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog8/" itemprop="url">java中的形参与实参的理解</a></h1>
+                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog11/" itemprop="url">java---GC机制</a></h1>
         
 
         <div class="post-meta">
@@ -1334,7 +1333,7 @@
           <p>此处简介</p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog8/#more" rel="contents">
+            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog11/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1385,7 +1384,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog9/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog14/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -1404,7 +1403,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog9/" itemprop="url">map总结</a></h1>
+                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog14/" itemprop="url">文本处理小结</a></h1>
         
 
         <div class="post-meta">
@@ -1458,7 +1457,7 @@
           <p>此处简介</p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog9/#more" rel="contents">
+            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog14/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1509,7 +1508,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog15/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog25/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -1528,7 +1527,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog15/" itemprop="url">Vim笔记</a></h1>
+                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog25/" itemprop="url">爬虫之nutch</a></h1>
         
 
         <div class="post-meta">
@@ -1582,7 +1581,7 @@
           <p>此处简介<br>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog15/#more" rel="contents">
+            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog25/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
