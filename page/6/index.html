@@ -261,7 +261,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2018/03/04/日常总结/old/spark学习2/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/centos防火墙策略设置/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -280,7 +280,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/03/04/日常总结/old/spark学习2/" itemprop="url">spark学习2</a></h1>
+                <a class="post-title-link" href="/2020/03/13/tmp/centos防火墙策略设置/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -292,8 +292,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-04T11:12:58+08:00">
-                2018-03-04
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
               </time>
             
 
@@ -331,14 +331,51 @@
 
       
         
-          <h1 id="spark学习2"><a href="#spark学习2" class="headerlink" title="spark学习2"></a>spark学习2</h1><h2 id="spark-运行的四种模式"><a href="#spark-运行的四种模式" class="headerlink" title="spark 运行的四种模式"></a>spark 运行的四种模式</h2>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/03/04/日常总结/old/spark学习2/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
+          
+            <h2 id="2020年-1月15日-星期三-10时11分27秒"><a href="#2020年-1月15日-星期三-10时11分27秒" class="headerlink" title="2020年 1月15日 星期三 10时11分27秒"></a>2020年 1月15日 星期三 10时11分27秒</h2><h2 id="启用防火墙"><a href="#启用防火墙" class="headerlink" title="启用防火墙"></a>启用防火墙</h2><p>systemctl status firewalld.service<br>systemctl stop firewalld.service<br>systemctl start firewalld.service<br>systemctl restart firewalld.service</p>
+<p>firewall-cmd –list-all</p>
+<p>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”171.212.210.195” port protocol=”tcp” port=”5601” accept”<br>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”171.212.210.195” port protocol=”tcp” port=”5601” accept”</p>
+<p>firewall-cmd –permanent –remove-rich-rule=”rule family=”ipv4” source address=”171.212.210.195” port protocol=”tcp” port=”5601” accept”</p>
+<p>公司ip+防火墙<br>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”171.221.254.61” port protocol=”tcp” port=”1-65535” accept”<br>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”182.150.164.108” port protocol=”tcp” port=”1-65535” accept”<br>firewall-cmd –permanent –remove-rich-rule=”rule family=”ipv4” source address=”182.150.164.108” port protocol=”tcp” port=”1-65535” accept”</p>
+<p>开通ip,端口不设限<br>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”182.150.164.108”  accept”<br>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”116.196.81.123”  accept”<br>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”10.10.100.1”  accept”<br>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”10.10.100.6”  accept”<br>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”10.10.100.0/24”  accept”</p>
+<p>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”192.168.142.166” port protocol=”tcp” port=”5432” accept”<br>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”192.168.142.166” port protocol=”tcp” port=”5432” accept”<br>firewall-cmd –permanent –add-rich-rule=”rule family=”ipv4” source address=”192.168.142.166” port protocol=”tcp” port=”5432” accept”</p>
+<p>systemctl restart firewalld.service<br>firewall-cmd –list-all</p>
+<p> 10.8.0.0/24</p>
+<p>firewall-cmd –add-source=10.10.100.0 –permanent<br>firewall-cmd –add-source=10.10.100.0 –permanent<br>firewall-cmd –add-source=10.10.100.0 –permanent</p>
+<p>firewall-cmd –query-source=10.10.100.0 –permanent<br>171.221.254.61<br>10.10.100.1</p>
+<p>加端口</p>
+<p>firewall-cmd –add-port=10000/tcp –permanent<br>firewall-cmd –add-port=9092/tcp –permanent<br>firewall-cmd –add-port=9093/tcp –permanent<br>firewall-cmd –reload</p>
+<h2 id="配置openvpn-防火墙配置"><a href="#配置openvpn-防火墙配置" class="headerlink" title="配置openvpn 防火墙配置"></a>配置openvpn 防火墙配置</h2><p>添加服务-OpenVPN          firewall-cmd –add-service=openvpn –permanent</p>
+<p>添加端口-1194/tcp和1194/udp（默认vpn端口为1194）   </p>
+<p>firewall-cmd –add-port=1194/tcp –permanent</p>
+<p>firewall-cmd –add-port=1194/udp –permanent</p>
+<p>执行两次分别为tcp和udp</p>
+<p>添加源地址-源地址为：你的OpenVPN为VPN客户端所分配的地址段 10.10.100.0 默认openvpn配置文件）</p>
+<p>firewall-cmd –add-source=10.10.100.0 –permanent     #添加源IP地址，也就是openvpn要分给客户端的网段</p>
+<p>firewall-cmd –query-source=0.10.100.0 –permanent  #将该源IP地址绑定在public和这块网卡上</p>
+<p>开启伪装（NAT）-masquerade</p>
+<p>firewall-cmd –add-masquerade –permanent<br>firewall-cmd –query-masquerade –permanent</p>
+<p>定要开启转发ip_forward！（/proc/sys/net/ipv4/ip_forward 值为1）</p>
+<p>vi /etc/sysctl.conf</p>
+<p>添加<br>net.ipv4.ip_forward = 1</p>
+<p>sysctl -p<br>-cmd –add-source=10.10.100.0 –permanent<br>firewall-cmd –add-source=10.10.100.0 –permanent</p>
+<p>firewall-cmd –query-source=10.10.100.0 –permanent<br>171.221.254.61<br>10.10.100.1</p>
+<p>加端口</p>
+<p>firewall-cmd –add-port=10000/tcp –permanent<br>firewall-cmd –add-port=9092/tcp –permanent<br>firewall-cmd –add-port=9093/tcp –permanent<br>firewall-cmd –reload</p>
+<h2 id="配置openvpn-防火墙配置-1"><a href="#配置openvpn-防火墙配置-1" class="headerlink" title="配置openvpn 防火墙配置"></a>配置openvpn 防火墙配置</h2><p>添加服务-OpenVPN          firewall-cmd –add-service=openvpn –permanent</p>
+<p>添加端口-1194/tcp和1194/udp（默认vpn端口为1194）   </p>
+<p>firewall-cmd –add-port=1194/tcp –permanent</p>
+<p>firewall-cmd –add-port=1194/udp –permanent</p>
+<p>执行两次分别为tcp和udp</p>
+<p>添加源地址-源地址为：你的OpenVPN为VPN客户端所分配的地址段 10.10.100.0 默认openvpn配置文件）</p>
+<p>firewall-cmd –add-source=10.10.100.0 –permanent     #添加源IP地址，也就是openvpn要分给客户端的网段</p>
+<p>firewall-cmd –query-source=0.10.100.0 –permanent  #将该源IP地址绑定在public和这块网卡上</p>
+<p>开启伪装（NAT）-masquerade</p>
+<p>firewall-cmd –add-masquerade –permanent<br>firewall-cmd –query-masquerade –permanent</p>
+<p>定要开启转发ip_forward！（/proc/sys/net/ipv4/ip_forward 值为1）</p>
+<p>vi /etc/sysctl.</p>
+
+          
         
       
     </div>
@@ -385,7 +422,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2018/03/04/日常总结/old/spark学习/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/数据迁移(redis,es)/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -404,7 +441,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/03/04/日常总结/old/spark学习/" itemprop="url">spark学习</a></h1>
+                <a class="post-title-link" href="/2020/03/13/tmp/数据迁移(redis,es)/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -416,8 +453,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-04T11:12:58+08:00">
-                2018-03-04
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
               </time>
             
 
@@ -455,14 +492,31 @@
 
       
         
-          <h1 id="spark-学习"><a href="#spark-学习" class="headerlink" title="spark 学习"></a>spark 学习</h1>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/03/04/日常总结/old/spark学习/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
+          
+            <h2 id="es迁移"><a href="#es迁移" class="headerlink" title="es迁移"></a>es迁移</h2><ol>
+<li>安装 elasticdump</li>
+</ol>
+<p>pbu:monitorypoint-camera_traffic_event</p>
+<p>elasticdump –input=<a href="http://namenode2:9200/pbu:monitorypoint-camera_traffic_event" target="_blank" rel="noopener">http://namenode2:9200/pbu:monitorypoint-camera_traffic_event</a>  –output=<a href="http://data1:9200/pbu:monitorypoint-camera_traffic_event" target="_blank" rel="noopener">http://data1:9200/pbu:monitorypoint-camera_traffic_event</a> –type=mapping</p>
+<p>elasticdumpy主要参数说明</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">--input: 源地址，可为ES集群URL、文件或stdin,可指定索引，格式为：&#123;protocol&#125;://&#123;host&#125;:&#123;port&#125;/&#123;index&#125;</span><br><span class="line"> --input-index: 源ES集群中的索引</span><br><span class="line"> --output: 目标地址，可为ES集群地址URL、文件或stdout，可指定索引，格式为：&#123;protocol&#125;://&#123;host&#125;:&#123;port&#125;/&#123;index&#125;</span><br><span class="line"> --output-index: 目标ES集群的索引</span><br><span class="line"> --type: 迁移类型，默认为data,表明只迁移数据，可选settings, analyzer, data, mapping, alias</span><br></pre></td></tr></table></figure>
+<p>elasticdump –input=<a href="http://namenode2:9200/pbu:monitorypoint-camera_traffic_event" target="_blank" rel="noopener">http://namenode2:9200/pbu:monitorypoint-camera_traffic_event</a>  –output=<a href="http://jd:9200/pbu:monitorypoint-camera_traffic_event" target="_blank" rel="noopener">http://jd:9200/pbu:monitorypoint-camera_traffic_event</a> –type=mapping</p>
+<p>elasticdump –input=<a href="http://namenode2:9200/county_industry_consumption" target="_blank" rel="noopener">http://namenode2:9200/county_industry_consumption</a>  –output=<a href="http://jd:9200/county_industry_consumption" target="_blank" rel="noopener">http://jd:9200/county_industry_consumption</a>  –type=mapping</p>
+<p>elasticdump –input=<a href="http://namenode2:9200/county_industry_consumption" target="_blank" rel="noopener">http://namenode2:9200/county_industry_consumption</a>  –output=<a href="http://jd:9200/county_industry_consumption" target="_blank" rel="noopener">http://jd:9200/county_industry_consumption</a>  –type=data</p>
+<p>curl -XGET http:://namenode2:9200/_cat/indices?v</p>
+<h2 id="est迁移"><a href="#est迁移" class="headerlink" title="est迁移"></a>est迁移</h2><p>定时同步</p>
+<p>LYDSJ_GATHER_CALL_COUNT<br>LYDSJ_GATHER_CALL_ERROR<br>LYDSJ_GATHER_LOG_STORE</p>
+<p>LYDSJ_GATHER_CALL_ERROR_TOTAL<br>LYDSJ_GATHER_CALL_COUNT_TOTAL<br>LYDSJ_GATHER_LOG_STORE_AFTERDAY<br>LYDSJ_GATHER_LOG_STORE_TOTAL<br>LYJTGL_RESOURCE_SECTION<br>LYJTGL_ROAD_SECTION_CURRENT<br>LYXXFB_YDP_STATUS</p>
+<p>一次同步</p>
+<p>LYJTGL_MONITOR_BASE_INFO<br>LYJTGL_SECTION_BASE_INFO<br>LYXXFB_YDP_NAME</p>
+<h2 id="hbase-迁移"><a href="#hbase-迁移" class="headerlink" title="hbase 迁移"></a>hbase 迁移</h2><p>hbase org.apache.hadoop.hbase.mapreduce.CopyTable –peer.adr=data1:2181,data2:2181,data3:2181:/hbase ‘pba:travel_trade-trade_base_info’<br> data, mapping, alias</p>
+<p><code>`</code></p>
+<p>elasticdump –input=<a href="http://namenode2:9200/pbu:monitorypoint-camera_traffic_event" target="_blank" rel="noopener">http://namenode2:9200/pbu:monitorypoint-camera_traffic_event</a>  –output=<a href="http://jd:9200/pbu:monitorypoint-camera_traffic_event" target="_blank" rel="noopener">http://jd:9200/pbu:monitorypoint-camera_traffic_event</a> –type=mapping</p>
+<p>elasticdump –input=<a href="http://namenode2:9200/county_industry_consumption" target="_blank" rel="noopener">http://namenode2:9200/county_industry_consumption</a>  –output=<a href="http://jd:9200/county_industry_consumption" target="_blank" rel="noopener">http://jd:9200/county_industry_consumption</a>  –type=mapping</p>
+<p>elasticdump –input=<a href="http://namenode2:9200/county_industry_consumption" target="_blank" rel="noopener">http://namenode2:9200/county_industry_consumption</a>  –output=<a href="http://jd:9200/county_industry_consumption" target="_blank" rel="noopener">http://jd:9200/county_industry_consumption</a>  –type=data</p>
+<p>curl -XGET http:://namenode2:9200/_</p>
+
+          
         
       
     </div>
@@ -509,7 +563,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2018/03/04/日常总结/old/spark算子/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/maven配置docker打包插件/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -528,7 +582,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/03/04/日常总结/old/spark算子/" itemprop="url">spark算子</a></h1>
+                <a class="post-title-link" href="/2020/03/13/tmp/maven配置docker打包插件/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -540,8 +594,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-04T11:12:05+08:00">
-                2018-03-04
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
               </time>
             
 
@@ -579,14 +633,10 @@
 
       
         
-          <h1 id="spark-算子"><a href="#spark-算子" class="headerlink" title="spark 算子"></a>spark 算子</h1>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/03/04/日常总结/old/spark算子/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
+          
+            <p><plugin><br>         <groupid>com.spotify</groupid><br>         <artifactid>dockerfile-maven-plugin</artifactid><br>         <version>${dockerfile-maven-plugin.version}</version><br>         <configuration><br>             <imagename>${docker.image.prefix}/${project.artifactId}</imagename><br>                    <dockerdirectory>src/main/docker</dockerdirectory><br>                    <resources><br>                        <resource><br>                            <targetpath>/</targetpath><br>                            <directory>${project.build.directory}</directory><br>                            <include>${project.build.finalName}.jar</include><br>                        </resource><br>                    </resources><br>         </configuration><br>     </plugin><br>                                                                                                                                                                                                                                                                                                                      </p>
+
+          
         
       
     </div>
@@ -633,7 +683,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2018/03/04/日常总结/old/sqoop记录/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/kafka_mirror_test/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -652,7 +702,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/03/04/日常总结/old/sqoop记录/" itemprop="url">sqoop记录</a></h1>
+                <a class="post-title-link" href="/2020/03/13/tmp/kafka_mirror_test/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -664,8 +714,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-04T10:54:48+08:00">
-                2018-03-04
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
               </time>
             
 
@@ -703,14 +753,830 @@
 
       
         
-          <h2 id="将Mysql数据导入Hive中"><a href="#将Mysql数据导入Hive中" class="headerlink" title="将Mysql数据导入Hive中"></a>将Mysql数据导入Hive中</h2>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/03/04/日常总结/old/sqoop记录/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
+          
+            <h1 id="kafka-mirror-consumer-config"><a href="#kafka-mirror-consumer-config" class="headerlink" title="kafka mirror consumer.config"></a>kafka mirror consumer.config</h1><p>jd kafka</p>
+<p>116.196.81.123:32795,116.196.81.123:32797,116.196.81.123:32796</p>
+<p>bootstrap.servers=192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092<br>bootstrap.servers=10.103.22.40:9092,10.103.22.64:9092,10.103.22.65:9092</p>
+<p>con.config</p>
+<p>fetch.min.bytes=1<br>group.id=mirrorMaker<br>session.timeout.ms=30000</p>
+<p>#bootstrap.servers=namenode:2181,datanode1:2181,datanode2:2181</p>
+<p>#bootstrap.servers=116.196.81.123:32792</p>
+<p>#bootstrap.servers=192.168.10.100:2181,192.168.10.101:2181,192.168.10.102:2181</p>
+<p>#bootstrap.servers=192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092</p>
+<p>#bootstrap.servers=192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092</p>
+<p>#bootstrap.servers=116.196.81.123:32795,116.196.81.123:32797,116.196.81.123:32796<br>bootstrap.servers=183.220.144.148:9092,183.220.144.150:9092,183.220.144.149:9092<br>request.timeout.ms=40000</p>
+<p>security.protocol=PLAINTEXT<br>sasl.kerberos.service.name=kafka</p>
+<p>pro.config</p>
+<p>batch.size=16384</p>
+<p>#bootstrap.servers=116.196.81.123:32792<br>bootstrap.servers=116.196.81.123:32798,116.196.81.123:32797,116.196.81.123:32796</p>
+<p>#bootstrap.servers=183.220.144.148:9092,183.220.144.150:9092,183.220.144.151:9092<br>buffer.memory=33554432<br>compression.type=none<br>linger.ms=0<br>request.timeout.ms=30000</p>
+<p>security.protocol=PLAINTEXT<br>sasl.kerberos.service.name=kafka<br>n.bytes=1<br>group.id=mirrorMaker<br>session.timeout.ms=30000</p>
+<p>#bootstrap.servers=namenode:2181,datanode1:2181,datanode2:2181</p>
+<p>#bootstrap.servers=116.196.81.123:32792</p>
+<p>#bootstrap.servers=192.168.10.100:2181,192.168.10.101:2181,192.168.10.102:2181</p>
+<p>#bootstrap.servers=192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092</p>
+<p>#bootstrap.servers=192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092</p>
+<p>#bootstrap.servers=116.196.81.123:32795,116.196.81.123:32797,116.196.81.123:32796<br>bootstrap.servers=183.220.144.148:9092,183.220.144.150:9092,183.220.144.149:9092<br>request.timeout.ms=40000</p>
+<p>security.protocol=PLAINTEXT<br>sasl.kerberos.service.name=kafka</p>
+<p>pro.config</p>
+<p>batch.size=16384</p>
+<p>#bootstrap.servers=116.196.81.123:32792<br>bootstrap.servers=116.196.</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/共享数据模块/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/13/tmp/共享数据模块/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>#<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/docker镜像网络指定[未解决]/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/13/tmp/docker镜像网络指定[未解决]/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">在生成docker镜像时指定docker的网络环境,解决相关任务指行时,docker容器与宿主机网络环境不互通,致使相关服务不能正常运行.</span><br></pre></td></tr></table></figure>
+<h2 id="docker单主机容器通信"><a href="#docker单主机容器通信" class="headerlink" title="docker单主机容器通信"></a>docker单主机容器通信</h2><p>按docker官方的说法，docker容器的网络有五种模式：</p>
+<p>1 bridge模式，–net=bridge(默认)</p>
+<p>在docker run启动容器的时候，如果不加–net参数，就默认采用这种网络模式。安装完docker，系统会自动添加一个供docker使用的网桥docker0，我们创建一个新的容器时，</p>
+<p>容器通过DHCP获取一个与docker0同网段的IP地址，并默认连接到docker0网桥，以此实现容器与宿主机的网络互通。</p>
+<p>2 host模式，–net=host</p>
+<p>这个模式下创建出来的容器，直接使用容器宿主机的网络命名空间。</p>
+<p>将不拥有自己独立的Network Namespace，即没有独立的网络环境。它使用宿主机的ip和端口。</p>
+<p>3 none模式，–net=none</p>
+<p>为容器创建独立网络命名空间，但不为它做任何网络配置，容器中只有lo，用户可以在此基础上，对容器网络做任意定制。</p>
+<p>这个模式下，dokcer不为容器进行任何网络配置。需要我们自己为容器添加网卡，配置IP。</p>
+<p>因此，若想使用pipework配置docker容器的ip地址，必须要在none模式下才可以。</p>
+<p>4 其他容器模式（即container模式），–net=container:NAME_or_ID</p>
+<p>与host模式类似，只是容器将与指定的容器共享网络命名空间。</p>
+<p>这个模式就是指定一个已有的容器，共享该容器的IP和端口。除了网络方面两个容器共享，其他的如文件系统，进程等还是隔离开的</p>
+<p>5 用户自定义：docker 1.9版本以后新增的特性，允许容器使用第三方的网络实现或者创建单独的bridge网络，提供网络隔离能力。</p>
+<p><img src="http://img.wqkenqing.ren/9bd525c19d2e0d257c0bb2efb1edb5cc.png" alt=""></p>
+<p><img src="http://img.wqkenqing.ren/61b5648badb256fd543adc6df0de7df2.png" alt=""></p>
+<p><a href="https://blog.csdn.net/ithaibiantingsong/article/details/81386307" target="_blank" rel="noopener">https://blog.csdn.net/ithaibiantingsong/article/details/81386307</a><br>      </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/kafka添加变量/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/13/tmp/kafka添加变量/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>kafka变量添加<br>KAFKA_OPTS=”-javaagent:/data/kafka_extra/jmx_prometheus_javaagent-0.12.0.jar=9292:/data/kafka_extra/kafka.yml”                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/mirrorMaker/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/13/tmp/mirrorMaker/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="kafka-mirror-consumer-config"><a href="#kafka-mirror-consumer-config" class="headerlink" title="kafka mirror consumer.config"></a>kafka mirror consumer.config</h1><p>jd kafka</p>
+<p>116.196.81.123:32795,116.196.81.123:32797,116.196.81.123:32796</p>
+<p>bootstrap.servers=192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092<br>bootstrap.servers=10.103.22.40:9092,10.103.22.64:9092,10.103.22.65:9092</p>
+<p>con.config</p>
+<p>fetch.min.bytes=1<br>group.id=mirrorMaker<br>session.timeout.ms=30000</p>
+<p>#bootstrap.servers=namenode:2181,datanode1:2181,datanode2:2181</p>
+<p>#bootstrap.servers=116.196.81.123:32792<br>bootstrap.servers=192.168.10.100:2181,192.168.10.101:2181,192.168.10.102:2181</p>
+<p>#bootstrap.servers=192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092</p>
+<p>#bootstrap.servers=192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092</p>
+<p>#bootstrap.servers=116.196.81.123:32795,116.196.81.123:32797,116.196.81.123:32796<br>request.timeout.ms=40000</p>
+<p>security.protocol=PLAINTEXT<br>sasl.kerberos.service.name=kafka</p>
+<p>pro.config</p>
+<p>batch.size=16384</p>
+<p>#bootstrap.servers=116.196.81.123:32792</p>
+<p>#bootstrap.servers=116.196.81.123:32795,116.196.81.123:32797,116.196.81.123:32796<br>bootstrap.servers=183.220.144.148:9092,183.220.144.150:9092,183.220.144.151:9092<br>buffer.memory=33554432<br>compression.type=none<br>linger.ms=0<br>request.timeout.ms=30000</p>
+<p>security.protocol=PLAINTEXT<br>sasl.kerberos.service.name=kafka</p>
+<p>pbu-industry_real-weather_data,flume-ng,pbu-travel_map-lyjtgl_gather_baidu</p>
+<p>116.196.81.123:32772<br>=mirrorMaker<br>session.timeout.ms=30000</p>
+<p>#bootstrap.servers=namenode:2181,datanode1:2181,datanode2:2181</p>
+<p>#bootstrap.servers=116.196.81.123:32792<br>bootstrap.servers=192.168.10.100:2181,192.168.10.101:2181,192.168.10.102:2181</p>
+<p>#bootstrap.servers=192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092</p>
+<p>#bootstrap.servers=192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092</p>
+<p>#bootstrap.servers=116.196.81.123:32795,116.196.81.123:32797,116.196.81.123:32796<br>request.timeout.ms=40000</p>
+<p>security.protocol=PLAINTEXT<br>sasl.kerberos.service.name=kafka</p>
+<p>pro.config</p>
+<p>batch.size=16384</p>
+<p>#bootstrap.servers=116.196.81.123:32792</p>
+<p>#bootstrap.servers=116.196.81.123:32795,116.196.81.123:32797,116.196.81.123:32796<br>bootstrap.servers=183.220.</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/TypeMap/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/13/tmp/TypeMap/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>11    {“code”:”PWSJ”,”title”:”票务数据”,”index”:11}<br>22    {“code”:”JJRZT”,”title”:”节假日专题”,”index”:22}<br>12    {“code”:”LYXMSJ”,”title”:”旅游项目数据”,”index”:12}<br>23    {“code”:”TSZT”,”title”:”投诉专题”,”index”:23}<br>13    {“code”:”LYZXSJ”,”title”:”旅游咨询数据”,”index”:13}<br>24    {“code”:”YQZT”,”title”:”舆情专题”,”index”:24}<br>14    {“code”:”LYZWSJ”,”title”:”旅游政务数据”,”index”:14}<br>15    {“code”:”HYJGSJ”,”title”:”行业监管数据”,”index”:15}<br>16    {“code”:”CYJYSJ”,”title”:”产业经营数据”,”index”:16}<br>17    {“code”:”YYSSJ”,”title”:”运营商数据”,”index”:17}<br>18    {“code”:”XMTSJ”,”title”:”新媒体数据”,”index”:18}<br>19    {“code”:”OTASJ”,”title”:”OTA数据”,”index”:19}<br>1    {“code”:”MDDSJ”,”title”:”目的地数据”,”index”:1}<br>2    {“code”:”SLQYJCSJ”,”title”:”涉旅企业基础数据”,”index”:2}<br>3    {“code”:”LYCYRYJCSJ”,”title”:”旅游从业人员基础数据”,”index”:3}<br>4    {“code”:”LYJTZYSJ”,”title”:”旅游交通资源数据”,”index”:4}<br>5    {“code”:”LYTCJCSJ”,”title”:”旅游停车基础数据”,”index”:5}<br>6    {“code”:”LYSHZYJCSJ”,”title”:”旅游商户资源基础数据”,”index”:6}<br>7    {“code”:”SLYJJCSJ”,”title”:”涉旅硬件基础数据”,”index”:7}<br>8    {“code”:”SLDMTK”,”title”:”涉旅多媒体库”,”index”:8}<br>9    {“code”:”CYSSSJ”,”title”:”产业实时数据”,”index”:9}<br>20    {“code”:”LYDSSJ”,”title”:”旅游电商数据”,”index”:20}<br>10    {“code”:”YKSJ”,”title”:”游客数据”,”index”:10}<br>21    {“code”:”LYDTSJ”,”title”:”旅游地图数据”,”index”:21}</p>
+<p>23    {“code”:”TSZT”,”title”:”投诉专题”,”index”:23}<br>13    {“code”:”LYZXSJ”,”title”:”旅游咨询数据”,”index”:13}<br>24    {“code”:”YQZT”,”title”:”舆情专题”,”index”:24}<br>14    {“code”:”LYZWSJ”,”title”:”旅游政务数据”,”index”:14}<br>15    {“code”:”HYJGSJ”,”title”:”行业监管数据”,”index”:15}<br>16    {“code”:”CYJYSJ”,”title”:”产业经营数据”,”index”:16}<br>17    {“code”:”YYSSJ”,”title”:”运营商数据”,”index”:17}<br>18    {“code”:”XMTSJ”,”title”:”新媒体数据”,”index”:18}<br>19    {“code”:”OTASJ”,”title”:”OTA数据”,”index”:19}<br>1    {“code”:”MDDSJ”,”title”:”目的地数据”,”index”:1}<br>2    {“code”:”SLQYJCSJ”,”title”:”涉旅企业基础数据”,”index”:2}<br>3    {“code”:”LYCYRYJCSJ”,”title”:”旅游从业人员基础数据”,”index”:3}<br>4    {“code”:”LYJTZYSJ”,”title”:”旅游交通资源数据”,”index”:4}<br>5    {“code”:”LYTCJCSJ”,”title”:”旅游停车基础数据”,”index”:5}<br>6    {“code”:”LYSHZYJCSJ”,”title”:”旅游商户资源基础数据”,”index”:6}<br>7    {“code”:”SLYJJCSJ”,”title”:”涉旅硬件基础数据”,”index”:7}<br>8    {“code”:”SLDMTK”,”title”:”涉旅多媒体库”,”index”:8}<br>9    {“code”:”CYSSSJ”,”title”:”产业实时数据”,”index”:9}<br>20    </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/flume in docker操作记录[已解决]/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/13/tmp/flume in docker操作记录[已解决]/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>镜像地址:</p>
+<p>registry.lisong.pub:5000/sunrise/flume:1.8.0-cdh</p>
+<p>#test avro sources<br>a1.sources=r1<br>a1.channels=c1<br>a1.sinks=k1</p>
+<p>a1.sources.r1.type = netcat<br>a1.sources.r1.bind=localhost<br>a1.sources.r1.port=55555<br>a1.sources.r1.channels = c1</p>
+<p>#Use a channel which buffers events in memory<br>a1.channels.c1.type = memory<br>a1.channels.c1.capacity=1000<br>a1.channels.c1.transactionCapacity = 100</p>
+<p>#sink配置</p>
+<p>#a1.sinks.k1.type=logger<br>a1.sinks.k1.type=file_roll</p>
+<p>a1.sinks.k1.channel=c1</p>
+<p>a1.sinks.k1.sink.directory=/data/hadoop/flume-ng/config/log</p>
+<h2 id="执行语句"><a href="#执行语句" class="headerlink" title="执行语句"></a>执行语句</h2><p>docker run -d -v flume_conf:/opt/flume-config registry.lisong.pub:5000/sunrise/flume:1.8.0-cdh   tcp.conf</p>
+<p>docker run -it -v flume_conf:/opt/flume-config -e FLUME_AGENT_NAME=a1 registry.lisong.pub:5000/sunrise/flume:1.8.0-cdh /bin/bash</p>
+<p>docker run -it -v /root/flumeng/test/kafka_test.conf:/opt/flume-config/flume.conf -e FLUME_AGENT_NAME=a1 registry.lisong.pub:28500/sunrise/flume:1.8.0-cdh /bin/bash</p>
+<p>flume-ng agent -c /etc/flume-ng/conf/ -f taildir.conf -n a1 -Dflume.root.logger=INFO,console</p>
+<p>docker run –restart=unless-stopped -d –net host -v /data/flume_config/config/test:/opt/flume-config -e FLUME_AGENT_NAME=a1  registry.lisong.pub:5000/sunrise/flume:1.8.0-cdh</p>
+<p>docker run –restart=unless-stopped -d –net host -v /root/flumeng/test/tcp_logger.conf:/opt/flume-config/flume.conf -e FLUME_AGENT_NAME=a1  registry.lisong.pub:28500/sunrise/flume:1.8.0-cdh</p>
+<p>docker run –restart=unless-stopped -d –net host -v /root/flumeng/test/kafka_test.conf:/opt/flume-config/flume.conf -e FLUME_AGENT_NAME=a1  registry.lisong.pub:28500/sunrise/flume:1.8.0-cdh</p>
+<p>#!/bin/bash</p>
+<p>FLUME_CONF_DIR=/opt/flume-config</p>
+<p>[[ -d “${FLUME_CONF_DIR}”  ]]  || { echo “Flume config file not mounted in /opt/flume-config”;  exit 1; }<br>[[ -z “${FLUME_AGENT_NAME}” ]] &amp;&amp; { echo “FLUME_AGENT_NAME required”; exit 1; }</p>
+<p>echo “Starting flume agent : ${FLUME_AGENT_NAME}”</p>
+<p>flume-ng agent \<br>  -c ${FLUME_CONF_DIR} \<br>  -f ${FLUME_CONF_DIR}/flume.conf \<br>  -n ${FLUME_AGENT_NAME} \<br>  -Dflume.root.logger=INFO,console \<br>  -DpropertiesImplementation=org.apache.flume.node.EnvVarResolverProperties \</p>
+<p>flume-ng agent -c /etc/flume-ng/conf/ -f flume.conf -n a1 -Dflume.root.logger=INFO,console<br>ong.pub:5000/sunrise/flume:1.8.0-cdh</p>
+<p>docker run –restart=unless-stopped -d –net host -v /root/flumeng/test/tcp_logger.conf:/opt/flume-config/flume.conf -e FLUME_AGENT_NAME=a1  registry.lisong.pub:28500/sunrise/flume:1.8.0-cdh</p>
+<p>docker run –restart=unless-stopped -d –net host -v /root/flumeng/test/kafka_test.conf:/opt/flume-config/flume.conf -e FLUME_AGENT_NAME=a1  registry.lisong.pub:28500/sunrise/flume:1.8.0-cdh</p>
+<p>#!/bin/bash</p>
+<p>FLUME_CONF_DIR=/opt/flume-config</p>
+<p>[[ -d “${FLUME_CONF_DIR}”  ]]  || { echo “Flume config file not mounted in /opt/flume-config”;  exit 1; }<br>[[ -z “${FLUME_AGENT_NAME}” ]] &amp;&amp; { echo “FLUME_AGENT_NAME required”; exit 1; }</p>
+<p>echo “Starting flume agent : ${FLUME_AGENT_NAME}”</p>
+<p>flume-ng agent \<br>  -c ${FLUME_CONF_DIR} \<br>  -f ${FLUME_CONF_DIR}/flume.conf \<br>  -n ${FLUME_AGENT_NAME} \<br>  -Dflume.root.logger=INFO,console \<br>  -DpropertiesImplement</p>
+
+          
         
       
     </div>
@@ -748,7 +1614,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/22/">22</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -794,7 +1660,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-count">212</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

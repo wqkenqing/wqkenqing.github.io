@@ -261,7 +261,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/02/25/日常总结/es/es常用命令/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/各采集任务频率/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -280,7 +280,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/02/25/日常总结/es/es常用命令/" itemprop="url">es常用命令</a></h1>
+                <a class="post-title-link" href="/2020/03/13/tmp/各采集任务频率/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -292,8 +292,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-02-25T00:00:00+08:00">
-                2020-02-25
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
               </time>
             
 
@@ -332,111 +332,259 @@
       
         
           
-            <p>查看集群是否健康</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /_cluster/healt</span><br></pre></td></tr></table></figure>
-<p>查看节点列表</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GET /_cat/nodes?v</span><br><span class="line"></span><br><span class="line">加v将表头显示出来</span><br></pre></td></tr></table></figure>
-<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h2><h3 id="查询所有索引"><a href="#查询所有索引" class="headerlink" title="查询所有索引"></a>查询所有索引</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /_cat/indices?v</span><br></pre></td></tr></table></figure>
-<h3 id="查看某个索引的映射"><a href="#查看某个索引的映射" class="headerlink" title="查看某个索引的映射"></a>查看某个索引的映射</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /indeName/mapping</span><br></pre></td></tr></table></figure>
-<h3 id="查看某个索引的设置"><a href="#查看某个索引的设置" class="headerlink" title="查看某个索引的设置"></a>查看某个索引的设置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /indeName/mapping</span><br></pre></td></tr></table></figure>
-<h3 id="添加一个索引"><a href="#添加一个索引" class="headerlink" title="添加一个索引"></a>添加一个索引</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">PUT /indexName</span><br><span class="line">&#123;</span><br><span class="line">  &quot;settings&quot;: &#123;</span><br><span class="line">     &quot;number_of_shards&quot;: 3,</span><br><span class="line">     &quot;number_of_replicas&quot;: 1</span><br><span class="line">   &#125;,</span><br><span class="line">   &quot;mappings&quot;: &#123;</span><br><span class="line">     &quot;man&quot;: &#123;</span><br><span class="line">       &quot;dynamic&quot;: &quot;strict&quot;,</span><br><span class="line">       &quot;properties&quot;: &#123;</span><br><span class="line">         &quot;name&quot;: &#123;</span><br><span class="line">           &quot;type&quot;: &quot;text&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;age&quot;: &#123;</span><br><span class="line">           &quot;type&quot;: &quot;integer&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;birthday&quot;: &#123;</span><br><span class="line">           &quot;type&quot;: &quot;date&quot;,</span><br><span class="line">           &quot;format&quot;: &quot;yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;address&quot;:&#123;</span><br><span class="line">           &quot;dynamic&quot;: &quot;true&quot;,</span><br><span class="line">           &quot;type&quot;: &quot;object&quot;</span><br><span class="line">         &#125;</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-<p>dynamic关键词说明:<br>“dynamic”:”strict”  表示如果遇到陌生field会报错<br>“dynamic”: true  表示如果遇到陌生字段，就进行dynamic mapping<br>“dynamic”: “false”   表示如果遇到陌生字段，就忽略</p>
-<hr>
-<h3 id="删除索引"><a href="#删除索引" class="headerlink" title="删除索引"></a>删除索引</h3><p>删除单个索引</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">DELETE /indexName</span><br></pre></td></tr></table></figure>
-<p>删除多个</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">DELETE /indexName1,indexName2</span><br></pre></td></tr></table></figure>
-<h3 id="添加字段映射"><a href="#添加字段映射" class="headerlink" title="添加字段映射"></a>添加字段映射</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">PUT /indexName/_mapping/Field</span><br><span class="line">&#123;</span><br><span class="line">  &quot;properties&quot;:&#123;</span><br><span class="line">    &quot;Field&quot;:&#123;</span><br><span class="line">      &quot;type&quot;:&quot;text&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="索引的别名"><a href="#索引的别名" class="headerlink" title="索引的别名"></a>索引的别名</h3><h4 id="创建索引别名"><a href="#创建索引别名" class="headerlink" title="创建索引别名"></a>创建索引别名</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PUT /indeName/_alias/aliasName</span><br></pre></td></tr></table></figure>
-<p>获取索引别名</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /indexName/_alias/*</span><br></pre></td></tr></table></figure>
-<p>查询别名对应的索引</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /*/_alias/aliasName</span><br></pre></td></tr></table></figure>
-<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><h3 id="向索引中添加文档"><a href="#向索引中添加文档" class="headerlink" title="向索引中添加文档"></a>向索引中添加文档</h3><ol>
-<li>自定义ID</li>
+            <table>
+<thead>
+<tr>
+<th style="text-align:left">topic</th>
+<th style="text-align:left">采集频率</th>
+<th style="text-align:left"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">lyjtgl_baidu_raod_section_current</td>
+<td style="text-align:left">5m</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">hy_camera_data</td>
+<td style="text-align:left">1m</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-environment_bureau-data</td>
+<td style="text-align:left">1h</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-environment_bureau-data</td>
+<td style="text-align:left">1h</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-industrial-hotel_checkin_record</td>
+<td style="text-align:left">3h</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-industry_real-weather_data</td>
+<td style="text-align:left">待定</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-industry_supervision-network_comment</td>
+<td style="text-align:left">较长</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-reception_income-county_business_circle_consumption</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-reception_income-county_consumption</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-reception_income-county_consumption_city</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-reception_income-county_consumption_province</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-reception_income-county_industry_consumption</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-ticket_data-tourist_tickets</td>
+<td style="text-align:left">~1h</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-travel_map-lyjtgl_gather_baidu</td>
+<td style="text-align:left">5m</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_dayLocal</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_daySourceCountry</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_daySourceCity</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_daySourceCountry</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_day_source_prov</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_heat_map</td>
+<td style="text-align:left">1h</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_hourLocal</td>
+<td style="text-align:left">1d</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_minuteLocal</td>
+<td style="text-align:left">5m</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_month_local</td>
+<td style="text-align:left">1M</td>
+</tr>
+</tbody>
+</table>
+<p>pbu-industrial-hotel_inventory<br>ta        | 待定      ||<br>|pbu-industry_supervision-network_comment        | 较长      ||<br>|pbu-reception_income-county_business_circle_consumption  | 1d      ||<br>|pbu-reception_income-county_consumption        | 1d      ||<br>|pbu-reception_income-county_consumption_city        | 1d      ||<br>|pbu-reception_income-county_consumption_province        | 1d      ||<br>|pbu-reception_income-county_industry_consumption        | 1d      ||<br>|pbu-ticket_data-tourist_tickets        | ~1h     ||<br>|pbu-travel_map-lyjtgl_gather_baidu        | 5m     ||<br>|pbu-yidong-tourist_dayLocal        | 1d     ||<br>|pbu-yidong-tourist_daySourceCountry        | 1d     ||<br>|pbu-yidong-tourist_daySourceC</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/hbase数据处理/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/13/tmp/hbase数据处理/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <ol>
+<li><p>hbase count 计数</p>
+</li>
+<li><p>hbase info export and transform</p>
+</li>
 </ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">PUT /indexName/type/id</span><br><span class="line">&#123;</span><br><span class="line">  &quot;Field1&quot;:&quot;message&quot;,</span><br><span class="line">  &quot;Field2&quot;:&quot;message&quot;,</span><br><span class="line">  &quot;Field3&quot;:&quot;message&quot;,</span><br><span class="line">  &quot;Field4&quot;:&quot;message&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">```  </span><br><span class="line"></span><br><span class="line">2. 随机生成id</span><br></pre></td></tr></table></figure>
-<p>POST /indexName/type<br>{<br>  “Field1”:”message”,<br>  “Field2”:”message”,<br>  “Field3”:”message”,<br>  “Field4”:”message”<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">后者则会自动生成id字符串</span><br><span class="line"></span><br><span class="line">3. 修改文档</span><br><span class="line"></span><br><span class="line">全文修改,即所有字段信息都要修改</span><br></pre></td></tr></table></figure></p>
-<p>PUT /indexName/type/id<br>{<br>  “Field1”:”update message”,<br>  “Field2”:”update message”,<br>  “Field3”:”message”,<br>  “Field4”:”message”<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">部份修改</span><br></pre></td></tr></table></figure></p>
-<p>POST /indexName/type/id/_update<br>{<br>  “doc”: {<br>    “FIELD”: “message”<br>  }<br>}</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">脚本(再深入)</span><br></pre></td></tr></table></figure>
-<p>POST /indexName/type/_id/_update<br>{<br>  “script”: {<br>    “lang”: “painless”,<br>    “source”: “ctx._source.age += 10”<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">在修改document的时候，如果该文档不存在，则使用upsert操作进行初始化</span><br></pre></td></tr></table></figure></p>
-<p>POST people/man/1/_update<br>{<br>  “script”: “ctx._source.age += 10”,<br>  “upsert”: {<br>    “age”: 20<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">### 删除文档</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">删除单个文档</span><br></pre></td></tr></table></figure></p>
-<p>DELETE /indexName/type/id</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">删除type下所有的文档</span><br></pre></td></tr></table></figure>
-<p>POST /indexName/type/_delete_by_query?conflicts=proceed<br>{<br>  “query”:{<br>    “match_all”:{</p>
-<pre><code>}
-</code></pre><p>  }<br>}</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">### 查询文档</span><br><span class="line"></span><br><span class="line">查询单个文档</span><br></pre></td></tr></table></figure>
-<p>GET /indexName/type/id</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">批量查询文档(待验证)</span><br></pre></td></tr></table></figure>
-<p>GET /_mget<br>{<br>  “docs”: [<br>      {<br>        “_index”: “index1”,<br>        “_type”: “type”,<br>        “_id”: 1<br>      },<br>      {<br>        “_index”: “index2”,<br>        “_type”: “type”,<br>        “_id”: 2<br>      }<br>    ]<br>}</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line"></span><br><span class="line">GET /indexName/type/_mget</span><br><span class="line">&#123;</span><br><span class="line">&quot;docs&quot;:[</span><br><span class="line">&#123;</span><br><span class="line">  &quot;FEILD&quot;:&quot;value&quot;</span><br><span class="line">&#125;,</span><br><span class="line">&#123;</span><br><span class="line">  &quot;FEILD2&quot;:&quot;value&quot;</span><br><span class="line">&#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>查询所有文档</p>
-<p>简单查询</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /indexName/_serach</span><br></pre></td></tr></table></figure>
-<p>法二</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">POST /people/_serach</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;:&#123;</span><br><span class="line">    &quot;match_all&quot;:&#123;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>查询某些字段内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">后面跟了 ?_source=field1,field2</span><br><span class="line"></span><br><span class="line">POST /people/_serach?_source=field1,field2</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;:&#123;</span><br><span class="line">    &quot;match_all&quot;:&#123;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>查询多个索引下的多个type</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /index1,index2/type1,type2/_search</span><br></pre></td></tr></table></figure>
-<p>查询所有索引下的部分type<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /_all/type1,type2/_search</span><br></pre></td></tr></table></figure></p>
-<h3 id="模糊查询"><a href="#模糊查询" class="headerlink" title="模糊查询"></a>模糊查询</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">POST /indexName/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;:&#123;</span><br><span class="line">    &quot;match&quot;:&#123;</span><br><span class="line">      &quot;field&quot;:&quot;message&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  ,</span><br><span class="line">  &quot;sort&quot;:[</span><br><span class="line">  &#123;</span><br><span class="line">    &quot;filed&quot;:&#123;&quot;order&quot;:&quot;desc&quot;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>注意</strong><br>message将会被拆分进行匹配,若message是中文,则会按切分后的每个字来匹配,若<br>message是英语,则会是按每个单词来匹配</p>
-<p><img src="http://img.wqkenqing.ren/51ccc5cad8b8fbbbb6ef55d3106bfe43.png" alt=""><br><img src="http://img.wqkenqing.ren/47a3ffe716f0026c004b155836a56641.png" alt="示列图"></p>
-<p>全文搜索(按准度)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">GET indexName/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;:&#123;</span><br><span class="line">    &quot;match&quot;:&#123;</span><br><span class="line">      &quot;Field&quot;:&#123;</span><br><span class="line">        &quot;query&quot;:&quot;val1 val2&quot;,</span><br><span class="line">        &quot;operator&quot;:&quot;and&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>即Fileld 中必须有val1,val2</p>
-<p>按匹配度查询<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">GET /indexName/_search</span><br><span class="line">&#123;</span><br><span class="line">&quot;query&quot;:&#123;</span><br><span class="line">  &quot;match&quot;:&#123;</span><br><span class="line">    &quot;Field&quot;:&#123;</span><br><span class="line">      &quot;query&quot;:&quot;val1 val2 val3&quot;</span><br><span class="line">      &quot;minimum_should_match&quot;:&quot;val&quot; eg:20%</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>即indexName,按Field中 val1 val2 val3 匹配度达到val即返回查询</p>
-<h3 id="高级查询"><a href="#高级查询" class="headerlink" title="高级查询"></a>高级查询</h3><p>简单精准查询</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GET /indexName/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;:&#123;</span><br><span class="line">    &quot;match_phrase&quot;:&#123;</span><br><span class="line">      &quot;Field&quot;:&quot;val&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>即查询要完全匹配val,但若val只有一个中文,则会Field只要含有val,就会被查出</p>
-<p>slop结合<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">GET /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;match_phrase&quot;: &#123;</span><br><span class="line">      &quot;name&quot;: &#123;</span><br><span class="line">        &quot;query&quot;: &quot;张三&quot;,</span><br><span class="line">        &quot;slop&quot;: 3</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>解读：slop是移动次数，上面案例表示“张”、“三”两个字可以经过最多挪动3次查询到！</p>
-<p>rescore (重打分）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">GET /forum/article/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;match&quot;: &#123;</span><br><span class="line">      &quot;content&quot;: &quot;java spark&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;rescore&quot;:&#123;</span><br><span class="line">    &quot;window_size&quot;: 50,</span><br><span class="line">    &quot;query&quot;: &#123;</span><br><span class="line">      &quot;rescore_query&quot;: &#123;</span><br><span class="line">        &quot;match_phrase&quot;: &#123;</span><br><span class="line">          &quot;content&quot;: &#123;</span><br><span class="line">            &quot;query&quot;: &quot;java spark&quot;,</span><br><span class="line">            &quot;slop&quot;: 50</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>多字段匹配查询</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">GET /indexName/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;:&#123;</span><br><span class="line">    &quot;multi_match&quot;:&#123;</span><br><span class="line">      &quot;query&quot;:&quot;val&quot;</span><br><span class="line">      &quot;fields&quot;:[&quot;val1&quot;,&quot;val2&quot;]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在多个字段中,也是模糊查询val<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">GET /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;query_string&quot;: &#123;</span><br><span class="line">      &quot;query&quot;: &quot;(叶良辰 AND 火) OR (赵日天 AND 风)&quot;,</span><br><span class="line">      &quot;fields&quot;: [&quot;name&quot;,&quot;desc&quot;]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="字段查询"><a href="#字段查询" class="headerlink" title="字段查询"></a>字段查询</h3><p>精准查询</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GET /indexName/_search</span><br><span class="line">&#123;</span><br><span class="line">&quot;query&quot;:&#123;</span><br><span class="line">  &quot;term&quot;:&#123;</span><br><span class="line">    &quot;field&quot;:&quot;val&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>分页查询</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GET /indexName/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;:&#123;</span><br><span class="line">    &quot;match_all&quot;:&#123;&#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;from&quot;:num,</span><br><span class="line">  &quot;size&quot;:num</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="范围查询"><a href="#范围查询" class="headerlink" title="范围查询"></a>范围查询</h3><p>数据值型</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">GET /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;range&quot;: &#123;</span><br><span class="line">      &quot;age&quot;: &#123;</span><br><span class="line">        &quot;gt&quot;: 16,</span><br><span class="line">        &quot;lte&quot;: 30</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>日期类型</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">GET /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;range&quot;: &#123;</span><br><span class="line">      &quot;birthday&quot;: &#123;</span><br><span class="line">        &quot;gte&quot;: &quot;2013-01-01&quot;,</span><br><span class="line">        &quot;lte&quot;: &quot;now&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">GET book/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;constant_score&quot;: &#123;</span><br><span class="line">      &quot;filter&quot;: &#123;</span><br><span class="line">        &quot;range&quot;: &#123;</span><br><span class="line">          &quot;date&quot;: &#123;</span><br><span class="line">            &quot;gt&quot;: &quot;now-1M&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;boost&quot;: 1.2</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>“gt”: “now-1M”表示从今天开始，往前推一个月！</p>
-<h3 id="过滤查询"><a href="#过滤查询" class="headerlink" title="过滤查询"></a>过滤查询</h3><p>法一</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">POST /people/man/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;constant_score&quot;: &#123;</span><br><span class="line">      &quot;filter&quot;: &#123;</span><br><span class="line">        &quot;range&quot;: &#123;</span><br><span class="line">          &quot;age&quot;: &#123;</span><br><span class="line">            &quot;gte&quot;: 20,</span><br><span class="line">            &quot;lte&quot;: 30</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;boost&quot;: 1.2</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>法二</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">POST /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;bool&quot;: &#123;</span><br><span class="line">      &quot;filter&quot;: &#123;</span><br><span class="line">        &quot;term&quot;: &#123;</span><br><span class="line">          &quot;age&quot;: 18</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="布尔查询"><a href="#布尔查询" class="headerlink" title="布尔查询"></a>布尔查询</h3><p>should查询<br>注意：should相当于 或 ，里面的match也是模糊匹配</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">POST /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;bool&quot;: &#123;</span><br><span class="line">      &quot;should&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;match&quot;: &#123;</span><br><span class="line">            &quot;name&quot;: &quot;叶良辰&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;match&quot;: &#123;</span><br><span class="line">            &quot;desc&quot;: &quot;赵日天&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>must查询<br>注意：两个条件都要满足，并且这里也会把must里面的“叶良辰”拆分成“叶”、“良”和“辰”进行查询；“赵日天”拆分成“赵”、“日”、和“天”！</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">POST /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;bool&quot;: &#123;</span><br><span class="line">      &quot;must&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;match&quot;: &#123;</span><br><span class="line">            &quot;name&quot;: &quot;叶良辰&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;match&quot;: &#123;</span><br><span class="line">            &quot;desc&quot;: &quot;赵日天&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>must与filter相结合<br>这里也会把must里面的“叶良辰”拆分成“叶”、“良”和“辰”进行查询</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">POST /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;bool&quot;: &#123;</span><br><span class="line">      &quot;must&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;match&quot;: &#123;</span><br><span class="line">            &quot;name&quot;: &quot;叶良辰&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;match&quot;: &#123;</span><br><span class="line">            &quot;desc&quot;: &quot;赵日天&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      ],</span><br><span class="line">      &quot;filter&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;term&quot;: &#123;</span><br><span class="line">            &quot;age&quot;: 18</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>must_not<br>注意：下面语句是精准匹配</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">POST /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;bool&quot;: &#123;</span><br><span class="line">      &quot;must_not&quot;: &#123;</span><br><span class="line">        &quot;term&quot;: &#123;</span><br><span class="line">          &quot;name&quot;: &quot;叶良辰&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="聚合查询"><a href="#聚合查询" class="headerlink" title="聚合查询"></a>聚合查询</h3><p>根据字段类型查询</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">GET /people/man/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;size&quot;: 0,</span><br><span class="line">  &quot;aggs&quot;: &#123;</span><br><span class="line">    &quot;group_by_age&quot;: &#123;</span><br><span class="line">      &quot;terms&quot;: &#123;</span><br><span class="line">        &quot;field&quot;: &quot;age&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>查询总体值</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">POST /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;aggs&quot;: &#123;</span><br><span class="line">    &quot;grads_age&quot;: &#123;</span><br><span class="line">      &quot;stats&quot;: &#123;</span><br><span class="line">        &quot;field&quot;: &quot;age&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>查询最小值</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">POST /people/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;aggs&quot;: &#123;</span><br><span class="line">    &quot;grads_age&quot;: &#123;</span><br><span class="line">      &quot;min&quot;: &#123;</span><br><span class="line">        &quot;field&quot;: &quot;age&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>根据国家分组，然后计算年龄平均值：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">GET /people/man/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;size&quot;: 0,</span><br><span class="line">  &quot;aggs&quot;: &#123;</span><br><span class="line">    &quot;group_by_age&quot;: &#123;</span><br><span class="line">      &quot;terms&quot;: &#123;</span><br><span class="line">        &quot;field&quot;: &quot;country&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;aggs&quot;: &#123;</span><br><span class="line">        &quot;avg_age&quot;: &#123;</span><br><span class="line">          &quot;avg&quot;: &#123;</span><br><span class="line">            &quot;field&quot;: &quot;age&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>解决：上面的reason里面说的很清楚，将fielddata设置为true就行了：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">POST /people/_mapping/man</span><br><span class="line">&#123;</span><br><span class="line">  &quot;properties&quot;: &#123;</span><br><span class="line">    &quot;country&quot;: &#123;</span><br><span class="line">      &quot;type&quot;: &quot;text&quot;,</span><br><span class="line">      &quot;fielddata&quot;: true</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="排序查询"><a href="#排序查询" class="headerlink" title="排序查询"></a>排序查询</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">排序查询通常没有排到我们想要的结果，因为字段分词后，有很多单词，再排序跟我们想要的结果又出入</span><br><span class="line"></span><br><span class="line">解决办法：把需要排序的字段建立两次索引，一个排序，另一个不排序。</span><br><span class="line"></span><br><span class="line">如下面的案例：把title.raw的fielddata设置为true，是排序的；而title的fielddata默认是false，可以用来搜索</span><br><span class="line"></span><br><span class="line">index: true 是在title.raw建立索引可以被搜索到，</span><br><span class="line"></span><br><span class="line">fielddata: true是让其可以排序</span><br><span class="line"></span><br><span class="line">PUT /blog</span><br><span class="line">&#123;</span><br><span class="line">  &quot;mappings&quot;: &#123;</span><br><span class="line">    &quot;article&quot;: &#123;</span><br><span class="line">      &quot;properties&quot;: &#123;</span><br><span class="line">        &quot;auther&quot;: &#123;</span><br><span class="line">          &quot;type&quot;: &quot;text&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;title&quot;: &#123;</span><br><span class="line">          &quot;type&quot;: &quot;text&quot;,</span><br><span class="line">          &quot;fields&quot;: &#123;</span><br><span class="line">            &quot;raw&quot;:&#123;</span><br><span class="line">              &quot;type&quot;: &quot;text&quot;,</span><br><span class="line">              &quot;index&quot;: true,</span><br><span class="line">              &quot;fielddata&quot;: true</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;content&quot;:&#123;</span><br><span class="line">          &quot;type&quot;: &quot;text&quot;,</span><br><span class="line">          &quot;analyzer&quot;: &quot;english&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;publishdate&quot;: &#123;</span><br><span class="line">          &quot;type&quot;: &quot;date&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">GET /blog/article/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;match_all&quot;: &#123;&#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;sort&quot;: [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;title.raw&quot;: &#123;</span><br><span class="line">        &quot;order&quot;: &quot;desc&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="scroll查询"><a href="#scroll查询" class="headerlink" title="scroll查询"></a>scroll查询</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">当搜索量比较大的时候，我们在短时间内不可能一次性搜索完然后展示出来</span><br><span class="line"></span><br><span class="line">这个时候，可以使用scroll进行搜索</span><br><span class="line"></span><br><span class="line">比如下面的案例，可以先搜索3条数据，然后结果中会有一个_scroll_id，下次搜索就可以直接用这个_scroll_id进行搜索了</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GET test_index/test_type/_search?scroll=1m</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;match_all&quot;: &#123;&#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;sort&quot;: &quot;_doc&quot;,</span><br><span class="line">  &quot;size&quot;: 3</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>step3 把scroll_id粘贴到下面的命令中再次搜索</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">GET _search/scroll</span><br><span class="line">&#123;</span><br><span class="line">  &quot;scroll&quot;: &quot;1m&quot;,</span><br><span class="line">  &quot;scroll_id&quot;: &quot;DnF1ZXJ5VGhlbkZldGNoBQAAAAAAAAA6FnZPSl9sbVR4UVVDU1NLb2wxVXJlbWcAAAAAAAAAPhZ2T0pfbG1UeFFVQ1NTS29sMVVyZW1nAAAAAAAAADsWdk9KX2xtVHhRVUNTU0tvbDFVcmVtZwAAAAAAAAA8FnZPSl9sbVR4UVVDU1NLb2wxVXJlbWcAAAAAAAAAPRZ2T0pfbG1UeFFVQ1NTS29sMVVyZW1n&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>mapreduce.input.fileinputformat.inputdir<br>/Users/wqkenqing/Desktop/文档/工作文档/haikang/ws_hy_all<br>/Users/wqkenqing/Desktop/文档/工作文档/haikang/hy_all</p>
+<p>pbu:industry_real-weather_data<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          </p>
 
           
         
@@ -485,7 +633,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/08/06/日常总结/old/kafka/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/ucloud硬盘挂载[未解决]/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -504,7 +652,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/08/06/日常总结/old/kafka/" itemprop="url">kafka</a></h1>
+                <a class="post-title-link" href="/2020/03/13/tmp/ucloud硬盘挂载[未解决]/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -516,8 +664,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-06T15:59:11+08:00">
-                2019-08-06
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
               </time>
             
 
@@ -555,138 +703,16 @@
 
       
         
-          <p>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic sparkstreaming<br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic flumetest<br>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/08/06/日常总结/old/kafka/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </p></div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/31/日常总结/flink/Flink/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Kuiq  Wang">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="wong's bolg">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/07/31/日常总结/flink/Flink/" itemprop="url">flink学习</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-31T00:00:00+08:00">
-                2019-07-31
-              </time>
-            
-
-            
-
-            
-          </span>
+          
+            <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">ucloud 硬盘挂载</span><br></pre></td></tr></table></figure>
+<ol>
+<li>fdisk -l</li>
+<li>fdisk /dev/vdb</li>
+<li>mkfs.ext4 /dev/vdb1</li>
+<li>mount /dev/vdb1 /data<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           </li>
+</ol>
 
           
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>flink内容记录</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/07/31/日常总结/flink/Flink/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
         
       
     </div>
@@ -733,7 +759,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/17/日常总结/hadoop/hdfs/hdfs命令/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/jellyfin家庭影院/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -752,7 +778,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/17/日常总结/hadoop/hdfs/hdfs命令/" itemprop="url">hdfs命令</a></h1>
+                <a class="post-title-link" href="/2020/03/13/tmp/jellyfin家庭影院/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -764,8 +790,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-17T00:00:00+08:00">
-                2019-07-17
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
               </time>
             
 
@@ -803,14 +829,27 @@
 
       
         
-          <p>hdfs常用命令</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/07/17/日常总结/hadoop/hdfs/hdfs命令/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
+          
+            <p>docker run -d -p 8096:8096   -v   /Users/kuiq.wang/Desktop/jellyfin/config:/config -v /Users/kuiq.wang/Desktop/video:/media jellyfin/jellyfin<br>docker run -d -p 8097:8096   -v   /Users/kuiq.wang/Desktop/jellyfin/english_config:/config -v /Users/kuiq.wang/Desktop/home_study:/media jellyfin/jellyfin</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">环境</th>
+<th style="text-align:left">账号</th>
+<th style="text-align:left">密码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">english_study</td>
+<td style="text-align:left">chunqiu</td>
+<td style="text-align:left">chunqiu</td>
+</tr>
+</tbody>
+</table>
+<p>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     </p>
+
+          
         
       
     </div>
@@ -857,7 +896,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog22/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/key/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -876,7 +915,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog22/" itemprop="url">未命名</a></h1>
+                <a class="post-title-link" href="/2020/03/13/tmp/key/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -888,8 +927,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-16T17:19:52+08:00">
-                2019-07-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
               </time>
             
 
@@ -928,19 +967,503 @@
       
         
           
-            <p>#测试环境搭建小结<br><code>因一些原因，最近协助搭建测试服务器，主要涉及到了一服务器系统安装，环境配置，参数调优，软件使用，自动化建设等内容，因为主要是协助，所以着重小结我参与的部份</code></p>
-<h2 id="参数调优"><a href="#参数调优" class="headerlink" title="参数调优"></a>参数调优</h2><p>这里的参数调优主要针对的是服务器的调优，主要是针对出现问题后的调优，这次软件使用上大致问题有</p>
+            <p>yidong-tourist_minuteLocal<br>yidong-tourist_month_source_country<br>reception_income-county_consumption_city<br>weather_burea_data<br>yidong-tourist_heat_map<br>yidong-tourist_hourLocal<br>industry_supervision-network_comment<br>reception_income-county_consumption<br>travel_hardware-info_screen_power<br>yidong-tourist_month_source_prov<br>reception_income-county_consumption_province<br>ticket_data-tourist_tickets<br>tourism_professionals-data<br>reception_income-county_industry_consumption<br>industrial-hotel_inventory<br>travel_related_enterprises-data<br>travel_map-lyjtgl_gather_baidu<br>industry_real-weather_data<br>yidong-tourist_day_source_prov<br>industrial-hotel_checkin_record<br>travel_transport-traffic_city_tour_bus<br>yidong-tourist_month_local<br>reception_income-county_business_circle_consumption<br>travel_transport-traffic_important_attraction_bus<br>hy_mock_data_five_minute<br>travel_transporttraffic_rural_tourism_bus<br>yidong-tourist_dayLocal<br>yidong-tourist_month_source_city<br>environment_bureau-data<br>industrial-hotel_base_info<br>yidong-tourist_daySourceCountry<br>pba-travel_hardware-info_screen_power<br>yidong-tourist_daySourceCity<br>country<br>reception_income-county_consumption_city<br>weather_burea_data<br>yidong-tourist_heat_map<br>yidong-tourist_hourLocal<br>industry_supervision-network_comment<br>reception_income-county_consumption<br>travel_hardware-info_screen_power<br>yidong-tourist_month_source_prov<br>reception_income-county_consumption_province<br>ticket_data-tourist_tickets<br>tourism_professionals-data<br>reception_income-county_industry_consumption<br>industrial-hotel_inventory<br>travel_related_enterprises-data<br>travel_map-lyjtgl_gather_baidu<br>industry_real-weather_data<br>yidong-tourist_day_source_prov<br>industrial-hotel_checkin_record<br>travel_transport-traffic_city_tour_bus<br>yidong-tourist_month_local<br>reception_income-county_business_circle_consumption<br>travel_transport-traffic_important_attraction_bus<br>hy_mock_data_five_minute<br>travel_transporttraffic_rural_tourism_bus<br>yidong-tourist_dayLocal<br>yidong-tourist_month_source_city<br>environment_bureau-data<br>industrial-hotel_base_info<br>yidong-tourist_daySourceCountry<br>pba-travel_</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/采集服务运行情况记录/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/13/tmp/采集服务运行情况记录/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">需要确定采集服务状态，以确认是否满足迁移同步需求</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">topic</th>
+<th style="text-align:left">status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">pba-travel_hardware-info_screen_network</td>
+<td style="text-align:left">no</td>
+</tr>
+<tr>
+<td style="text-align:left">pba-travel_hardware-info_screen_power</td>
+<td style="text-align:left">no</td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-reception_income-county_business_circle_consumption</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-reception_income-county_consumption</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-reception_income-county_consumption_city</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-reception_income-county_industry_consumption</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-ticket_data-tourist_tickets</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-travel_map-lyjtgl_gather_baidu</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_dayLocal</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_daySourceCity</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_daySourceCountry</td>
+<td style="text-align:left">no</td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_day_source_prov</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_heat_map</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_hourLocal</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_local-operated</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_minuteLocal</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_minuteLocal-operated</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_month_local</td>
+<td style="text-align:left">no</td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_month_source_city</td>
+<td style="text-align:left">no</td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_month_source_prov</td>
+<td style="text-align:left">no</td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_sourceCity-operated</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_sourceCountry-operated</td>
+<td style="text-align:left">no</td>
+</tr>
+<tr>
+<td style="text-align:left">pbu-yidong-tourist_month_source_country</td>
+<td style="text-align:left">no</td>
+</tr>
+</tbody>
+</table>
+<p>umption       |        |<br>|pbu-reception_income-county_consumption      |        |<br>|pbu-reception_income-county_consumption_city     |        |<br>|pbu-reception_income-county_industry_consumption    |        |<br>|pbu-ticket_data-tourist_tickets    |        |<br>|pbu-travel_map-lyjtgl_gather_baidu    |        |<br>|pbu-yidong-tourist_dayLocal    |        |<br>|pbu-yidong-tourist_daySourceCity    |        |<br>|pbu-yidong-tourist_daySourceCountry    |     no   |<br>|pbu-yidong-tourist_day_source_prov    |        |<br>|pbu-yidong-tourist_heat_map   |        |<br>|pbu-yidong-tourist_hourLocal   |        |<br>|pbu-yidong-tourist_local-operated |        |<br>|pbu-yidong-tourist_minuteLocal|        |<br>|pbu-yidong-tourist_minuteLocal-operated|        |<br>|pbu-yidong-tourist_month_local|      </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/部署/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/13/tmp/部署/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="windows环境部署"><a href="#windows环境部署" class="headerlink" title="windows环境部署"></a>windows环境部署</h1><h2 id="启用ubuntu"><a href="#启用ubuntu" class="headerlink" title="启用ubuntu"></a>启用ubuntu</h2><h2 id="在ubuntu中部署docker"><a href="#在ubuntu中部署docker" class="headerlink" title="在ubuntu中部署docker"></a>在ubuntu中部署docker</h2><h2 id="安装zsh-amp-amp-oh-myzsh"><a href="#安装zsh-amp-amp-oh-myzsh" class="headerlink" title="安装zsh &amp;&amp; oh-myzsh"></a>安装zsh &amp;&amp; oh-myzsh</h2><p>sudo apt install zsh<br>chsh -s /bin/zsh</p>
+<p>配置密码文件，解决chsh: PAM认证失败的问题</p>
+<p>把第一行的/bin/bash改成/bin/zsh，这个是root用户的。</p>
+<p>把最后一行的/bin/bash改成/bin/zsh，这个应该是每台电脑的登录用户名+计算机名组成的。</p>
+<p>plugins=(<br>  git<br>  zsh_reload<br>  zsh-autosuggestions<br>  zsh-syntax-highlighting<br>  sudo<br>  cp<br>  ubuntu<br>  yum<br>  pip<br>  autojump<br>  docker<br>  docker-compose<br>  golang<br>  npm<br>  bower<br>  adb<br>)</p>
+<h2 id="添加docker其它用户docker使用权限"><a href="#添加docker其它用户docker使用权限" class="headerlink" title="添加docker其它用户docker使用权限"></a>添加docker其它用户docker使用权限</h2><p>sudo gpasswd -a ${USER} docker</p>
+<h2 id="设置maven-ubuntu环境"><a href="#设置maven-ubuntu环境" class="headerlink" title="设置maven(ubuntu环境)"></a>设置maven(ubuntu环境)</h2><p>/mnt/d/soft_normal/apache-maven-3.6.3<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/kafka指令集合[未解决]/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/13/tmp/kafka指令集合[未解决]/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">kafka bin 目录下sh脚本用法总结</span><br></pre></td></tr></table></figure>
+<p>并非所有,主要攫取一些相对常用的sh命令</p>
+<p>大致有</p>
 <ul>
-<li>oom</li>
-<li>ioStream</li>
-<li>端口数不足</li>
-<li>pid分配不够等问题</li>
+<li>kafka-console-consumer.sh</li>
+<li>kafka-console-producer.sh</li>
+<li>kafka-consumer-groups.sh</li>
+<li>kafka-delete-records.sh</li>
+<li>kafka-topics.sh</li>
 </ul>
-<h3 id="om"><a href="#om" class="headerlink" title="om"></a>om</h3><p>对oom的调优主要的动作有调大分配给jvm的内存，但光调大内存不一定能解决问题，当遇到大量创建线程，但linux服务器允许该用户的执行的线程数不够时，会报无法创建的问题，严重会致使无法执行。所以还需要调大用户的进程数，查看用户信息通过ulimit -a</p>
-<h3 id="ioStream"><a href="#ioStream" class="headerlink" title="ioStream"></a>ioStream</h3><p>这个是io问题，经分析出现这个问题的主要原因应该该用户下限制了最大文件打开数，所以通过ulimit -n numbers即可调大该值<br>但有时退出后可能会重新复原，所以需要长久变更可设置在.bashrc文件中</p>
-<h3 id="端口数不足"><a href="#端口数不足" class="headerlink" title="端口数不足"></a>端口数不足</h3><p>这是并发测试web接口时，发送的请求动作的完成需要时间，本机设置的端口区间可能无法满足大批量的端口需求，所以需要进行重新设置，主要方式是调大区间，调低端口被释放时间等</p>
-<p> 第一步，修改/etc/sysctl.conf文件，在文件中添加如下行：<br>   net.ipv4.ip_local_port_range = 1024 65000<br>   这表明将系统对本地端口范围限制设置为1024~65000之间。请注意，本地端口范围的最小值必须大于或等于1024；而端口范围的最大值则应小于或等于65535。修改完后保存此文件。<br><a href="[http://blog.sina.com.cn/s/blog_658c8cea0101l2sw.html">解决方案</a>][1]<br><a href="http://blog.chinaunix.net/uid-24907956-id-3428052.html" target="_blank" rel="noopener">解决方案2</a></p>
-<h3 id="pid分配不够等问题"><a href="#pid分配不够等问题" class="headerlink" title="pid分配不够等问题"></a>pid分配不够等问题</h3><p><a href="http://blog.csdn.net/cfaster/article/details/53065738" target="_blank" rel="noopener">pid分配不够</a></p>
+<h2 id="kafka-console-consumer-sh"><a href="#kafka-console-consumer-sh" class="headerlink" title="kafka-console-consumer.sh"></a>kafka-console-consumer.sh</h2><p>eg1</p>
+<p>kafka-console-consumer.sh –bootstrap-server node1:9092,node2:9092,node3:9092 –from-beginning –group test1 –max-messages numbers –offset pos –partition num –property print.key=true</p>
+<p>上面是一个相对常用consumer运行命令</p>
+<h3 id="参数分析"><a href="#参数分析" class="headerlink" title="参数分析"></a>参数分析</h3><p>–bootstrap-server 指定 server集群地址</p>
+<p>–from-begining 从头开始消费.</p>
+<p>–group 指定消费组</p>
+<p>–max-messages 指定消费最大消息数</p>
+<p>–offset 指定消费位置</p>
+<p>–partition 指定分区</p>
+<h2 id="kafka-console-producer-sh"><a href="#kafka-console-producer-sh" class="headerlink" title="kafka-console-producer.sh"></a>kafka-console-producer.sh</h2><p>eg1</p>
+<p>kafka-console-producer.sh  –batch-size 200 –broker-list node1:9092,node2:9092,node3:9092  –sync –topic</p>
+<p>Kafka之sync、async以及oneway</p>
+<p><a href="https://blog.csdn.net/u013256816/article/details/54896952" target="_blank" rel="noopener">https://blog.csdn.net/u013256816/article/details/54896952</a></p>
+<p>参数解析后面补充</p>
+<p>##</p>
+<p>kafka-run-class.sh kafka.tools.GetOffsetShell  –broker-list localhost:9092 –partitions 0 –topic jzw_toll_island_state –time -1</p>
+<p>jzw_toll_island_info</p>
+<p>jzw_toll_island_state<br>              </p>
 
           
         
@@ -989,7 +1512,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog21/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/flume采集文件夹变化/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -1008,7 +1531,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog21/" itemprop="url">未命名</a></h1>
+                <a class="post-title-link" href="/2020/03/13/tmp/flume采集文件夹变化/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -1020,8 +1543,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-16T17:19:29+08:00">
-                2019-07-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
               </time>
             
 
@@ -1060,40 +1583,21 @@
       
         
           
-            <p><code>the record for python</code></p>
-<h3 id="Python-知识点"><a href="#Python-知识点" class="headerlink" title="Python 知识点"></a>Python 知识点</h3><h4 id="标识符号"><a href="#标识符号" class="headerlink" title="标识符号"></a>标识符号</h4><p>在 Python 里，标识符有字母、数字、下划线组成。<br>在 Python 中，所有标识符可以包括英文、数字以及下划线(_)，但不能以数字开头。</p>
-<p>以下划线开头的标识符是有特殊意义的。以单下划线开头 _foo 的代表不能直接访问的类属性，需通过类提供的接口进行访问，不能用 from xxx import * 而导入；</p>
-<p>以双下划线开头的 <strong>foo 代表类的私有成员；以双下划线开头和结尾的 </strong>foo__ 代表 Python 里特殊方法专用的标识，如 <strong>init</strong>() 代表类的构造函数。</p>
-<p>Python 可以同一行显示多条语句，方法是用分号 ; 分开，</p>
-<h4 id="行和缩进"><a href="#行和缩进" class="headerlink" title="行和缩进"></a>行和缩进</h4><p>python 最具特色的就是用缩进来写模块。<br>缩进的空白数量是可变的，但是所有代码块语句必须包含相同的缩进空白数量，这个必须严格执行<br>因此，在 Python 的代码块中必须使用相同数目的行首缩进空格数。<br>建议你在每个缩进层次使用 单个制表符 或 两个空格 或 四个空格 , 切记不能混用</p>
-<h4 id="多行语句"><a href="#多行语句" class="headerlink" title="多行语句"></a>多行语句</h4><p>Python语句中一般以新行作为为语句的结束符。<br>但是我们可以使用斜杠（ \）将一行的语句分为多行显示，</p>
-<h4 id="Python-引号"><a href="#Python-引号" class="headerlink" title="Python 引号"></a>Python 引号</h4><p>Python 可以使用引号( ‘ )、双引号( “ )、三引号( ‘’’ 或 “”” ) 来表示字符串，引号的开始与结束必须的相同类型的。<br>其中三引号可以由多行组成，编写多行文本的快捷语法，常用语文档字符串，在文件的特定地点，被当做注释。</p>
-<h4 id="Python注释"><a href="#Python注释" class="headerlink" title="Python注释"></a>Python注释</h4><p>python 中多行注释使用三个单引号(‘’’)或三个双引号(“””)。</p>
-<h4 id="Python空行"><a href="#Python空行" class="headerlink" title="Python空行"></a>Python空行</h4><p>函数之间或类的方法之间用空行分隔，表示一段新的代码的开始。类和函数入口之间也用一行空行分隔，以突出函数入口的开始。<br>空行与代码缩进不同，空行并不是Python语法的一部分。书写时不插入空行，Python解释器运行也不会出错。但是空行的作用在于分隔两段不同功能或含义的代码，便于日后代码的维护或重构。<br>记住：空行也是程序代码的一部分。</p>
-<h4 id="Python-变量类型"><a href="#Python-变量类型" class="headerlink" title="Python 变量类型"></a>Python 变量类型</h4><p>变量存储在内存中的值。这就意味着在创建变量时会在内存中开辟一个空间。<br>基于变量的数据类型，解释器会分配指定内存，并决定什么数据可以被存储在内存中。<br>因此，变量可以指定不同的数据类型，这些变量可以存储整数，小数或字符。</p>
-<p><strong>变量赋值</strong></p>
-<p>Python 中的变量赋值不需要类型声明。<br>每个变量在内存中创建，都包括变量的标识，名称和数据这些信息。<br>每个变量在使用前都必须赋值，变量赋值以后该变量才会被创建。<br>等号（=）用来给变量赋值。</p>
-<h4 id="python-标准数据类型"><a href="#python-标准数据类型" class="headerlink" title="python 标准数据类型"></a>python 标准数据类型</h4><p>python 定义了一些标准类型，用于存储各种类型的数据。<br>Python有五个标准的数据类型：<br>Numbers（数字）<br>String（字符串）<br>List（列表）<br>Tuple（元组）<br>Dictionary（字典）</p>
-<h4 id="Python数字"><a href="#Python数字" class="headerlink" title="Python数字"></a>Python数字</h4><p>数字数据类型用于存储数值。<br>他们是不可改变的数据类型，这意味着改变数字数据类型会分配一个新的对象。<br>当你指定一个值时，Number对象就会被创建：<br>您也可以使用del语句删除一些对象的引用。<br>del语句的语法是：</p>
-<p>del var1[,var2[,var3[….,varN]]]]</p>
-<p>您可以通过使用del语句删除单个或多个对象的引用。例如：</p>
-<p>del var<br>del var_a, var_b</p>
-<p>Python支持四种不同的数字类型：</p>
-<p>int（有符号整型）</p>
-<p>long（长整型[也可以代表八进制和十六进制]）</p>
-<p>float（浮点型）</p>
-<p>complex（复数）</p>
-<h4 id="Python字符串"><a href="#Python字符串" class="headerlink" title="Python字符串"></a>Python字符串</h4><p>字符串或串(String)是由数字、字母、下划线组成的一串字符。</p>
-<p>一般记为 :<br>s=”a1a2···an”(n&gt;=0)<br>它是编程语言中表示文本的数据类型。</p>
-<p>python的字串列表有2种取值顺序:</p>
-<p>从左到右索引默认0开始的，最大范围是字符串长度少1</p>
-<p>从右到左索引默认-1开始的，最大范围是字符串开头</p>
-<p>当使用以冒号分隔的字符串，python返回一个新的对象，结果包含了以这对偏移标识的连续的内容，左边的开始是包含了下边界。<br>上面的结果包含了s[1]的值l，而取到的最大范围不包括上边界，就是s[5]的值p。</p>
-<p>加号（+）是字符串连接运算符，星号（*）是重复操作</p>
-<h4 id="Python列表"><a href="#Python列表" class="headerlink" title="Python列表"></a>Python列表</h4><p>List（列表） 是 Python 中使用最频繁的数据类型。</p>
-<h4 id="python元组"><a href="#python元组" class="headerlink" title="python元组"></a>python元组</h4><p>元组是另一个数据类型，类似于List（列表）。</p>
-<p>元组用”()”标识。内部元素用逗号隔开。但是元组不能二次赋值，相当于只读列表</p>
-<h4 id="Python-字典"><a href="#Python-字典" class="headerlink" title="Python 字典"></a>Python 字典</h4>
+            <p>registry.lisong.pub:28500/sunrise/flume  1.8.0-cdh</p>
+<p>jd zookeeper 32773</p>
+<p>kafka 32772</p>
+<p>docker run -d -e FLUME_AGENT_NAME=a1 -v flume_conf:/opt/flume-config -v /root/test_log:/logs registry.lisong.pub:28500/sunrise/flume:1.8.0-cdh   kafka_spool.conf</p>
+<p>docker run -d -e FLUME_AGENT_NAME=a1 -v /root/flume_config/kafka_spool.conf:/opt/flume-config/flume.conf -v /root/test_log:/logs registry.lisong.pub:28500/sunrise/flume:1.8.0-cdh</p>
+<p>docker run –restart=unless-stopped -d –net host -v /root/flumeng/test/tcp_logger.conf:/opt/flume-config/flume.conf -v /root/test_log:/logs -e FLUME_AGENT_NAME=a1  registry.lisong.pub:28500/sunrise/flume:1.8.0-cdh</p>
+<p>docker pull registry.lisong.pub:28500/log_create<br>docker run -d -v /root/data/log/:/data/log registry.lisong.pub:28500/log_create<br>docker run -d -v /root/data/log/:/data/log registry.lisong.pub:28500/log_create2</p>
+<p>/root/data/log</p>
+<p>docker run -d -e FLUME_AGENT_NAME=a1 -v /root/flume_config/kafka_tail.conf:/opt/flume-config/flume.conf -v /root/data/log:/logs registry.lisong.pub:28500/sunrise/flume:1.8.0-cdh</p>
+<p>docker run -d -e FLUME_AGENT_NAME=a1 -v /root/flume_config/kafka_rege.conf:/opt/flume-config/flume.conf -v /root/data/log:/logs registry.lisong.pub:28500/sunrise/flume:1.8.0-cdh</p>
+<p>/opt/jdk8/bin/java -Xmx20m -Dflume.root.logger=INFO,console -DpropertiesImplementation=org.apache.flume.node.EnvVarResolverProperties -cp /opt/flume-config:/opt/flume/lib/<em>:/lib/</em> -Djava.library.path= org.apache.flume.node.Application -f /opt/flume-config/flume.conf -n a1</p>
+<p>flume-ng agent \<br>  -c /root/flume_config/ \<br>  -f /root/flume_config/kafka_tailDir.conf \<br>  -n a1 \<br>  -Dflume.root.logger=INFO,console \<br>  -DpropertiesImplementation=org.apache.flume.node.EnvVarResolverProperties &amp;</p>
+<p>  a1.sources.tailsource-1.type = exec<br>  a1.sources.tailsource-1.shell = /bin/bash -c<br>  a1.sources.tailsource-1.command = for i in /root/data/log/*.log;<br>/root/data/log</p>
+<p>docker run -d -e FLUME_AGENT_NAME=a1 -v /root/flume_config/kafka_tail.conf:/opt/flume-config/flume.conf -v /root/data/log:/logs registry.li</p>
+
           
         
       
@@ -1141,7 +1645,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/Thread/多线程/">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2020/03/13/tmp/elasticsearch索引备份/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Kuiq  Wang">
@@ -1160,7 +1664,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/16/日常总结/Thread/多线程/" itemprop="url">未命名</a></h1>
+                <a class="post-title-link" href="/2020/03/13/tmp/elasticsearch索引备份/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -1172,8 +1676,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-16T15:47:49+08:00">
-                2019-07-16
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-13T15:13:06+08:00">
+                2020-03-13
               </time>
             
 
@@ -1212,383 +1716,15 @@
       
         
           
-            
+            <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">POST _reindex</span><br><span class="line">&#123;</span><br><span class="line">  &quot;source&quot;: &#123;</span><br><span class="line">    &quot;index&quot;: &quot;hy_traffic_baidu_five_minute&quot;,</span><br><span class="line">    &quot;size&quot;: 10000</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;dest&quot;: &#123;</span><br><span class="line">    &quot;index&quot;: &quot;hy_traffic_baidu_five_minute_new&quot;,</span><br><span class="line">    &quot;routing&quot;: &quot;=cat&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><a href="https://blog.csdn.net/ctwy291314/article/details/82734667" target="_blank" rel="noopener">https://blog.csdn.net/ctwy291314/article/details/82734667</a></p>
+<p>Reindex api</p>
+<p><a href="https://segmentfault.com/a/1190000017044200" target="_blank" rel="noopener">https://segmentfault.com/a/1190000017044200</a><br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </p>
+
           
         
       
     </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog12/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Kuiq  Wang">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="wong's bolg">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog12/" itemprop="url">git小结</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-16T00:00:00+08:00">
-                2019-07-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>此处简介</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog12/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog7/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Kuiq  Wang">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="wong's bolg">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog7/" itemprop="url">java中IO小结</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-16T00:00:00+08:00">
-                2019-07-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>此处简介</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog7/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/日常总结/oldblog/blog4/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Kuiq  Wang">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="wong's bolg">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/07/16/日常总结/oldblog/blog4/" itemprop="url">List学习</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-16T00:00:00+08:00">
-                2019-07-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>此处简介<br>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/07/16/日常总结/oldblog/blog4/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </p></div>
     
     
     
@@ -1623,7 +1759,7 @@
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/22/">22</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1669,7 +1805,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-count">212</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

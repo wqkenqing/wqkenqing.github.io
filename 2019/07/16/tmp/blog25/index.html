@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="此处简介">
+<meta property="og:type" content="article">
+<meta property="og:title" content="爬虫之nutch">
+<meta property="og:url" content="http://www.wqkenqing.ren/2019/07/16/tmp/blog25/index.html">
+<meta property="og:site_name" content="wong&#39;s bolg">
+<meta property="og:description" content="此处简介">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://img.wqkenqing.ren/file/2017/8/e8f001bf53174dd985d3ffd36c6fb32d-image.png">
+<meta property="og:image" content="http://img.wqkenqing.ren/file/2017/8/ffc49faa6d304b2694313bd5c206ee94-image.png">
+<meta property="og:image" content="http://img.wqkenqing.ren/file/2017/8/33e8c343b9854449897c28dd5177409f-image.png">
+<meta property="og:image" content="http://http//img.wqkenqing.ren//file/2017/9/ae5a036dcc9c45a29fdfa0ed2d345eca-image.png">
+<meta property="og:updated_time" content="2020-03-13T07:14:01.134Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="爬虫之nutch">
+<meta name="twitter:description" content="此处简介">
+<meta name="twitter:image" content="http://img.wqkenqing.ren/file/2017/8/e8f001bf53174dd985d3ffd36c6fb32d-image.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.wqkenqing.ren/2019/07/16/tmp/blog25/">
+
+
+
+
+
+  <title>爬虫之nutch | wong's bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">wong's bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.wqkenqing.ren/2019/07/16/tmp/blog25/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kuiq  Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wong's bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">爬虫之nutch</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-16T00:00:00+08:00">
+                2019-07-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>此处简介<br><a id="more"></a></p>
+<p> <code>这阵子主要研究的爬虫方向，主要以java为语言基础,nutch为自动框架，jsoup作为自主爬虫插件开发基础，进行了一些有针对性的实站，在这些过程中，也遇到了一些问题和心得，觉得有必要总结一下</code></p>
+<h2 id="爬虫之nutch"><a href="#爬虫之nutch" class="headerlink" title="爬虫之nutch"></a>爬虫之nutch</h2><h3 id="nutch使用体验与感悟"><a href="#nutch使用体验与感悟" class="headerlink" title="nutch使用体验与感悟"></a>nutch使用体验与感悟</h3><p>在这里之所以以nutch开篇，因为在接触爬虫之前就一直有听过它的大名，知道它是我们java语言栈中的爬虫利器，而且因为它，诞生了hadoop这一重器，后者在如今天大数据技术圈的名头，应该是无人不晓吧。所以，多种因素的促使下，让我入了nutch的坑。而本文虽是不仅针对nutch的总结，但主要还是以nutch为主。</p>
+<p>经过一阵的实际体验,nutch给我的感觉，老实说确实是强,百科中说nutch的目的是“Nutch 致力于让每个人能很容易, 同时花费很少就可以配置世界一流的Web搜索引擎. 为了完成这一宏伟的目标, Nutch必须能够做到”,能有这么宏伟的目标，自然得有相应的实力来支撑。但就我体验来说，它确实是强，经过简单的配置后，几个简单的指令就能对页面进行抓取，但我觉得也有几个比较明显的让人体验不太好的地方</p>
+<ol>
+<li>对动态生成的网页内容的抓取不理想，或要通过其它的插件，但插件的引入也不如想像般顺利</li>
+<li>版本太多，且很多版本之间的差异明显。在后面会尝试说明一下。</li>
+<li>资料太少，有很多场景国外都没有有效的解决策略（公网检索下），国内环境就更差了，为了搜集资料我多次去过国家图书馆，逛过书店等，都没太找到特别详尽且有针对性的资料，所以nutch的整个踩坑过程是很痛苦的，我后面会将我目前调使的nutch抓取服务配置和一些踩坑进行详细的总结，我觉得，就我之前对网上的搜集资料的掌握的情况来看，接下来我给出的总结，或者能带来一些更可靠的价值。<br>综上，我对nutch的感悟是又爱又恨。爱得是它确实是能很便利的帮忙爬取一些东西，恨的是它又不完全是那么便利</li>
+</ol>
+<h3 id="nutch搭建与踩坑回顾"><a href="#nutch搭建与踩坑回顾" class="headerlink" title="nutch搭建与踩坑回顾"></a>nutch搭建与踩坑回顾</h3><p>前文中已经提到过nutch有很多版本，目前最新版本2.3.1，它的多个版本间是有很多差异的，比如1.X的版本间的持久层是没有抽象出来的，所以1.X版本的持久化形式比较单一。而2.X版本中持久层被抽象出来，通过一不同的配置即可实现多元的持久层存储。如mysql、hbase、avro等。但在2.3.X开始就不支持mysql，官网是明确公示过，或者说从2.2.X开始就不支持了，但就实际操作来看2.2.X还是能适配mysql的，而2.3.X在我的实际操作中是不行的。另在这里说一下，我的持久层主要以mysql为主，后面可能还会再试试hbase，而一开始不采用hbase不是我没尝试，而是尝试过，发现nutch目前适配的hbase版本太低，而我服务器上已经搭建的hbase集群环境的版本相对高了不少，无法适配。我想没有必要为此就针对hbase的版本进行更替，所以采用mysql作为持久层，<strong>这是坑一</strong>。<br>在使用nutch之前，对其是一点都不了解的，或者说对爬虫需求也都是不熟悉的。所以，对其的功能是寄于厚望，一开始就配一个网站的首页url，就设置多线程，多层抓取。但经过多次实站后，发现有些网站中一部份或大部份都不能抓取。再随着深入观察发现，很多是动态生成的内容。更甚者，有些内容的加载是页面加载后，再发送ajax来加载页面的一些关键内容。而原本考虑nutch是支持插件扩展的，原想直接通过检索，求助于互联网，希望直接就能找到一款ajax扩展的插件，然而，几经周折，都未成行。<strong>这是坑二</strong></p>
+<p>其它还有一些小坑，具体我在下面搭建环节具体结细节处再提，虽小，但影响也挺大，而且比较坑人。以上都是主要通过人力暂未能直接解决的坑。所以先列出来，下面，我回顾下我的nutch搭建环节，其中会给出一些小坑与相应的解决方案</p>
+<h4 id="搭建"><a href="#搭建" class="headerlink" title="搭建"></a>搭建</h4><p>nutch的搭建分为分布式与单机版，我目前主要涉猎的是nutch单机版。具体的版本选择，我尝试过nutch1.2与nutch1.7以上的所有版本，1.X与2.X的主要差异在于2.X将持久层给抽象出来了。总得来说nuthc2.x的实用性相对高些。而我以我目前具体使用的版本2.2.1为例，进行介绍<br>step 1.获取nutch2.2.1 <a href="http://archive.apache.org/dist/" target="_blank" rel="noopener">http://archive.apache.org/dist/</a><br>这个url能定位到apache很多软件和历史版本。进入这里，然后找到nutch，下载相应的版本（该连接有时可能打不开，翻墙试试）。<br>step 2. 对ivy下的ivy.xml与ivysetting.xml进行修改。<br>这里就有之前提到的坑一了，这里可能配置对持久层的依赖了。我这以mysql配置。</p>
+<p>修改${APACHE_NUTCH_HOME}/ivy/ivy.xml文件</p>
+<p>将以下行的注释取消</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">修改以下行。从默认的</span><br><span class="line">```   org=&quot;org.apache.gora&quot;  name=&quot;gora-core&quot;  rev=&quot;0.3&quot;  conf=&quot;*-&gt;default&quot;/&gt;</span><br></pre></td></tr></table></figure>
+<p>改成<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">取消以下行的注释</span><br><span class="line">```  org=&quot;org.apache.gora&quot;  name=&quot;gora-sql&quot;  rev=&quot;0.1.1-incubating&quot;  conf=&quot;*-&gt;default&quot; /&gt;</span><br></pre></td></tr></table></figure></p>
+<p>如果按默认的不做修改，将会在抓取网页时遇到以下错误。</p>
+<p><img src="//img.wqkenqing.ren/file/2017/8/e8f001bf53174dd985d3ffd36c6fb32d-image.png" alt="e8f001bf53174dd985d3ffd36c6fb32d-image.png"></p>
+<p>然后配置ivysetting.xml，这个文件类似maven的.setting.xml文件，主要修改相应的软件仓库源，默认地址可能会出现下载缓慢的情况，建议换成国内源，贴一个我配的阿里的。<br><img src="//img.wqkenqing.ren/file/2017/8/ffc49faa6d304b2694313bd5c206ee94-image.png" alt="ffc49faa6d304b2694313bd5c206ee94-image.png"></p>
+<p>速度杠杠的。<br>这时就可以进行编译了，通过终端进nutch文件地址进执行ant</p>
+<p>然后配置持久层的配置文件，gora.properties<br><img src="//img.wqkenqing.ren/file/2017/8/33e8c343b9854449897c28dd5177409f-image.png" alt="33e8c343b9854449897c28dd5177409f-image.png"></p>
+<p>接下来配另mysql的映射文件gora-sql-mapping.xml，可以这么说，这个地方出现的坑是我遇到的坑最多的地方之一。因为我是事后总结，平日也有工任务，所以，在出现坑的时侯，我首要的考虑的是解决的它，所以解决这些问题后，可能能记得是大致是什么状况，但无法具体复现，我在这以总结，提练式的对这些小坑进行叙述，就不贴具体的错误日志了。</p>
+<p>首先，文件中的默认配置id的大小是512.这个对于以unicode，准确的说以utf8为编码格式的mysql来说是过长的，会在inject就报sql初始化错误，id too long<br><strong>解决方式</strong><br>将id的长度改小，我设置的是180，nutch默认一般以target url拼接成id，所以一般来讲，180的id是妥妥够用的。</p>
+<p>类似的问题还会出现一些如text ,content过长的问题，初次搭建我这先建议改小试试，后面还有根治的方式。</p>
+<p>修改了gora-sql-mapping.xml文件后，执行抓取指令，以bin/nutch crawl urlfile  -threads number -deepth num 这是nutch 普遍用的一个指行指令，这个指令执行时会默认将数据持久化到webpage的表中，这种方式缺点是不太灵活，复杂任务的时候不好操作。</p>
+<p>另一种bin/crawl urlfile -crawlId name (这个name会作为对应的表名组成部份) “solrrl” “num”用于指定解析程度<br>这种方式相对而言更灵活，后面我主要采用这种方式。这里有个小细节，bin/crawl 这个脚本是可以尝试更改的，它默认执行任务时只创建了50，而这种方式无法像上面那样指定创建线程数，所以我更改了crawl文件的初始值，将参数调值2000.所以可以根据自己需求，酌情更改。</p>
+<p>bin/nutch parse 有些fetch 任务执行完成后，parse数据同步至数据库时可能会产生一些错误，那么可以通过这个指令尝试进行解析。<br>示例：bin/nutch parse -crawlId name -all<br>这里容易出现前面提到过的一个问题，就是在解析时，content 或text 中的内容格式不对，或text 内容中出现在了emoji等情况，都可能使解析任务中断。我经过一翻调整，算是有一个统一解决方案：在这里贴出来参考<br>1、将数据库编码格式设置为utf8mb4；<br>2、将text和content的gora-mapping.xml文件中添加jdbc-type=“text” 或jdbc-type=”blob”的设置，即指明其数据库中对应的类型，避免长度等问题<br>3、上两者结合的一个情况，text存入文中的内容有编码格式，相对读取轻松，blob以二进制形式存放，取值需要转码，所以在不出错的情况下优先设为text，而这时，数据库设为utf8mb4时就不要在jdbc url 中设置utf8格式了，这样反而会出现问题。<br><img src="//http://img.wqkenqing.ren//file/2017/9/ae5a036dcc9c45a29fdfa0ed2d345eca-image.png" alt="ae5a036dcc9c45a29fdfa0ed2d345eca-image.png"></p>
+<p>至此 nutch日常的主要使用指令就这两个，还有些 如果bin/nutch fetch bin/nutch gernate<br>这些相对出错较少，出错的影响和对策网上也相对较多，就不再缀述了。</p>
+<hr>
+<p>至此爬虫服务的总结就要告一段落了，这篇文章体量相对较大，我是断断续续逐步完成的，所以，后面更多是凭回忆出的之前深刻影响且在网上少有明确解决方案的一些问题，给出我的解决方式，所以，如果这篇总结针对的算是nutch使用过程中，尝试更进一步的助力，而非特别基础的。如果看到此篇文章的你对nutch还有其它的一些问题，可以尝试留言，我们一起探讨。</p>
+<p>um”用于指定解析程度<br>这种方式相对而言更灵活，后面我主要采用这种方式。这里有个小细节，bin/crawl 这个脚本是可以尝试更改的，它默认执行任务时只创建了50，而这种方式无法像上面那样指定创建线程数，所以我更改了crawl文件的初始值，将参数调值2000.所以可以根据自己需求，酌情更改。</p>
+<p>bin/nutch parse 有些fetch 任务执行完成后，parse数据同步至数据库时可能会产生一些错误，那么可以通过这个指令尝试进行解析。<br>示例：bin/nutch parse -crawlId name -all<br>这里容易出现前面提到过的一个问题，就是在解析时，content 或text 中的内容格式不对，或text 内容中出现在了emoji等情况，都可能使解析任务中断。我经过一翻调整，算是有一个统一解决方案：在这里贴出来参考<br>1、将数据库编码格式设置为utf8mb4；<br>2、将text和content的gora-mapping.xml文件中添加jdbc-type=“text” 或jdbc-type=”blob”的设置，即指明其数据库中对应的类</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/16/日常总结/oldblog/blog20/" rel="next" title="hbase">
+                <i class="fa fa-chevron-left"></i> hbase
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/16/tmp/blog1/" rel="prev" title="java八大数据类型总结">
+                java八大数据类型总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Kuiq  Wang</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">212</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#爬虫之nutch"><span class="nav-number">1.</span> <span class="nav-text">爬虫之nutch</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#nutch使用体验与感悟"><span class="nav-number">1.1.</span> <span class="nav-text">nutch使用体验与感悟</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#nutch搭建与踩坑回顾"><span class="nav-number">1.2.</span> <span class="nav-text">nutch搭建与踩坑回顾</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#搭建"><span class="nav-number">1.2.1.</span> <span class="nav-text">搭建</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Kuiq  Wang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
