@@ -2,7 +2,7 @@
 set -ev
 
 # get clone master
-git clone https://${GH_REF} .deploy_git
+git clone https://github.com/wqkenqing/wqkenqing.github.io.git .deploy_git
 cd .deploy_git
 git checkout master
 
@@ -19,7 +19,7 @@ git add .
 git commit -m "Travis CI Auto Builder at `date +"%Y-%m-%d %H:%M"`"
 
 # Github Pages
-git push --force --quiet "https://${TravisCIToken}@${GH_REF}" master:master
+git push --force --quiet "https://github.com/wqkenqing/wqkenqing.github.io.git" master:master
 
 # Coding Pages
 #git push --force --quiet "https://Leafney:${CodingToken}@${CD_REF}" master:master
