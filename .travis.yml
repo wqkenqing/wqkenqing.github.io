@@ -22,11 +22,11 @@ after_script:
     - git config user.email "wqkenqingto@126.com"
     - git add .
     - git commit -m "Travis CI Auto Builder"
-    - git push --force --quiet "https://github.com/wqkenqing/wqkenqing.github.io.git" master:master
+    - git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:master # GH_TOKEN是在Travis中配置token的名称
+
 branches:
     only:
         - hexo # 只监测hexo分支
 env:
     global:
         - GH_REF: git@github.com:wqkenqing/wqkenqing.github.io.git #设置GH_REF，注意更改成自己的仓库地址
-
