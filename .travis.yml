@@ -26,11 +26,11 @@ install:
 script:
     - hexo clean
     - hexo g
-    - hexo d
+    # - hexo d
 
-# # after_script:
-#     - ./publish-to-gh-pages.sh
-#       # - hexo deploy
+# after_script:
+    - ./publish-to-gh-pages.sh
+      # - hexo deploy
 
 branches:
     only:
