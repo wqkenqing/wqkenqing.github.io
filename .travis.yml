@@ -27,7 +27,7 @@ script:
     - hexo clean
     - hexo g
     - sed -i "s/gh_token/${REPO_TOKEN}/g" ./_config.yml
-    # - hexo d
+    - hexo d
 
 
 # # after_script:
