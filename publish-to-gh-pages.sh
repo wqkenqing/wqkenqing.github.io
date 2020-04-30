@@ -6,10 +6,10 @@ git clone https://github.com/wqkenqing/wqkenqing.github.io.git .deploy_git
 cd .deploy_git
 git checkout master
 
-# cd ../
-# mv .deploy_git/.git/ ./public/
+cd ../
+mv .deploy_git/.git/ ./public/
 #
-# cd ./public
+cd ./public
 
 git config user.name "wqkenqing"
 git config user.email "wqkeqningto@126.com"
