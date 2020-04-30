@@ -18,7 +18,7 @@ notifications:
 before_install:
     - export TZ='Asia/Shanghai'
     - npm install hexo-cli -g
-    - chmod +x ./publish-to-gh-pages.sh
+    # - chmod +x ./publish-to-gh-pages.sh
 
 install:
     - npm install
@@ -26,11 +26,13 @@ install:
 script:
     - hexo clean
     - hexo g
-    # - hexo d
+    # - sed -i "s/gh_token/${GH_TOKEN}/g" ./_config.yml
+    - hexo d
 
-# after_script:
-    - ./publish-to-gh-pages.sh
-      # - hexo deploy
+
+# # after_script:
+#     - ./publish-to-gh-pages.sh
+#       # - hexo deploy
 
 branches:
     only:
