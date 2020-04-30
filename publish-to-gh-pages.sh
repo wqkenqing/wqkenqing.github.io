@@ -14,6 +14,7 @@ cd ./public
 git config user.name "wqkenqing"
 git config user.email "wqkeqningto@126.com"
 
+cd ./public
 # add commit timestamp
 git add .
 git commit -m "Travis CI Auto Builder at `date +"%Y-%m-%d %H:%M"`"
