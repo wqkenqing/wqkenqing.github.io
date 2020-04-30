@@ -80,7 +80,8 @@ theme: iissnan
 deploy:
   type: git
   # repo: https://github.com/wqkenqing/wqkenqing.github.io.git
-  repo: ssh://git@github.com:wqkenqing/wqkenqing.github.io.git
+  # repo: ssh://git@github.com:wqkenqing/wqkenqing.github.io.git
+  repo: https://gh_token@github.com/wqkenqing/wqkenqing.github.io.git
   #repo: https://github.com/wqkenqing/blogbackup.git
   branch: master
   ###serarch
