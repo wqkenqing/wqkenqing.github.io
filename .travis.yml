@@ -1,42 +1,51 @@
-language: node_js
-
-node_js: stable
-
-cache:
-    apt: true
-    directories:
-        - node_modules
-
-notifications:
-    email:
-        recipients:
-            - wqkenqingto@126.com
-        on_success: change
-        on_failure: always
-
-before_install:
-    - export TZ='Asia/Shanghai'
-    - npm install hexo-cli -g
-    - chmod +x ./publish-to-gh-pages.sh
-
-install:
-    - npm install
-
+# language: node_js
+#
+# node_js: stable
+#
+# cache:
+#     apt: true
+#     directories:
+#         - node_modules
+#
+# notifications:
+#     email:
+#         recipients:
+#             - wqkenqingto@126.com
+#         on_success: change
+#         on_failure: always
+#
+# before_install:
+#     - export TZ='Asia/Shanghai'
+#     - npm install hexo-cli -g
+#     - chmod +x ./publish-to-gh-pages.sh
+#
+# install:
+#     - npm install
+#
+# script:
+#     - hexo clean
+#     - hexo g
+#
+# # after_script:
+#     - ./publish-to-gh-pages.sh
+#       # - hexo deploy
+#
+# branches:
+#     only:
+#         - hexo
+#
+# env:
+#     global:
+#         # Github Pages
+#         - GH_REF: github.com/wqkenqing/wqkenqing.github.io.git
+#         # Coding Pages
+#         # - CD_REF: git.coding.net/Leafney/Leafney.coding.me.git
+# language: node_js
+node_js: --lts
+before_script:
+  - git config user.name "wqkenqing"
+  - git config user.email "wqkenqingto@163.com"
+  # - sed -i'' "s~https://github.com/<yourname>/<reponame>.git~https://${GITHUB_ACCESS_TOKEN}@github.com/<yourname>/<reopname>.git~" _config.yml
 script:
-    - hexo clean
-    - hexo g
-
-# after_script:
-    - ./publish-to-gh-pages.sh
-      # - hexo deploy
-
-branches:
-    only:
-        - hexo
-
-env:
-    global:
-        # Github Pages
-        - GH_REF: github.com/wqkenqing/wqkenqing.github.io.git
-        # Coding Pages
-        # - CD_REF: git.coding.net/Leafney/Leafney.coding.me.git
+  - hexo g
+  - hexo d
