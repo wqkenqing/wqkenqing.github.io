@@ -41,3 +41,4 @@ env:
         - GH_REF: github.com/wqkenqing/wqkenqing.github.io.git
         # Coding Pages
         # - CD_REF: git.coding.net/Leafney/Leafney.coding.me.git
+set -ev
