@@ -40,7 +40,7 @@
 #         - GH_REF: github.com/wqkenqing/wqkenqing.github.io.git
 #         # Coding Pages
 #         # - CD_REF: git.coding.net/Leafney/Leafney.coding.me.git
-# language: node_js
+language: node_js
 node_js: --lts
 before_script:
   - git config user.name "wqkenqing"
