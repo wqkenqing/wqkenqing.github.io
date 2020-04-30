@@ -26,8 +26,9 @@ script:
     - hexo clean
     - hexo g
 
-# after_script:
+after_script:
     # - ./publish-to-gh-pages.sh
+      - hexo deploy
 
 branches:
     only:
