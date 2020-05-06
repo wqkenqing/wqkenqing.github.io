@@ -35,7 +35,7 @@ script:
     # - hexo d
 
 
-# after_script:
+after_script:
       # - hexo deploy
       - cd ./public
       - git init
