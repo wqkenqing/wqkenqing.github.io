@@ -17,7 +17,7 @@ notifications:
 
 before_install:
     - export TZ='Asia/Shanghai'
-    - npm install hexo-cli -g
+    # - npm install hexo-cli -g
     # - chmod +x ./publish-to-gh-pages.sh
     #    - git clone -b dev https://github.com/Molunerfinn/hexo-theme-melody themes/melody
 
@@ -29,7 +29,7 @@ install:
       #- npm install hexo-generator-feed # RSS generate
 
 script:
-    - hexo clean
+    # - hexo clean
     - hexo g
     # - sed -i "s/gh_token/${REPO_TOKEN}/g" ./_config.yml
     # - hexo d
