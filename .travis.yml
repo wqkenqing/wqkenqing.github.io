@@ -17,6 +17,8 @@ notifications:
 
 before_install:
     - export TZ='Asia/Shanghai'
+    - npm install -g hexo
+
     # - npm install hexo-cli -g
     # - chmod +x ./publish-to-gh-pages.sh
     #    - git clone -b dev https://github.com/Molunerfinn/hexo-theme-melody themes/melody
