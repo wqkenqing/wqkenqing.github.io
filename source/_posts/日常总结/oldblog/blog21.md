@@ -1,3 +1,15 @@
+
+---
+
+title: python learn
+date: 2019-07-16
+tags: python
+
+---
+此处简介
+
+<!--more-->
+
 `the record for python`
 ### Python 知识点
 
