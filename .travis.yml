@@ -17,6 +17,7 @@ notifications:
 
 before_install:
     - export TZ='Asia/Shanghai'
+    - npm install hexo-generator-searchdb --save
     - npm install -g hexo
 
     # - npm install hexo-cli -g
