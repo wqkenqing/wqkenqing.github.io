@@ -377,7 +377,7 @@ changyan:
 # Valine.
 # You can get your appid and appkey from https://leancloud.cn
 # more info please open https://valine.js.org
-valine: https://cdn.jsdelivr.net/npm/valine@1.3.9/dist/Valine.min.js
+valine: 
   enable: false
   appid:  # your leancloud application appid
   appkey:  # your leancloud application appkey
