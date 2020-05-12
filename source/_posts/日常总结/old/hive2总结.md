@@ -1,6 +1,6 @@
 ---
 title:  hive2总结
-date: 2021-12-24 23:07:45
+date: 2019-12-24 23:07:45
 tags: bigdata
 ---
 # Hive相关点小结
