@@ -13,7 +13,7 @@ tags: python
 `the record for python`
 ### Python 知识点
 
-#### 标识符号
+#### 标识符号
 在 Python 里，标识符有字母、数字、下划线组成。
 在 Python 中，所有标识符可以包括英文、数字以及下划线(_)，但不能以数字开头。
 
