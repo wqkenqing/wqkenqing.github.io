@@ -86,7 +86,7 @@ deploy:
   #repo: https://github.com/wqkenqing/blogbackup.git
   branch: master
   ###serarch
-  search:
+search:
   path: search.xml
   field: post
   format: html
