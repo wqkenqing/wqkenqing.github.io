@@ -939,6 +939,8 @@ GET _search/scroll
 
 
 
+
+
 ## 运维
 
 ### reindex
@@ -981,4 +983,27 @@ POST _aliases
   ]
 }
 ```
+
+
+
+## 拓展QA
+
+### Q: 同一个字段如何通过不同的域(feild)实现多种类型的功能
+
+A: 如一个字段被定义成了text,但同时这个字段的内容也需要keyword的不分词的特性.那些通过配置fields 可实现该功能.
+
+```
+"title": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+```
+
+如上查询DSL配成 title.keyword时,则不可分词,查询出来的内容是唯一结果.
+
+如果查询DSL配成titile时.则会分词
 
