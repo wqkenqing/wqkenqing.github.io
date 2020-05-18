@@ -160,7 +160,7 @@ PUT /indexName/type/id
   "Field4":"message"
 }
 
-```  
+```
 
 2. 随机生成id
 
@@ -936,3 +936,49 @@ GET _search/scroll
 }
 
 ```
+
+
+
+## 运维
+
+### reindex
+
+
+
+
+
+```
+POST _reindex
+{
+  "source": {
+    "index": "activity_mini2"
+  },
+  "dest": {
+    "index": "activity_mini3"
+  }
+}
+```
+
+
+
+### 别名
+
+```
+POST _aliases
+{
+  "actions": [
+    {
+      "remove": {
+        "index": "activity_mini2",
+        "alias": "activity_mini2_alias"
+      }}, 
+      {
+      "add": {
+        "index": "activity_mini3",
+        "alias": "activity_mini2_alias"
+      }
+    }
+  ]
+}
+```
+
