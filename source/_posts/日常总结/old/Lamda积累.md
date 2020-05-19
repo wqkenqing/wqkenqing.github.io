@@ -1,5 +1,6 @@
 ---
 title: Lambda&Stream.md
+date: 2020-05-11
 tags: 日常总结
 abstract: Lambda积累
 ---

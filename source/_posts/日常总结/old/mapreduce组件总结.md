@@ -1,5 +1,6 @@
 ---
 title:  mapreduce组件总结
+date: 2020-05-11
 tags: bigdata
 ---
 
@@ -47,6 +48,7 @@ copy phase 完成后,是reduceTask 中的 sort phase
 
 ##二次排序
 ```
+
 ```
 mapreduce 常见的辅助排序
 1. partitioner

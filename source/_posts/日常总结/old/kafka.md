@@ -1,5 +1,6 @@
 ---
 title: kafka
+date: 2020-05-11
 tags: kafka
 ---
 kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic sparkstreaming
