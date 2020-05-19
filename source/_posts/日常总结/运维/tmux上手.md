@@ -1,5 +1,5 @@
 ---
-title: tmux上手
+title: tmux上手[转载]
 date: 2020-05-19
 tags: tmux
 
