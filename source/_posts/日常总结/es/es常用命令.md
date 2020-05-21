@@ -986,6 +986,36 @@ POST _aliases
 
 
 
+### 快照
+
+
+
+### 同步
+
+这里先简单介绍以elasticsearch-dump为基础的同步
+
+```
+elastcisearchdump --input=path \
+									--output=path \
+									--type=
+```
+
+```
+上面常见的type有settings,mapping,data,alias
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 拓展QA
 
 ### Q: 同一个字段如何通过不同的域(feild)实现多种类型的功能
