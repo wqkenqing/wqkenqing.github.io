@@ -994,6 +994,8 @@ POST _aliases
 
 这里先简单介绍以elasticsearch-dump为基础的同步
 
+#### 全量同步
+
 ```
 elastcisearchdump --input=path \
 									--output=path \
@@ -1001,8 +1003,24 @@ elastcisearchdump --input=path \
 ```
 
 ```
-上面常见的type有settings,mapping,data,alias
+上面常见的type有settings,mapping,data,alias等主要内容
 ```
+
+#### DSL 语句同步
+
+```
+elasticdump \
+  --input=http://path1:9200/$1 \
+  --output=http://path2:9200/$1 \
+  --type=data \
+   --searchBody="$body"
+```
+
+因为走的是网络IO所以效率上会有较大问题.适用于小批量数据同步,后续再补充较大规模数据的迁移
+
+
+
+
 
 
 
