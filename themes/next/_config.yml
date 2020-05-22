@@ -100,8 +100,8 @@ menu:
   #schedule: /schedule/ || calendar
   #sitemap: /sitemap.xml || sitemap
   #commonweal: /404/ || heartbeat
-  tags: /tags|| tags
-  about: /about || user
+  tags: /tags/ || tags
+  about: /about/ || user
   categories: /categories/ || th
 # Enable/Disable menu icons.
 menu_icons:
