@@ -2,6 +2,10 @@ title: es添加字段
 date: 2020-05-22 
 tags: es feild script
 
+---
+
+<!--more-->
+
 ```
 给es添加字段
 ```
