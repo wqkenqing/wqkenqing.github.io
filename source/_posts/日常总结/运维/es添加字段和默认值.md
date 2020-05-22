@@ -1,10 +1,22 @@
-title: es添加字段
+title: es添加字段并赋值
 date: 2020-05-22 
 tags: es feild script
 
 ---
 
 <!--more-->
+
+
+添加字段即
+
+```json
+PUT /index/_mapping
+{
+    ...
+}
+```
+
+
 
 ```
 给es添加字段
