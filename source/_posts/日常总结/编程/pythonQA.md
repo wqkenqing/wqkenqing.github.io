@@ -1,6 +1,6 @@
 title: pythonQA
-date:2020-05-26
-tags:[python,qa]
+date: 2020-05-26
+tags: [python,qa]
 
 ---
 
