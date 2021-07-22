@@ -13,7 +13,7 @@ timezone:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://www.wqkenqing.ren
+url: https://www.wqkenqing.ren
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -80,7 +80,7 @@ theme: landscape
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  # repo: https://github.com/wqkenqing/wqkenqing.github.io.git
+    #repo: https://github.com/wqkenqing/wqkenqing.github.io.git
   # repo: ssh://git@github.com:wqkenqing/wqkenqing.github.io.git
   repo: https://gh_token@github.com/wqkenqing/wqkenqing.github.io.git
   #repo: https://github.com/wqkenqing/blogbackup.git
