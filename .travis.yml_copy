@@ -20,7 +20,6 @@ before_install:
     - npm install hexo-generator-searchdb --save
     - npm install hexo-generator-search --save
     - npm install -g hexo
-      #- npm i --save hexo-wordcount
 
     # - npm install hexo-cli -g
     # - chmod +x ./publish-to-gh-pages.sh
@@ -28,9 +27,9 @@ before_install:
 
 
 install:
-  # - npm install hexo-cli -g
-    - npm install hexo --save
     - npm install
+    - npm install hexo-cli -g
+    - npm install hexo --save
 # - npm install
       #- npm install hexo-renderer-jade hexo-renderer-stylus --save # medoly 主题需要的插件
       #- npm install hexo-deployer-git --save # git 部署
