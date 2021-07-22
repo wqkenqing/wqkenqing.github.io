@@ -2,7 +2,7 @@ language: node_js
 
 # node_js: stable
 node_js:
-  - 7.8.0
+  - 7.10.0
 cache:
     apt: true
     directories:
