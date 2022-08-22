@@ -368,8 +368,8 @@ POST /indexName/_search
 message将会被拆分进行匹配,若message是中文,则会按切分后的每个字来匹配,若
 message是英语,则会是按每个单词来匹配
 
-![](http://img.wqkenqing.ren/51ccc5cad8b8fbbbb6ef55d3106bfe43.png)
-![示列图](http://img.wqkenqing.ren/47a3ffe716f0026c004b155836a56641.png)
+![](http://rgr3ifyzo.sabkt.gdipper.com/51ccc5cad8b8fbbbb6ef55d3106bfe43.png)
+![示列图](http://rgr3ifyzo.sabkt.gdipper.com/47a3ffe716f0026c004b155836a56641.png)
 
 
 全文搜索(按准度)

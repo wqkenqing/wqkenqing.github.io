@@ -85,7 +85,7 @@ bin/nutch parse 有些fetch 任务执行完成后，parse数据同步至数据�
 1、将数据库编码格式设置为utf8mb4；
 2、将text和content的gora-mapping.xml文件中添加jdbc-type=“text” 或jdbc-type="blob"的设置，即指明其数据库中对应的类型，避免长度等问题
 3、上两者结合的一个情况，text存入文中的内容有编码格式，相对读取轻松，blob以二进制形式存放，取值需要转码，所以在不出错的情况下优先设为text，而这时，数据库设为utf8mb4时就不要在jdbc url 中设置utf8格式了，这样反而会出现问题。
-![ae5a036dcc9c45a29fdfa0ed2d345eca-image.png](//http://img.wqkenqing.ren//file/2017/9/ae5a036dcc9c45a29fdfa0ed2d345eca-image.png)
+![ae5a036dcc9c45a29fdfa0ed2d345eca-image.png](//http://rgr3ifyzo.sabkt.gdipper.com//file/2017/9/ae5a036dcc9c45a29fdfa0ed2d345eca-image.png)
 
 至此 nutch日常的主要使用指令就这两个，还有些 如果bin/nutch fetch bin/nutch gernate
 这些相对出错较少，出错的影响和对策网上也相对较多，就不再缀述了。
