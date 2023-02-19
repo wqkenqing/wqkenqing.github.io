@@ -39,7 +39,7 @@ flink run -c myflink.demo.SocketTextStreamWordCount my-flink-project-0.1.jar 127
 
 ## DataStream API
 flink程序工作解剖图
-![](http://rgr3ifyzo.sabkt.gdipper.com/FIyXNI.png)
+![](http://img.wqkenqing.ren/FIyXNI.png)
 
 ### 执行环境
 

@@ -30,7 +30,7 @@ kafka-consumer-groups --bootstrap-server 192.168.10.100:9092,192.168.10.101:9092
 ## kafka java api
 kafka 虽然搭建较为简单,但想要对针它编程体验还是有些问题.初步使用下来明显感觉对版本的强约束性.以我线上版本
 
-![2019-03-12-11-02-43](http://rgr3ifyzo.sabkt.gdipper.com/2019-03-12-11-02-43.png)为例,我java项目对应的版本则是
+![2019-03-12-11-02-43](http://img.wqkenqing.ren/2019-03-12-11-02-43.png)为例,我java项目对应的版本则是
 ``` java
 
 <dependency>

@@ -32,11 +32,11 @@ MapReduce主要是两种经典函数：
 *   TaskTracker：TaskTracker 会周期性地通过Heartbeat 将本节点上资源的使用情况和任务的运行进度汇报给JobTracker，同时接收JobTracker 发送过来的命令并执行相应的操作（如启动新任务、杀死任务等）。TaskTracker 使用“slot”等量划分本节点上的资源量。“slot”代表计算资源（CPU、内存等）。一个Task 获取到一个slot 后才有机会运行，而Hadoop 调度器的作用就是将各个TaskTracker 上的空闲slot 分配给Task 使用。slot 分为Map slot 和Reduce slot 两种，分别供Map Task 和Reduce Task 使用。TaskTracker 通过slot 数目（可配置参数）限定Task 的并发度。
 *   Task ： Task 分为Map Task 和Reduce Task 两种，均由TaskTracker 启动。HDFS 以固定大小的block 为基本单位存储数据，而对于MapReduce 而言，其处理单位是split。
 *   Map Task 执行过程如下图 所示：由该图可知，Map Task 先将对应的split 迭代解析成一个个key/value 对，依次调用用户 自定义的map() 函数进行处理，最终将临时结果存放到本地磁盘上, 其中临时数据被分成若干个partition，每个partition 将被一个Reduce Task 处理。
-   ![09d902f773ff4e30b1cf995705d4f03c-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/09d902f773ff4e30b1cf995705d4f03c-image.png)
+   ![09d902f773ff4e30b1cf995705d4f03c-image.png](http://img.wqkenqing.ren//file/2017/10/09d902f773ff4e30b1cf995705d4f03c-image.png)
 
 
     Reduce Task 执行过程下图所示。该过程分为三个阶段
-    ![2f9ff84d09cf424cb8a1c4d24db637c0-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/2f9ff84d09cf424cb8a1c4d24db637c0-image.png)
+    ![2f9ff84d09cf424cb8a1c4d24db637c0-image.png](http://img.wqkenqing.ren//file/2017/10/2f9ff84d09cf424cb8a1c4d24db637c0-image.png)
 
 
 
@@ -67,7 +67,7 @@ MapReduce主要是两种经典函数：
 
 *   JobTracker 是在接受到最后一个任务运行完成后，才会将任务标志为成功
 *   此时会做删除中间结果等善后处理工作
-  ![8fba570574f6491c96b51698743466b2-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/8fba570574f6491c96b51698743466b2-image.png)
+  ![8fba570574f6491c96b51698743466b2-image.png](http://img.wqkenqing.ren//file/2017/10/8fba570574f6491c96b51698743466b2-image.png)
 
 
 ### MapReduce任务执行流程与数据处理流程详解
@@ -102,7 +102,7 @@ MapReduce主要是两种经典函数：
     3.创建RecordReader.
     4.反射创建MapperRunner
 
-![3a461434b0604118aad45a4d38cf3649-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/3a461434b0604118aad45a4d38cf3649-image.png)
+![3a461434b0604118aad45a4d38cf3649-image.png](http://img.wqkenqing.ren//file/2017/10/3a461434b0604118aad45a4d38cf3649-image.png)
 
 
 而map输出时相对复杂，主要涉及到的有Partitioner，shuffle，sort，combiner等概念，我们就来一一讨论。
@@ -140,33 +140,33 @@ shuffle完后进入了ReduceTask的reduce()方法中
 在Reduce Phase的过程中，它处理的是所有Map Tasks输出结果中某一个分区中的所有数据，这些数据整体表现为一个根据键有序的输入，对于每一个键都会相应地调用一次Reduce Function（同一个键对应的值可能有多个，这些值将作为Reduce Function的参数）
 
 至此MapReduce的逻辑过程基本描述完成，虽然洋洋洒洒可能会有数千字，但本文的出发点就不是简析，而更多是自我概念原理部份的总结，所以力求整个流程完整详细。后面我配上一些网络图片，方便大家快速理解，结合文字加深印象。
-![b26c54ff10ad4e2b9832a960ef4aab90-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/b26c54ff10ad4e2b9832a960ef4aab90-image.png)
+![b26c54ff10ad4e2b9832a960ef4aab90-image.png](http://img.wqkenqing.ren//file/2017/10/b26c54ff10ad4e2b9832a960ef4aab90-image.png)
 
-![a179f15b88cc403b8bd84d7963823762-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/a179f15b88cc403b8bd84d7963823762-image.png)
+![a179f15b88cc403b8bd84d7963823762-image.png](http://img.wqkenqing.ren//file/2017/10/a179f15b88cc403b8bd84d7963823762-image.png)
 
-![4a5b5498dd764087ade380db394e6f84-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/4a5b5498dd764087ade380db394e6f84-image.png)
+![4a5b5498dd764087ade380db394e6f84-image.png](http://img.wqkenqing.ren//file/2017/10/4a5b5498dd764087ade380db394e6f84-image.png)
 
-![74ed215c305747a49348430782e5636a-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/74ed215c305747a49348430782e5636a-image.png)
+![74ed215c305747a49348430782e5636a-image.png](http://img.wqkenqing.ren//file/2017/10/74ed215c305747a49348430782e5636a-image.png)
 
 
-![b55be177bd514ce79b7444c2dd3ddcfb-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/b55be177bd514ce79b7444c2dd3ddcfb-image.png)
+![b55be177bd514ce79b7444c2dd3ddcfb-image.png](http://img.wqkenqing.ren//file/2017/10/b55be177bd514ce79b7444c2dd3ddcfb-image.png)
 
-![286bb24da172471793924b2b9b7c857c-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/286bb24da172471793924b2b9b7c857c-image.png)
-![68bbc5f114f3496d886402cbb0da8fc1-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/68bbc5f114f3496d886402cbb0da8fc1-image.png)
+![286bb24da172471793924b2b9b7c857c-image.png](http://img.wqkenqing.ren//file/2017/10/286bb24da172471793924b2b9b7c857c-image.png)
+![68bbc5f114f3496d886402cbb0da8fc1-image.png](http://img.wqkenqing.ren//file/2017/10/68bbc5f114f3496d886402cbb0da8fc1-image.png)
 
-![38d8bf9498274367b22856f62a8f7fcf-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/38d8bf9498274367b22856f62a8f7fcf-image.png)
+![38d8bf9498274367b22856f62a8f7fcf-image.png](http://img.wqkenqing.ren//file/2017/10/38d8bf9498274367b22856f62a8f7fcf-image.png)
 
-![7b7e5da815064fdfa0d060910f8dfb9b-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/7b7e5da815064fdfa0d060910f8dfb9b-image.png)
+![7b7e5da815064fdfa0d060910f8dfb9b-image.png](http://img.wqkenqing.ren//file/2017/10/7b7e5da815064fdfa0d060910f8dfb9b-image.png)
 
-![a4ac8a6f758b4bdfb5e1a752a02f0654-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/a4ac8a6f758b4bdfb5e1a752a02f0654-image.png)
+![a4ac8a6f758b4bdfb5e1a752a02f0654-image.png](http://img.wqkenqing.ren//file/2017/10/a4ac8a6f758b4bdfb5e1a752a02f0654-image.png)
 
-![9e91f8a6b0ab488abbad0714487fe10f-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/9e91f8a6b0ab488abbad0714487fe10f-image.png)
+![9e91f8a6b0ab488abbad0714487fe10f-image.png](http://img.wqkenqing.ren//file/2017/10/9e91f8a6b0ab488abbad0714487fe10f-image.png)
 
-![87a4d55fff15408c87f94029b8fb2aea-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/87a4d55fff15408c87f94029b8fb2aea-image.png)
+![87a4d55fff15408c87f94029b8fb2aea-image.png](http://img.wqkenqing.ren//file/2017/10/87a4d55fff15408c87f94029b8fb2aea-image.png)
 
-![eb099e53d6fa44a5b76410040f41f3ae-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/eb099e53d6fa44a5b76410040f41f3ae-image.png)
+![eb099e53d6fa44a5b76410040f41f3ae-image.png](http://img.wqkenqing.ren//file/2017/10/eb099e53d6fa44a5b76410040f41f3ae-image.png)
 
-![98aac8b77be64d53b276f7a112aba12d-image.png](http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/98aac8b77be64d53b276f7a112aba12d-image.png)
+![98aac8b77be64d53b276f7a112aba12d-image.png](http://img.wqkenqing.ren//file/2017/10/98aac8b77be64d53b276f7a112aba12d-image.png)
 
 
 
