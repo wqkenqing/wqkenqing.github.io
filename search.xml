@@ -1,144 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Hadoop总结(第一版---HDFS篇)</title>
-    <url>/2019/07/16/oldblog/Hadoop%E6%80%BB%E7%BB%93/</url>
-    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
-<h1 id="Hadoop总结-第一版—HDFS篇"><a href="#Hadoop总结-第一版—HDFS篇" class="headerlink" title="Hadoop总结(第一版—HDFS篇)"></a>Hadoop总结(第一版—HDFS篇)</h1><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">## 什么是hadoop？</span><br><span class="line">&gt;hadoop是稳定的，高容错的，可大规模布署的分布式文件，存储，并行编程框架。</span><br><span class="line">```本文默认是已经有hadoop使用经验,所以暂不涉及具体的hadoop生态的各组件的部署和调优细节，后续单开文章来总结。但在具体讲解时会涉及说参数配置会对相关组件参生影响</span><br></pre></td></tr></table></figure>
-<p>具体而言，hadoop核心组件内容有：<strong>hdfs</strong>、<strong>mapredcue</strong>。所以接下来的总结主要针对这两在核心组件展开</p>
-<h2 id="HDFS篇"><a href="#HDFS篇" class="headerlink" title="HDFS篇"></a>HDFS篇</h2><h3 id="什么是HDFS？"><a href="#什么是HDFS？" class="headerlink" title="什么是HDFS？"></a>什么是HDFS？</h3><p><strong>分布式文件系统</strong>：分布式文件系统是一种允许文件通过网络在多台主机上分享的 文件的系统，可让多机器上的多用户分享文件和存储空间<br>HDFS:（Hadoop Distribute File System）即hadoop分布式文件系统  主要用于适合运行在通用硬件上的分布式文件系统，特点是高度容错，适合布署在廉价服务器上，具有高吞吐量的数据访问等特点  1. 保存多个副本，且提供容错机制，副本丢失或宕机自动恢复。默认存3份。  2. 运行在廉价的机器上。  3. 适合大数据的处理。多大？多小？HDFS默认会将文件分割成block，64M为1个block。然后将block按键值对存储在HDFS上，并将键值对的映射存到内存中。如果小文件太多，那内存的负担会很重。  4. 适用于一次写入、多次查询的情况  5. 不支持并发写情况，小文件不合适。因为小文件也占用一个块，小文件越多（1000个1k文件）块越 多，NameNode压力越大。<br><code>hdfs得部署在linux系统上</code></p>
-<h3 id="HDFS的具体内容"><a href="#HDFS的具体内容" class="headerlink" title="HDFS的具体内容"></a>HDFS的具体内容</h3><p>文件、节点、数据块 HDFS主要是是围绕着这三个关键词设计的.</p>
-<h4 id="数据块"><a href="#数据块" class="headerlink" title="数据块"></a><strong>数据块</strong></h4><ul>
-<li>Block：在HDFS中，每个文件都是采用的分块的方式存储，每个block放在不同的dataNode节点上，每个block的标识是一个三元组(block id , numBytes,generationStamp),block id 具有唯一性，具体分配是由namenode节点设置，然后在datanode上建立对应的Block文件，同时建立对应的block meta文件(问题是block meta文件存放位，block size可以通过配置文件设置，所以修改block size会对以前持续化的数据有何影响?）</li>
-<li>Packet:是HDFS文件在DFSClient与DataNode之间通信的过程中文件的形式(一般一个Block对应多个Packet)</li>
-<li>Chunk:是通过程中具体传输的文件单位，发送过程以Packet的方式进行，但 一个packet包含多个Chunk,同时对于每个chunk进行checksum计算，生成checksum bytes。</li>
-</ul>
-<p><strong>Packet</strong><br>Packet的结构：数据包和heatbeat包  一个Packet数据包的组成结构主要分为 Packet Header 、PacketData  Packet Header 中又分为：<br><img src="//img.wqkenqing.ren.qiniudns.com/file/2017/7/10eed6bcc563463ea0b8cd5adf99adec-image.png" alt="10eed6bcc563463ea0b8cd5adf99adec-image.png"><br>Packet Data部分是一个Packet的实际数据部分。<br>主要内容有</p>
-<ul>
-<li>一个4字节校验</li>
-<li>Checksum</li>
-<li>Chunk部分，Chunk部分最大为512字节<br><img src="//img.wqkenqing.ren/file/2017/7/c68e61da1e8148ab99b43fe8e3f5408e-image.png" alt="c68e61da1e8148ab99b43fe8e3f5408e-image.png"><br>Packet创建过程：首先将字节流数据写入一个buffer缓冲区中，也就是从偏移量为25的位置（checksumStart）开 始写Packet数据Chunk的Checksum部分，从偏移量为533的位置（dataStart）开始写Packet数据的Chunk Data部分，直到一个Packet创建完成为止。</li>
-</ul>
-<p><code>注意：当写一个文件的最后一个Block的最后一个Packet时，如果一个Packet的大小未能达到最大长度，也就是上图对应的缓冲区 中，Checksum与Chunk Data之间还保留了一段未被写过的缓冲区位置，在发送这个Packet之前，会检查Chunksum与Chunk Data之间的缓冲区是否为空白缓冲区（gap），如果有则将Chunk Data部分向前移动，使得Chunk Data 1与Chunk Checksum N相邻，然后才会被发送到DataNode节点</code></p>
-<h4 id="hdsf架构-主要组成是节点）"><a href="#hdsf架构-主要组成是节点）" class="headerlink" title="hdsf架构(主要组成是节点）"></a>hdsf架构(主要组成是节点）</h4><p>主要的构成角色有：Client、NameNode、SecondayNameNode、DataNode<br><img src="//img.wqkenqing.ren/file/2017/7/5ba6f1ec6b9c4b0982dc2ce73ff9c444-image.png" alt="5ba6f1ec6b9c4b0982dc2ce73ff9c444-image.png"></p>
-<ul>
-<li>Client：系统使用者，调用HDFS API操作文件；与NN交互获取文件元数据;与DN交互进行数据读写, 注意：写数据时文件切分由Client完成</li>
-<li>Namenode：Master节点 （也称元数据节点）是系统唯一的管理者。负责元数据的管理(名称空间和数据块映射信息);配置副本策略；处理客户端请求</li>
-<li>Datanode：数据存储节点(也称Slave节点)，存储实际的数据；执行数据块的读写；汇报存储信息给NN</li>
-<li>Secondary NameNode：备胎，namenode的工作量；是NameNode的冷备份；合并fsimage和fsedits然后再发给namenode</li>
-</ul>
-<p><code>careful:</code> 注意：在hadoop 2.x 版本，当启用 hdfs ha 时，将没有这一角色<br><strong>热冷备份说明</strong>：<br>热备份：b是a的热备份，如果a坏掉。那么b马上运行代替a的工作  冷备份：b是a的冷备份，如果a坏掉。那么b不能马上代替a工作。但是b上存储a的一些信息，减少a坏掉之后的损失<br><strong>hdfs构架原则</strong></p>
-<ol>
-<li>元数据与数据分离：文件本身的属性（即元数据）与文件所持有的数据分离</li>
-<li>主/从架构：一个HDFS集群是由一个NameNode和一定数目的DataNode组成</li>
-<li>一次写入多次读取：HDFS中的文件在任何时间只能有一个Writer。当文件被创建，接着写入数据，最后，一旦文件被关闭，就不能再修改。</li>
-<li>移动计算比移动数据更划算：数据运算，越靠近数据，执行运算的性能就越好，由于hdfs数据分布在不同机器上，要让网络的消耗最低，并提高系统的吞吐量，最佳方式是将运算的执行移到离它要处理的数据更近的地方，而不是移动数据</li>
-</ol>
-<p><strong>针对第四条的解释</strong>：<br>在上文中交代到hdfs中的文件是以block的形式存放在集群中，所以一个文件可以是被切分成很多block存放在集群的机器中针对第四条，移动计算比移动数据更划算，是因为，从理论上讲，集群的计算能力是很方便扩展的，如服务器的硬件提升，或增加服务器等。但网络带宽等资源却很容易达到瓶颈或增加经济负担，所以将计算转移至每个block就近的机器进行计算，会比将所有的block合到一个机器上再进行计算要划算，所以，叫移动计算要比移动数据划算</p>
-<h5 id="NameNode"><a href="#NameNode" class="headerlink" title="NameNode"></a>NameNode</h5><p>NameNode是整个文件系统的管理与计算节点，是HDFS中最复杂的一个实体，它与管理着HDFS文件系统中最重要的两个关系</p>
-<ol>
-<li>HDFS文件系统中的文件目录树，以及文件的数据块索引，即每个文件对应的数据块列表  数据块和数据节点的对应关系，即某一块数据块保存在哪些数据节点的信息  <strong>第一个关系</strong>即目录树、元数据和数据块的索引信息持久化到物理存储中，具体的实现是保存在命名空间的镜像fsimage和编辑日志edits中，<strong>careful</strong>：在fsimage中，并没有记录每一个block对应到那几个Datanodes的对应表信息</li>
-<li><strong>第二个关系是</strong>在NameNode启动后，每个DataNode对本地的磁盘进行扫描，将本DataNode上保存的block信息上报至NameNode,Namenode在接收到每个Datanode的块信息汇报后，将接收到的块信息，以及其所在的Datanode信息等保存在内存中。HDFS就是通过这种块信息汇报的方式来完成 block -&gt; Datanodes list的对应表构建（<strong>careful</strong>）<br>类似于数据库中的检查点，为了避免edits日志过大，在Hadoop1.X 中，SecondaryNameNode会按照时间阈值（比如24小时）或者edits大小阈值（比如1G），周期性的将fsimage和edits的合 并，然后将最新的fsimage推送给NameNode。而在Hadoop2.X中，这个动作是由Standby NameNode来完成.<br>由此可看出，这两个文件一旦损坏或丢失，将导致整个HDFS文件系统不可用<br>在hadoop1.X为了保证这两种元数据文件的高可用性，一般的做法，将dfs.namenode.name.dir设置成以逗号分隔的多个目录，这多个目录至少不要在一块磁盘上，最好放在不同的机器上，比如：挂载一个共享文件系统<br>fsimage\edits 是序列化后的文件，想要查看或编辑里面的内容，可通过 hdfs 提供的 oiv\oev 命令，<br>命令: hdfs oiv （offline image viewer） 用于将fsimage文件的内容转储到指定文件中以便于阅读,，如文本文件、XML文件，该命令需要以下参数：<br>-i (必填参数) –inputFile <arg> 输入FSImage文件<br>-o (必填参数) –outputFile <arg> 输出转换后的文件，如果存在，则会覆盖<br>-p (可选参数） –processor <arg> 将FSImage文件转换成哪种格式： (Ls|XML|FileDistribution).默认为Ls<br>示例：hdfs oiv -i /data1/hadoop/dfs/name/current/fsimage_0000000000019372521 -o /home/hadoop/fsimage.txt<br>命令：hdfs oev (offline edits viewer 离线edits查看器）的缩写， 该工具只操作文件因而并不需要hadoop集群处于运行状态。<br>示例: hdfs oev -i edits_0000000000000042778-0000000000000042779 -o edits.xml<br>支持的输出格式有binary（hadoop使用的二进制格式）、xml（在不使用参数p时的默认输出格式）和stats（输出edits文件的统计信息）<br>由此可以总结到：NameNode管理着DataNode，接收DataNode的注册、心跳、数据块提交等信息的上报，并且在心跳中发送数据块<strong>复制</strong>、<strong>删除</strong>、<strong>恢复</strong>等指令；同时，NameNode还为客户端对<strong>文件系统目录树的操作</strong>和对<strong>文件数据读写</strong>、对<strong>HDFS系统进行管理提供支持</strong><br>另 Namenode 启动后会进入一个称为<strong>安全模式</strong>的特殊状态。处于安全模式 的 Namenode 是不会进行数据块的复制的。 Namenode 从所有的 Datanode 接收心跳信号和块状态报告。 块状态报告包括了某个 Datanode 所有的数据 块列表。每个数据块都有一个指定的最小副本数。当 Namenode 检测确认某 个数据块的副本数目达到这个最小值，那么该数据块就会被认为是副本安全 (safely replicated) 的；在一定百分比（这个参数可配置）的数据块被 Namenode 检测确认是安全之后（加上一个额外的 30 秒等待时间）， Namenode 将退出安全模式状态。接下来它会确定还有哪些数据块的副本没 有达到指定数目，并将这些数据块复制到其他 Datanode 上。  ##### Secondary NameNode  在HA cluster中又称为standby node<br>主要作用：  1.如上文提到的合并fsimage和eits日志，将eits日志文件大小控制在一个限度下  大致流程如下  namenode 响应 Secondary namenode 请求，将 edit log 推送给 Secondary namenode ， 开始重新写一个新的 edit log  Secondary namenode 收到来自 namenode 的 fsimage 文件和 edit log  Secondary namenode 将 fsimage 加载到内存，应用 edit log ， 并生成一 个新的 fsimage 文件  Secondary namenode 将新的 fsimage 推送给 Namenode  Namenode 用新的 fsimage 取代旧的 fsimage ， 在 fstime 文件中记下检查 点发生的时<br><img src="//img.wqkenqing.ren/file/2017/7/aed541bebcc04fb79e2de3c504b7ee46-image.png" alt="aed541bebcc04fb79e2de3c504b7ee46-image.png"></arg></arg></arg></li>
-</ol>
-<h4 id="HDFS写文件-1-x-默认的block大小是64M-2-X版本默认block的大小是-128M"><a href="#HDFS写文件-1-x-默认的block大小是64M-2-X版本默认block的大小是-128M" class="headerlink" title="HDFS写文件  1.x 默认的block大小是64M 2.X版本默认block的大小是 128M "></a>HDFS写文件  1.x 默认的block大小是64M 2.X版本默认block的大小是 128M <img src="//img.wqkenqing.ren/file/2017/7/d0c33b33bfbc41e8a493553395e52ef0-image.png" alt="d0c33b33bfbc41e8a493553395e52ef0-image.png"></h4><p>如上图所示  + Client预先设置的block参数切分FIle</p>
-<ul>
-<li>CLient向NameNode发送写数据请求，</li>
-<li>NameNode，记录block信息，并返回可用的DataNode(具体的返回规则参考下文)</li>
-<li>client向DataNode发送block1；发送过程是以流式写入具体流程是</li>
-</ul>
-<ol>
-<li>将64M的block1按64k的packet划分</li>
-<li>然后将第一个packet发送给host2</li>
-<li>host2接收完后，将第一个packet发送给host1，同时client想host2发送第二个packet</li>
-<li>host1接收完第一个packet后，发送给host3，同时接收host2发来的第二个packet</li>
-<li>以此类推，如图红线实线所示，直到将block1发送完毕</li>
-<li>host2,host1,host3向NameNode，host2向Client发送通知，说“消息发送完了”。</li>
-<li>client收到host2发来的消息后，向namenode发送消息，说我写完了。这样就真完成了。</li>
-<li><p>发送完block1后，再向host7，host8，host4发送block2  当客户端向 HDFS 文件写入数据的时候，一开始是写到本地临时文件中。假设该文件的副 本系数设置为 3 ，当本地临时文件累积到一个数据块的大小时，客户端会从 Namenode 获取一个 Datanode 列表用于存放副本。然后客户端开始向第一个 Datanode 传输数据，第一个 Datanode 一小部分一小部分 (4 KB) 地接收数据，将每一部分写入本地仓库，并同时传输该部分到列表中 第二个 Datanode 节点。第二个 Datanode 也是这样，一小部分一小部分地接收数据，写入本地 仓库，并同时传给第三个 Datanode 。最后，第三个 Datanode 接收数据并存储在本地。因此， Datanode 能流水线式地从前一个节点接收数据，并在同时转发给下一个节点，数据以流水线的 方式从前一个 Datanode 复制到下一个<br><img src="//img.wqkenqing.ren/file/2017/7/2c77aaad2f684820bf8a6b475b79d2f1-image.png" alt="2c77aaad2f684820bf8a6b475b79d2f1-image.png"></p>
-<p>写入的过程，按hdsf默认设置，1T文件，我们需要3T的存储，3T的网络流量  在执行读或写的过程中，NameNode和DataNode通过HeartBeat进行保存通信，确定DataNode活着。如果发现DataNode死掉了，就将死掉的DataNode上的数据，放到其他节点去。读取时，要读其他节点去  挂掉一个节点，没关系，还有其他节点可以备份；甚至，挂掉某一个机架，也没关系；其他机架上，也有备份</p>
-<h5 id="hdfs读文件"><a href="#hdfs读文件" class="headerlink" title="hdfs读文件"></a>hdfs读文件</h5><p><img src="//img.wqkenqing.ren/file/2017/7/8fb62c84f57a4203a2dbedf5f68920d9-image.png" alt="8fb62c84f57a4203a2dbedf5f68920d9-image.png"></p>
-<p>客户端通过调用FileSystem对象的open()方法来打开希望读取的文件，对于HDFS来说，这个对象时分布文件系统的一个实例；  DistributedFileSystem通过使用RPC来调用NameNode以确定文件起始块的位置，同一Block按照重复数会返回多个位置，这些位置按照Hadoop集群拓扑结构排序，距离客户端近的排在前面  前两步会返回一个FSDataInputStream对象，该对象会被封装成DFSInputStream对象，DFSInputStream可以方便的管理datanode和namenode数据流，客户端对这个输入流调用read()方法  存储着文件起始块的DataNode地址的DFSInputStream随即连接距离最近的DataNode，通过对数据流反复调用read()方法，将数据从DataNode传输到客户端  到达块的末端时，DFSInputStream会关闭与该DataNode的连接，然后寻找下一个块的最佳DataNode，这些操作对客户端来说是透明的，客户端的角度看来只是读一个持续不断的流  一旦客户端完成读取，就对FSDataInputStream调用close()方法关闭文件读取</p>
-<h5 id="block持续化结构"><a href="#block持续化结构" class="headerlink" title="block持续化结构"></a>block持续化结构</h5><p>DataNode节点上一个Block持久化到磁盘上的物理存储结构，如下图所示：  <img src="//img.wqkenqing.ren/file/2017/7/df10f0ac586f4baebc2587842aec5675-image.png" alt="df10f0ac586f4baebc2587842aec5675-image.png"></p>
-<p>每个Block文件（如上图中blk_1084013198文件）都对应一个meta文件（如上图中blk_1084013198_10273532.meta文件），Block文件是一个一个Chunk的二进制数据（每个Chunk的大小是512字节），而meta文件是与每一个Chunk对应的Checksum数据，是序列化形式存储  —  至上我们大致了解了HDFS。正如上文提到的Hadoop的特点，高可能，高容错性。若光从上文提到的特性可能还不足以说明，如NameNode环节就提到了NameNode的重要作用，但若NameNode出现了故障，对整个机集会是毁灭性的打击，于是Hadoop也引入其它的一些手段来保存高可用，高容错。接下来我们就来探讨下</p>
-<h3 id="Hadoop-HA的引入"><a href="#Hadoop-HA的引入" class="headerlink" title="Hadoop HA的引入"></a>Hadoop HA的引入</h3><p>HA：High Available即高可用性集群，是保证业务连续性的有效解决方案，一般有两个或两个以上的节点，且分为活动节点及备用节点。  在HA具体实现方法不同的情况下，HA框架的流程是一致的, 不一致的就是如何存储和管理日志。在Active NN和Standby NN之间要有个共享的存储日志的地方，Active NN把EditLog写到这个共享的存储日志的地方，Standby NN去读取日志然后执行，这样Active和Standby NN内存中的HDFS元数据保持着同步。一旦发生主从切换Standby NN可以尽快接管Active NN的工作; 默认并未启用 hdfs ha。<br>SPOF方案回顾：</p>
-</li>
-<li><p>Secondary NameNode：它不是HA，它只是阶段性的合并edits和fsimage，以缩短集群启动的时间。当NN失效的时候，Secondary NN并无法立刻提供服务，Secondary NN甚至无法保证数据完整性：如果NN数据丢失的话，在上一次合并后的文件系统的改动会丢失</p>
-</li>
-<li>Backup NameNode (HADOOP-4539)：它在内存中复制了NN的当前状态，算是Warm Standby，可也就仅限于此，并没有failover等。它同样是阶段性的做checkpoint，也无法保证数据完整性<br>3. 手动把name.dir指向NFS（Network File System），这是安全的Cold Standby，可以保证元数据不丢失，但集群的恢复则完全靠手动<br>4. Facebook AvatarNode：Facebook有强大的运维做后盾，所以Avatarnode只是Hot Standby，并没有自动切换，当主NN失效的时候，需要管理员确认，然后手动把对外提供服务的虚拟IP映射到Standby NN，这样做的好处是确保不会发生脑裂的场景。其某些设计思想和Hadoop 2.0里的HA非常相似，从时间上来看，Hadoop 2.0应该是借鉴了Facebook的做法 <img src="//img.wqkenqing.ren/file/2017/7/32ec8d45379b4e4d99505b03b1b33e61-image.png" alt="32ec8d45379b4e4d99505b03b1b33e61-image.png"></li>
-</ol>
-<p>5. PrimaryNN 与StandbyNN之间通过NFS来共享FsEdits、FsImage文件，这样主备NN之间就拥有了一致的目录树和block信息；而block的 位置信息，可以根据DN向两个NN上报的信息过程中构建起来。这样再辅以虚IP，可以较好达到主备NN快速热切的目的。但是显然，这里的NFS又引入了新的SPOF<br>6. 在主备NN共享元数据的过程中，也有方案通过主NN将FsEdits的内容通过与备NN建立的网络IO流，实时写入备NN，并且保证整个过程的原子性。这种方案，解决了NFS共享元数据引入的SPOF，但是主备NN之间的网络连接又会成为新的问题</p>
-<h4 id="hadoop2-X-ha-原理-hadoop2-x之后，Clouera提出了QJM-Qurom-Journal-Manager，这是一个基于Paxos算法实现的HDFS-HA方案，它给出了一种较好的解决思路和方案-示意图如下："><a href="#hadoop2-X-ha-原理-hadoop2-x之后，Clouera提出了QJM-Qurom-Journal-Manager，这是一个基于Paxos算法实现的HDFS-HA方案，它给出了一种较好的解决思路和方案-示意图如下：" class="headerlink" title="hadoop2.X ha 原理:  hadoop2.x之后，Clouera提出了QJM/Qurom Journal Manager，这是一个基于Paxos算法实现的HDFS HA方案，它给出了一种较好的解决思路和方案,示意图如下："></a>hadoop2.X ha 原理:  hadoop2.x之后，Clouera提出了QJM/Qurom Journal Manager，这是一个基于Paxos算法实现的HDFS HA方案，它给出了一种较好的解决思路和方案,示意图如下：</h4><p><img src="//img.wqkenqing.ren/file/2017/7/bc057fbb4b4047928bf06b7a43364335-image.png" alt="bc057fbb4b4047928bf06b7a43364335-image.png"></p>
-<ul>
-<li>基本原理就是用2N+1台 JN 存储EditLog，每次写数据操作有大多数（&gt;=N+1）返回成功时即认为该次写成功，数据不会丢失了。当然这个算法所能容忍的是最多有N台机器挂掉，如果多于N台挂掉，这个算法就失效了。这个原理是基于Paxos算法</li>
-<li><p>在HA架构里面SecondaryNameNode这个冷备角色已经不存在了，为了保持standby NN时时的与主Active NN的元数据保持一致，他们之间交互通过一系列守护的轻量级进程JournalNode  + 任何修改操作在 Active NN上执行时，JN进程同时也会记录修改log到至少半数以上的JN中，这时 Standby NN 监测到JN 里面的同步log发生变化了会读取 JN 里面的修改log，然后同步到自己的的目录镜像树里面，<br><img src="//img.wqkenqing.ren/file/2017/7/608621d2ab52466db89e8a95d165f6e7-image.png" alt="608621d2ab52466db89e8a95d165f6e7-image.png"></p>
-<p>当发生故障时，Active的 NN 挂掉后，Standby NN 会在它成为Active NN 前，读取所有的JN里面的修改日志，这样就能高可靠的保证与挂掉的NN的目录镜像树一致，然后无缝的接替它的职责，维护来自客户端请求，从而达到一个高可用的目的  QJM方式来实现HA的主要优势：<br>1. 不需要配置额外的高共享存储，降低了复杂度和维护成本<br>2. 消除spof<br>3. 系统鲁棒性(Robust:健壮)的程度是可配置<br>4. JN不会因为其中一台的延迟而影响整体的延迟，而且也不会因为JN的数量增多而影响性能（因为NN向JN发送日志是并行的）  datanode的fencing: 确保只有一个NN能命令DN。HDFS-1972中详细描述了DN如何实现fencing<br>1. 每个NN改变状态的时候，向DN发送自己的状态和一个序列号<br>2. DN在运行过程中维护此序列号，当failover时，新的NN在返回DN心跳时会返回自己的active状态和一个更大的序列号。DN接收到这个返回则认为该NN为新的active  3. 如果这时原来的active NN恢复，返回给DN的心跳信息包含active状态和原来的序列号，这时DN就会拒绝这个NN的命令  客户端fencing：确保只有一个NN能响应客户端请求，让访问standby nn的客户端直接失败。在RPC层封装了一层，通过FailoverProxyProvider以重试的方式连接NN。通过若干次连接一个NN失败后尝试连接新的NN，对客户端的影响是重试的时候增加一定的延迟。客户端可以设置重试此时和时间  Hadoop提供了ZKFailoverController角色，部署在每个NameNode的节点上，作为一个deamon进程, 简称zkfc，<br><img src="//img.wqkenqing.ren/file/2017/7/3cfc6fc17a8e47509465442f6eaf7c14-image.png" alt="3cfc6fc17a8e47509465442f6eaf7c14-image.png"></p>
-<p>FailoverController主要包括三个组件:<br>1. HealthMonitor: 监控NameNode是否处于unavailable或unhealthy状态。当前通过RPC调用NN相应的方法完成<br>2. ActiveStandbyElector: 管理和监控自己在ZK中的状态<br>3. ZKFailoverController 它订阅HealthMonitor 和ActiveStandbyElector 的事件，并管理NameNode的状态  ZKFailoverController主要职责：      1. 健康监测：周期性的向它监控的NN发送健康探测命令，从而来确定某个NameNode是否处于健康状态，如果机器宕机，心跳失败，那么zkfc就会标记它处于一个不健康的状态<br>2. 会话管理：如 果NN是健康的，zkfc就会在zookeeper中保持一个打开的会话，如果NameNode同时还是Active状态的，那么zkfc还会在 Zookeeper中占有一个类型为短暂类型的znode，当这个NN挂掉时，这个znode将会被删除，然后备用的NN，将会得到这把锁，升级为主 NN，同时标记状态为Active<br>3. 当宕机的NN新启动时，它会再次注册zookeper，发现已经有znode锁了，便会自动变为Standby状态，如此往复循环，保证高可靠，需要注意，目前仅仅支持最多配置2个NN<br>4. master选举：如上所述，通过在zookeeper中维持一个短暂类型的znode，来实现抢占式的锁机制，从而判断那个NameNode为Active状态  <strong>hadoop2.x Federation</strong>：  单Active NN的架构使得HDFS在集群扩展性和性能上都有潜在的问题，当集群大到一定程度后，NN进程使用的内存可能会达到上百G，NN成为了性能的瓶颈  常用的估算公式为1G对应1百万个块，按缺省块大小计算的话，大概是64T (这个估算比例是有比较大的富裕的，其实，即使是每个文件只有一个块，所有元数据信息也不会有1KB/block)  为了解决这个问题,Hadoop 2.x提供了HDFS Federation, 示意图如下：<br><img src="//img.wqkenqing.ren/file/2017/7/e5015b90accf4fe6a7729afe692ffa64-image.png" alt="e5015b90accf4fe6a7729afe692ffa64-image.png"></p>
-<p>多个NN共用一个集群里的存储资源，每个NN都可以单独对外提供服务  每个NN都会定义一个存储池，有单独的id，每个DN都为所有存储池提供存储  DN会按照存储池id向其对应的NN汇报块信息，同时，DN会向所有NN汇报本地存储可用资源情况  如果需要在客户端方便的访问若干个NN上的资源，可以使用客户端挂载表，把不同的目录映射到不同的NN，但NN上必须存在相应的目录  设计优势：  改动最小，向前兼容；现有的NN无需任何配置改动；如果现有的客户端只连某台NN的话  分离命名空间管理和块存储管理  客户端挂载表：通过路径自动对应NN、使Federation的配置改动对应用透明  (与上面ha方案中介绍的最多2个NN冲突？)  至此hadoop中的hdfs高可用特性，高容错的实现又有了更深理解，但针对hdfs还一层设计实现<strong>机架感知</strong></p>
-<h4 id="机架感知"><a href="#机架感知" class="headerlink" title="机架感知"></a>机架感知</h4><p>分布式的集群通常包含非常多的机器，由于受到机架槽位和交换机网口的限制，通常大型的分布式集群都会跨好几个机架，由多个机架上的机器共同组成一个分布 式集群。机架内的机器之间的网络速度通常都会高于跨机架机器之间的网络速度，并且机架之间机器的网络通信通常受到上层交换机间网络带宽的限制。  具体到hadoop集群，由于hadoop的HDFS对数据文件的分布式存放是按照分块block存储，每个block会有多个副本(默认为3)，并且为了数据的安全和高效，所以hadoop默认对3个副本的存放策略为：<br>在本地机器的hdfs目录下存储一个block  在另外一个rack的某个datanode上存储一个block<br>在该机器的同一个rack下的某台机器上存储最后一个block<br>这样的策略可以保证对该block所属文件的访问能够优先在本rack下找到，如果整个rack发生了异常，也可以在另外的rack上找到该block的副本。这样足够的高效，并且同时做到了数据的容错。<br>hadoop对机架的感知并非是自适应的，亦即，hadoop集群分辨某台slave机器是属于哪个rack并非是只能的感知的，而是需要 hadoop的管理者人为的告知hadoop哪台机器属于哪个rack，这样在hadoop的namenode启动初始化时，会将这些机器与rack的对 应信息保存在内存中，用来作为对接下来所有的HDFS的写块操作分配datanode列表时（比如3个block对应三台datanode）的选择 datanode策略，做到hadoop allocate block的策略：尽量将三个副本分布到不同的rack。<br>具体实现本文不在深究，在此附上网上的一些解决方式<br><a href="http://www.cnblogs.com/cloudma/articles/hadoop-topology.html" target="_blank" rel="noopener">机架感知实现1</a>  <a href="http://blog.csdn.net/magicdreaming/article/details/7629773" target="_blank" rel="noopener">机架感知实现2</a></p>
-</li>
-</ul>
-<hr>
-<p>至此对hdfs的理解与总结告一段落，后续有了新的理解再进行补充</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>JVM问题</title>
-    <url>/2019/07/16/oldblog/JVM%E9%97%AE%E9%A2%98/</url>
-    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
-<p>JVM问题<br>1、堆内存溢出<br>2、持久代内存溢出<br>3、系统频繁FGC</p>
-<p>框架使用不当<br>4、错误使用框架提供API<br>5、日志框架使用不当<br>OS内存溢出<br>6、某系统物理内存溢出<br>数据库问题<br>7、慢SQL问题</p>
-<p>案例1、堆内存溢出<br>JVM基础知识<br>1、Jvm内存分为三个大区，young区，old区和perm区；其中young区又包含三个区：Edgn区、S0、S1区<br>2、young区和old区属于heap区，占据堆内存；perm区称为持久代，不占据堆内存。<br>堆内存溢出<br>性能问题发现过程</p>
-<p>查看服务器上报错日志，发现有如下报错信息［java.lang.OutOfMemoryError: Java heap space］；根据报错信息确定是jvm 堆内存空间不够导致，于是使用jvm命令（下图）查看，发现此时old区内存空间已经被占满了，同时使用jvisualvm监控工具也<br>发现old区空间被占满（右图），整个heap区空间已经无法再容纳新对象进入。<br>建议<br>考虑大量数据一次性写入内存场景</p>
-<p>持久代内存溢出<br>现象</p>
-<p>压测某系统接口，压测前1分钟左右tps 400多，之后<br>Tps直降为零，后台报错日志：java.lang.OutOfMemoryError:PermGen space，通过jvm监控工具查看持久代（perm区）空间被占满，Old区空闲；</p>
-<p>问题定位过程<br>通过注释代码块定位问题，考虑到perm区溢出大部分跟类对象大量创建有关，故锁定问题在序列化框架使用可能有问题；<br>对于比较棘手难解决的perm溢出问题，作者构建了一个perm区溢出的场景，可以采用如下定位方案<br>1、添加jvm dump配置<br>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data/dump.bin<br>2、安装eclipse mat分析工具<br>3、将dump文件导入eclipse，点击［Leak Suspects］，找到跟公司有关的代码进行分析<br>此处不过多讲解，大家可以去网上查阅资料学习<br>解决办法<br>跟开发沟通后选择去掉msgpack0.6版本框架，采用java原成序列化框架，修改后系统tps稳定在400多，gc情况正常<br>修改前后gc情况对比<br>修复前<br>类似问题如何避免</p>
-<p>1、去掉项目无用jar包<br>2、避免大量使用类对象、大量使用反射<br>案例3、频繁FGC<br>（1）系统某接口频繁FGC<br>问题排查：<br>先查JVM内存信息找可疑对象<br>从内存对象实例信息中发现跟mysql连接有关，然后检测mysql配置信息<br> <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"></bean></p>
-<p>发现系统采用的是 spring框架的数据源，没有用连接池；</p>
-<p>思考<br>使用连接池有什么好处？<br>连接复用、减少连接重复建立和销毁造成的大量资源消耗</p>
-<p>然后换做hikaricp连接池做对比测试<br> &lt;bean id=”dataSource” class=”com.zaxxer.hikari.HikariDataSource”<br>压测半小时未出现fgc，问题得到解决<br>类似问题如何避免</p>
-<p>1、研发规范统一DB连接池，避免研发误用<br>2、减少大对象、临时对象使用</p>
-<p>案例4、错误使用框架提供API<br>现象<br>某系统本身业务逻辑处理能力很快（研发本机自测tps可以到达2w多），但是接入到framework框架后，TPS最高只能到达300笔/S左右，而且系统负载很低</p>
-<p>问题排查<br>根据这种现象说明系统可能是堵在了某块方法上，根据这种情况一般采用线程dump的方式来查看系统具体哪些线程出现异常情况，通过线程dump 发现 ［TIMED_WAITING］状态的业务线程占比很高<br>根据线程dump信息，找到公司包名开头的信息，然后从下往上查看<br>线程dump信息，从信息中我们可以看到</p>
-<p>framework.servlet.fServlet.doPost：框架api封装了servlet dopost方法做了某些操作<br>framework.servlet.fServlet.execute：框架api执行servelt<br>framework.process.fProcessor.process：框架api进行自身逻辑处理<br>framework.filter.impl.AuthFilter.before：框架使用过滤器进行用户权限过滤</p>
-<p> 。。。。。。然后就是进行http请求操作<br>由此我们断定，就是在框架进行权限校验这块堵住了。之后跟开发沟通这块的<br>问题即可</p>
-<p>分析思路<br>压测端 ：net  服务器  jvm<br>服务端：net  服务器 nginx tomcat jvm（应用程序）算法 db（mysql redis）</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>List学习</title>
-    <url>/2019/07/16/oldblog/List%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
-<h3 id="List学习"><a href="#List学习" class="headerlink" title="List学习"></a>List学习</h3><p> <code>ArrayList不是线程安全的，只能用在单线程环境下，多线程环境下可以考虑用Collections.synchronizedList(List l)函数返回一个线程安全的ArrayList类，也可以使用concurrent并发包下的CopyOnWriteArrayList类</code></p>
-<p>ArrayList实现了Serializable接口，因此它支持序列化，能够通过序列化传输，实现了RandomAccess接口，支持快速随机访问，实际上就是通过下标序号进行快速访问，实现了Cloneable接口，能被克隆。</p>
-<p>每个ArrayList实例都有一个容量，该容量是指用来存储列表元素的数组的大小。它总是至少等于列表的大小。随着向ArrayList中不断添加元素，其容量也自动增长。自动增长会带来数据向新数组的重新拷贝，因此，如果可预知数据量的多少，可在构造ArrayList时指定其容量。在添加大量元素前，应用程序也可以使用ensureCapacity操作来增加ArrayList实例的容量，这可以减少递增式再分配的数量。<br>每个ArrayList实例都有一个容量，该容量是指用来存储列表元素的数组的大小。它总是至少等于列表的大小。随着向ArrayList中不断添加元素，其容量也自动增长。自动增长会带来数据向新数组的重新拷贝，因此，如果可预知数据量的多少，可在构造ArrayList时指定其容量。在添加大量元素前，应用程序也可以使用ensureCapacity操作来增加ArrayList实例的容量，这可以减少递增式再分配的数量。<br>从上述代码中可以看出，数组进行扩容时，会将老数组中的元素重新拷贝一份到新的数组中，每次数组容量的增长大约是其原容量的1.5倍。这种操作的代价是很高的，因此在实际使用时，我们应该尽量避免数组容量的扩张。当我们可预知要保存的元素的多少时，要在构造ArrayList实例时，就指定其容量，以避免数组扩容的发生。或者根据实际需求，通过调用ensureCapacity方法来手动增加ArrayList实例的容量。</p>
-<p>Object oldData[] = elementData;//为什么要用到oldData[]<br>乍一看来后面并没有用到关于oldData， 这句话显得多此一举！但是这是一个牵涉到内存管理的类， 所以要了解内部的问题。 而且为什么这一句还在if的内部，这跟elementData = Arrays.copyOf(elementData, newCapacity); 这句是有关系的，下面这句Arrays.copyOf的实现时新创建了newCapacity大小的内存，然后把老的elementData放入。好像也没有用到oldData，有什么问题呢。问题就在于旧的内存的引用是elementData， elementData指向了新的内存块，如果有一个局部变量oldData变量引用旧的内存块的话，在copy的过程中就会比较安全，因为这样证明这块老的内存依然有引用，分配内存的时候就不会被侵占掉，然后copy完成后这个局部变量的生命期也过去了，然后释放才是安全的。不然在copy的的时候万一新的内存或其他线程的分配内存侵占了这块老的内存，而copy还没有结束，这将是个严重的事情。 关于ArrayList和Vector区别如下：</p>
-<pre><code>ArrayList在内存不够时默认是扩展50% + 1个，Vector是默认扩展1倍。
-Vector提供indexOf(obj, start)接口，ArrayList没有。
-Vector属于线程安全级别的，但是大多数情况下不使用Vector，因为线程安全需要更大的系统开销。
-</code></pre><p> ArrayList还给我们提供了将底层数组的容量调整为当前列表保存的实际元素的大小的功能。它可以通过trimToSize方法来实现。代码如下：</p>
-<p>关于ArrayList的源码，给出几点比较重要的总结：</p>
-<pre><code>1、注意其三个不同的构造方法。无参构造方法构造的ArrayList的容量默认为10，带有Collection参数的构造方法，将Collection转化为数组赋给ArrayList的实现数组elementData。
-
-2、注意扩充容量的方法ensureCapacity。ArrayList在每次增加元素（可能是1个，也可能是一组）时，都要调用该方法来确保足够的容量。当容量不足以容纳当前的元素个数时，就设置新的容量为旧的容量的1.5倍加1，如果设置后的新容量还不够，则直接新容量设置为传入的参数（也就是所需的容量），而后用Arrays.copyof()方法将元素拷贝到新的数组（详见下面的第3点）。从中可以看出，当容量不够时，每次增加元素，都要将原来的元素拷贝到一个新的数组中，非常之耗时，也因此建议在事先能确定元素数量的情况下，才使用ArrayList，否则建议使用LinkedList。
-
-3、ArrayList的实现中大量地调用了Arrays.copyof()和System.arraycopy()方法。我们有必要对这两个方法的实现做下深入的了解。
-</code></pre><p><a href="http://www.cnblogs.com/ITtangtang/p/3948555.html" target="_blank" rel="noopener">http://www.cnblogs.com/ITtangtang/p/3948555.html</a></p>
-<p>. LinkedList是用链表结构存储数据的，很适合数据的动态插入和删除，随机访问和遍历速度比较慢。另外，接口中没有定义的方法get，remove，insertList，专门用于操作表头和表尾元素，可以当作堆栈、队列和双向队列使用。LinkedList没有同步方法。如果多个线程同时访问一个List，则必须自己实现访问同步。一种解决方法是在创建 List时构造一个同步的List：<br>             List list = Collections.synchronizedList(new LinkedList(…));</p>
-<p>查看Java源代码，发现当数组的大小不够的时候，<br>需要重新建立数组，然后将元素拷贝到新的数组内，ArrayList和Vector的扩展数组的大小不同。</p>
-<p><a href="http://www.tuicool.com/articles/iQZBFb" target="_blank" rel="noopener">http://www.tuicool.com/articles/iQZBFb</a></p>
-<p><a href="http://www.cnblogs.com/azai/archive/2010/12/09/1901272.html" target="_blank" rel="noopener">http://www.cnblogs.com/azai/archive/2010/12/09/1901272.html</a></p>
-<hr>
-<h4 id="简化"><a href="#简化" class="headerlink" title="简化"></a>简化</h4><ul>
-<li>Collections.synchronizedList(List l)</li>
-<li>Serializable 、RandomAccess 、Cloneable</li>
-<li><p>ensureCapacity</p>
-<p>从上面的源码剖析可以看出这三种List实现的一些典型适用场景，如果经常对数组做随机插入操作，特别是插入的比较靠前，那么LinkedList的性能优势就非常明显，而如果都只是末尾插入，则ArrayList更占据优势，如果需要线程安全，则使用Vector或者创建线程安全的ArrayList。</p>
-</li>
-</ul>
-<p>在使用基于数组实现的ArrayList 和Vector 时我们要指定初始容量，因为我们在源码中也看到了，在添加时首先要进行容量的判断，如果容量不够则要创建新数组，还要将原来数组中的数据复制到新数组中，这个过程会减低效率并且会浪费资源。</p>
-]]></content>
-  </entry>
-  <entry>
     <title>MapReduce的核心思想</title>
     <url>/2019/07/16/oldblog/MapReduce%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3/</url>
     <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
@@ -228,38 +90,141 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 ]]></content>
   </entry>
   <entry>
-    <title>Restful架构</title>
-    <url>/2019/07/16/oldblog/Restful%E6%9E%B6%E6%9E%84/</url>
+    <title>JVM问题</title>
+    <url>/2019/07/16/oldblog/JVM%E9%97%AE%E9%A2%98/</url>
     <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
-<h2 id="Restful架构"><a href="#Restful架构" class="headerlink" title="Restful架构"></a>Restful架构</h2><h3 id="什么是RESTful架构"><a href="#什么是RESTful架构" class="headerlink" title="什么是RESTful架构"></a>什么是RESTful架构</h3><p><code>Representational State Transfer:表现层状态转化</code></p>
-<p>REST的名称”表现层状态转化”中，省略了主语。”表现层”其实指的是”资源”（Resources）的”表现层”。</p>
-<blockquote>
-<p>所谓”资源”，就是网络上的一个实体，或者说是网络上的一个具体信息。它可以是一段文本、一张图片、一首歌曲、一种服务，总之就是一个具体的实在。你可以用一个URI（统一资源定位符）指向它，每种资源对应一个特定的URI。要获取这个资源，访问它的URI就可以，因此URI就成了每一个资源的地址或独一无二的识别符。</p>
-</blockquote>
-<p>“资源”是一种信息实体，它可以有多种外在表现形式。我们把”资源”具体呈现出来的形式，叫做它的”表现层”（Representation）。</p>
-<p>访问一个网站，就代表了客户端和服务器的一个互动过程。在这个过程中，势必涉及到数据和状态的变化。</p>
-<p>互联网通信协议HTTP协议，是一个无状态协议。这意味着，所有的状态都保存在服务器端。因此，如果客户端想要操作服务器，必须通过某种手段，让服务器端发生”状态转化”（State Transfer）。而这种转化是建立在表现层之上的，所以就是”表现层状态转化”。</p>
-<p>客户端用到的手段，只能是HTTP协议。具体来说，就是HTTP协议里面，四个表示操作方式的动词：GET、POST、PUT、DELETE。它们分别对应四种基本操作：GET用来获取资源，POST用来新建资源（也可以用于更新资源），PUT用来更新资源，DELETE用来删除资源。</p>
+<p>JVM问题<br>1、堆内存溢出<br>2、持久代内存溢出<br>3、系统频繁FGC</p>
+<p>框架使用不当<br>4、错误使用框架提供API<br>5、日志框架使用不当<br>OS内存溢出<br>6、某系统物理内存溢出<br>数据库问题<br>7、慢SQL问题</p>
+<p>案例1、堆内存溢出<br>JVM基础知识<br>1、Jvm内存分为三个大区，young区，old区和perm区；其中young区又包含三个区：Edgn区、S0、S1区<br>2、young区和old区属于heap区，占据堆内存；perm区称为持久代，不占据堆内存。<br>堆内存溢出<br>性能问题发现过程</p>
+<p>查看服务器上报错日志，发现有如下报错信息［java.lang.OutOfMemoryError: Java heap space］；根据报错信息确定是jvm 堆内存空间不够导致，于是使用jvm命令（下图）查看，发现此时old区内存空间已经被占满了，同时使用jvisualvm监控工具也<br>发现old区空间被占满（右图），整个heap区空间已经无法再容纳新对象进入。<br>建议<br>考虑大量数据一次性写入内存场景</p>
+<p>持久代内存溢出<br>现象</p>
+<p>压测某系统接口，压测前1分钟左右tps 400多，之后<br>Tps直降为零，后台报错日志：java.lang.OutOfMemoryError:PermGen space，通过jvm监控工具查看持久代（perm区）空间被占满，Old区空闲；</p>
+<p>问题定位过程<br>通过注释代码块定位问题，考虑到perm区溢出大部分跟类对象大量创建有关，故锁定问题在序列化框架使用可能有问题；<br>对于比较棘手难解决的perm溢出问题，作者构建了一个perm区溢出的场景，可以采用如下定位方案<br>1、添加jvm dump配置<br>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data/dump.bin<br>2、安装eclipse mat分析工具<br>3、将dump文件导入eclipse，点击［Leak Suspects］，找到跟公司有关的代码进行分析<br>此处不过多讲解，大家可以去网上查阅资料学习<br>解决办法<br>跟开发沟通后选择去掉msgpack0.6版本框架，采用java原成序列化框架，修改后系统tps稳定在400多，gc情况正常<br>修改前后gc情况对比<br>修复前<br>类似问题如何避免</p>
+<p>1、去掉项目无用jar包<br>2、避免大量使用类对象、大量使用反射<br>案例3、频繁FGC<br>（1）系统某接口频繁FGC<br>问题排查：<br>先查JVM内存信息找可疑对象<br>从内存对象实例信息中发现跟mysql连接有关，然后检测mysql配置信息<br> <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"></bean></p>
+<p>发现系统采用的是 spring框架的数据源，没有用连接池；</p>
+<p>思考<br>使用连接池有什么好处？<br>连接复用、减少连接重复建立和销毁造成的大量资源消耗</p>
+<p>然后换做hikaricp连接池做对比测试<br> &lt;bean id=”dataSource” class=”com.zaxxer.hikari.HikariDataSource”<br>压测半小时未出现fgc，问题得到解决<br>类似问题如何避免</p>
+<p>1、研发规范统一DB连接池，避免研发误用<br>2、减少大对象、临时对象使用</p>
+<p>案例4、错误使用框架提供API<br>现象<br>某系统本身业务逻辑处理能力很快（研发本机自测tps可以到达2w多），但是接入到framework框架后，TPS最高只能到达300笔/S左右，而且系统负载很低</p>
+<p>问题排查<br>根据这种现象说明系统可能是堵在了某块方法上，根据这种情况一般采用线程dump的方式来查看系统具体哪些线程出现异常情况，通过线程dump 发现 ［TIMED_WAITING］状态的业务线程占比很高<br>根据线程dump信息，找到公司包名开头的信息，然后从下往上查看<br>线程dump信息，从信息中我们可以看到</p>
+<p>framework.servlet.fServlet.doPost：框架api封装了servlet dopost方法做了某些操作<br>framework.servlet.fServlet.execute：框架api执行servelt<br>framework.process.fProcessor.process：框架api进行自身逻辑处理<br>framework.filter.impl.AuthFilter.before：框架使用过滤器进行用户权限过滤</p>
+<p> 。。。。。。然后就是进行http请求操作<br>由此我们断定，就是在框架进行权限校验这块堵住了。之后跟开发沟通这块的<br>问题即可</p>
+<p>分析思路<br>压测端 ：net  服务器  jvm<br>服务端：net  服务器 nginx tomcat jvm（应用程序）算法 db（mysql redis）</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>List学习</title>
+    <url>/2019/07/16/oldblog/List%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
+<h3 id="List学习"><a href="#List学习" class="headerlink" title="List学习"></a>List学习</h3><p> <code>ArrayList不是线程安全的，只能用在单线程环境下，多线程环境下可以考虑用Collections.synchronizedList(List l)函数返回一个线程安全的ArrayList类，也可以使用concurrent并发包下的CopyOnWriteArrayList类</code></p>
+<p>ArrayList实现了Serializable接口，因此它支持序列化，能够通过序列化传输，实现了RandomAccess接口，支持快速随机访问，实际上就是通过下标序号进行快速访问，实现了Cloneable接口，能被克隆。</p>
+<p>每个ArrayList实例都有一个容量，该容量是指用来存储列表元素的数组的大小。它总是至少等于列表的大小。随着向ArrayList中不断添加元素，其容量也自动增长。自动增长会带来数据向新数组的重新拷贝，因此，如果可预知数据量的多少，可在构造ArrayList时指定其容量。在添加大量元素前，应用程序也可以使用ensureCapacity操作来增加ArrayList实例的容量，这可以减少递增式再分配的数量。<br>每个ArrayList实例都有一个容量，该容量是指用来存储列表元素的数组的大小。它总是至少等于列表的大小。随着向ArrayList中不断添加元素，其容量也自动增长。自动增长会带来数据向新数组的重新拷贝，因此，如果可预知数据量的多少，可在构造ArrayList时指定其容量。在添加大量元素前，应用程序也可以使用ensureCapacity操作来增加ArrayList实例的容量，这可以减少递增式再分配的数量。<br>从上述代码中可以看出，数组进行扩容时，会将老数组中的元素重新拷贝一份到新的数组中，每次数组容量的增长大约是其原容量的1.5倍。这种操作的代价是很高的，因此在实际使用时，我们应该尽量避免数组容量的扩张。当我们可预知要保存的元素的多少时，要在构造ArrayList实例时，就指定其容量，以避免数组扩容的发生。或者根据实际需求，通过调用ensureCapacity方法来手动增加ArrayList实例的容量。</p>
+<p>Object oldData[] = elementData;//为什么要用到oldData[]<br>乍一看来后面并没有用到关于oldData， 这句话显得多此一举！但是这是一个牵涉到内存管理的类， 所以要了解内部的问题。 而且为什么这一句还在if的内部，这跟elementData = Arrays.copyOf(elementData, newCapacity); 这句是有关系的，下面这句Arrays.copyOf的实现时新创建了newCapacity大小的内存，然后把老的elementData放入。好像也没有用到oldData，有什么问题呢。问题就在于旧的内存的引用是elementData， elementData指向了新的内存块，如果有一个局部变量oldData变量引用旧的内存块的话，在copy的过程中就会比较安全，因为这样证明这块老的内存依然有引用，分配内存的时候就不会被侵占掉，然后copy完成后这个局部变量的生命期也过去了，然后释放才是安全的。不然在copy的的时候万一新的内存或其他线程的分配内存侵占了这块老的内存，而copy还没有结束，这将是个严重的事情。 关于ArrayList和Vector区别如下：</p>
+<pre><code>ArrayList在内存不够时默认是扩展50% + 1个，Vector是默认扩展1倍。
+Vector提供indexOf(obj, start)接口，ArrayList没有。
+Vector属于线程安全级别的，但是大多数情况下不使用Vector，因为线程安全需要更大的系统开销。
+</code></pre><p> ArrayList还给我们提供了将底层数组的容量调整为当前列表保存的实际元素的大小的功能。它可以通过trimToSize方法来实现。代码如下：</p>
+<p>关于ArrayList的源码，给出几点比较重要的总结：</p>
+<pre><code>1、注意其三个不同的构造方法。无参构造方法构造的ArrayList的容量默认为10，带有Collection参数的构造方法，将Collection转化为数组赋给ArrayList的实现数组elementData。
+
+2、注意扩充容量的方法ensureCapacity。ArrayList在每次增加元素（可能是1个，也可能是一组）时，都要调用该方法来确保足够的容量。当容量不足以容纳当前的元素个数时，就设置新的容量为旧的容量的1.5倍加1，如果设置后的新容量还不够，则直接新容量设置为传入的参数（也就是所需的容量），而后用Arrays.copyof()方法将元素拷贝到新的数组（详见下面的第3点）。从中可以看出，当容量不够时，每次增加元素，都要将原来的元素拷贝到一个新的数组中，非常之耗时，也因此建议在事先能确定元素数量的情况下，才使用ArrayList，否则建议使用LinkedList。
+
+3、ArrayList的实现中大量地调用了Arrays.copyof()和System.arraycopy()方法。我们有必要对这两个方法的实现做下深入的了解。
+</code></pre><p><a href="http://www.cnblogs.com/ITtangtang/p/3948555.html" target="_blank" rel="noopener">http://www.cnblogs.com/ITtangtang/p/3948555.html</a></p>
+<p>. LinkedList是用链表结构存储数据的，很适合数据的动态插入和删除，随机访问和遍历速度比较慢。另外，接口中没有定义的方法get，remove，insertList，专门用于操作表头和表尾元素，可以当作堆栈、队列和双向队列使用。LinkedList没有同步方法。如果多个线程同时访问一个List，则必须自己实现访问同步。一种解决方法是在创建 List时构造一个同步的List：<br>             List list = Collections.synchronizedList(new LinkedList(…));</p>
+<p>查看Java源代码，发现当数组的大小不够的时候，<br>需要重新建立数组，然后将元素拷贝到新的数组内，ArrayList和Vector的扩展数组的大小不同。</p>
+<p><a href="http://www.tuicool.com/articles/iQZBFb" target="_blank" rel="noopener">http://www.tuicool.com/articles/iQZBFb</a></p>
+<p><a href="http://www.cnblogs.com/azai/archive/2010/12/09/1901272.html" target="_blank" rel="noopener">http://www.cnblogs.com/azai/archive/2010/12/09/1901272.html</a></p>
 <hr>
-<p>综合上面的解释，我们总结一下什么是RESTful架构：</p>
-<ul>
-<li>每一个URI代表一种资源；</li>
-<li>客户端和服务器之间，传递这种资源的某种表现层；</li>
-<li>客户端通过四个HTTP动词，对服务器端资源进行操作，实现”表现层状态转化”。</li>
+<h4 id="简化"><a href="#简化" class="headerlink" title="简化"></a>简化</h4><ul>
+<li>Collections.synchronizedList(List l)</li>
+<li>Serializable 、RandomAccess 、Cloneable</li>
+<li><p>ensureCapacity</p>
+<p>从上面的源码剖析可以看出这三种List实现的一些典型适用场景，如果经常对数组做随机插入操作，特别是插入的比较靠前，那么LinkedList的性能优势就非常明显，而如果都只是末尾插入，则ArrayList更占据优势，如果需要线程安全，则使用Vector或者创建线程安全的ArrayList。</p>
+</li>
 </ul>
-<p>最常见的一种设计错误，就是URI包含动词。<strong>因为”资源”表示一种实体，所以应该是名词</strong>，<strong>URI不应该有动词</strong>，动词应该放在HTTP协议中。</p>
-<p>举例来说，某个URI是/posts/show/1，其中show是动词，这个URI就设计错了，正确的写法应该是/posts/1，然后用GET方法表示show。</p>
-<p>如果某些动作是HTTP动词表示不了的，你就应该把动作做成一种资源。比如网上汇款，从账户1向账户2汇款500元，错误的URI是：</p>
-<p>　　POST /accounts/1/transfer/500/to/2</p>
-<p>正确的写法是把动词transfer改成名词transaction，资源不能是动词，但是可以是一种服务：</p>
-<p>　　POST /transaction HTTP/1.1<br>　　Host: 127.0.0.1<br>　　<br>　　from=1&amp;to=2&amp;amount=500.00</p>
-<p>另一个设计误区，就是在URI中加入版本号：</p>
-<p>　　<a href="http://www.example.com/app/1.0/foo" target="_blank" rel="noopener">http://www.example.com/app/1.0/foo</a></p>
-<p>　　<a href="http://www.example.com/app/1.1/foo" target="_blank" rel="noopener">http://www.example.com/app/1.1/foo</a></p>
-<p>　　<a href="http://www.example.com/app/2.0/foo" target="_blank" rel="noopener">http://www.example.com/app/2.0/foo</a></p>
-<p>因为不同的版本，可以理解成同一种资源的不同表现形式，所以应该采用同一个URI。版本号可以在HTTP请求头信息的Accept字段中进行区分（参见Versioning REST Services）：<br>Accept: vnd.example-com.foo+json; version=1.0</p>
-<p>　　Accept: vnd.example-com.foo+json; version=1.1</p>
-<p>　　Accept: vnd.example-com.foo+json; version=2.0</p>
+<p>在使用基于数组实现的ArrayList 和Vector 时我们要指定初始容量，因为我们在源码中也看到了，在添加时首先要进行容量的判断，如果容量不够则要创建新数组，还要将原来数组中的数据复制到新数组中，这个过程会减低效率并且会浪费资源。</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>Hadoop总结(第一版---HDFS篇)</title>
+    <url>/2019/07/16/oldblog/Hadoop%E6%80%BB%E7%BB%93/</url>
+    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
+<h1 id="Hadoop总结-第一版—HDFS篇"><a href="#Hadoop总结-第一版—HDFS篇" class="headerlink" title="Hadoop总结(第一版—HDFS篇)"></a>Hadoop总结(第一版—HDFS篇)</h1><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">## 什么是hadoop？</span><br><span class="line">&gt;hadoop是稳定的，高容错的，可大规模布署的分布式文件，存储，并行编程框架。</span><br><span class="line">```本文默认是已经有hadoop使用经验,所以暂不涉及具体的hadoop生态的各组件的部署和调优细节，后续单开文章来总结。但在具体讲解时会涉及说参数配置会对相关组件参生影响</span><br></pre></td></tr></table></figure>
+<p>具体而言，hadoop核心组件内容有：<strong>hdfs</strong>、<strong>mapredcue</strong>。所以接下来的总结主要针对这两在核心组件展开</p>
+<h2 id="HDFS篇"><a href="#HDFS篇" class="headerlink" title="HDFS篇"></a>HDFS篇</h2><h3 id="什么是HDFS？"><a href="#什么是HDFS？" class="headerlink" title="什么是HDFS？"></a>什么是HDFS？</h3><p><strong>分布式文件系统</strong>：分布式文件系统是一种允许文件通过网络在多台主机上分享的 文件的系统，可让多机器上的多用户分享文件和存储空间<br>HDFS:（Hadoop Distribute File System）即hadoop分布式文件系统  主要用于适合运行在通用硬件上的分布式文件系统，特点是高度容错，适合布署在廉价服务器上，具有高吞吐量的数据访问等特点  1. 保存多个副本，且提供容错机制，副本丢失或宕机自动恢复。默认存3份。  2. 运行在廉价的机器上。  3. 适合大数据的处理。多大？多小？HDFS默认会将文件分割成block，64M为1个block。然后将block按键值对存储在HDFS上，并将键值对的映射存到内存中。如果小文件太多，那内存的负担会很重。  4. 适用于一次写入、多次查询的情况  5. 不支持并发写情况，小文件不合适。因为小文件也占用一个块，小文件越多（1000个1k文件）块越 多，NameNode压力越大。<br><code>hdfs得部署在linux系统上</code></p>
+<h3 id="HDFS的具体内容"><a href="#HDFS的具体内容" class="headerlink" title="HDFS的具体内容"></a>HDFS的具体内容</h3><p>文件、节点、数据块 HDFS主要是是围绕着这三个关键词设计的.</p>
+<h4 id="数据块"><a href="#数据块" class="headerlink" title="数据块"></a><strong>数据块</strong></h4><ul>
+<li>Block：在HDFS中，每个文件都是采用的分块的方式存储，每个block放在不同的dataNode节点上，每个block的标识是一个三元组(block id , numBytes,generationStamp),block id 具有唯一性，具体分配是由namenode节点设置，然后在datanode上建立对应的Block文件，同时建立对应的block meta文件(问题是block meta文件存放位，block size可以通过配置文件设置，所以修改block size会对以前持续化的数据有何影响?）</li>
+<li>Packet:是HDFS文件在DFSClient与DataNode之间通信的过程中文件的形式(一般一个Block对应多个Packet)</li>
+<li>Chunk:是通过程中具体传输的文件单位，发送过程以Packet的方式进行，但 一个packet包含多个Chunk,同时对于每个chunk进行checksum计算，生成checksum bytes。</li>
+</ul>
+<p><strong>Packet</strong><br>Packet的结构：数据包和heatbeat包  一个Packet数据包的组成结构主要分为 Packet Header 、PacketData  Packet Header 中又分为：<br><img src="//img.wqkenqing.ren.qiniudns.com/file/2017/7/10eed6bcc563463ea0b8cd5adf99adec-image.png" alt="10eed6bcc563463ea0b8cd5adf99adec-image.png"><br>Packet Data部分是一个Packet的实际数据部分。<br>主要内容有</p>
+<ul>
+<li>一个4字节校验</li>
+<li>Checksum</li>
+<li>Chunk部分，Chunk部分最大为512字节<br><img src="//img.wqkenqing.ren/file/2017/7/c68e61da1e8148ab99b43fe8e3f5408e-image.png" alt="c68e61da1e8148ab99b43fe8e3f5408e-image.png"><br>Packet创建过程：首先将字节流数据写入一个buffer缓冲区中，也就是从偏移量为25的位置（checksumStart）开 始写Packet数据Chunk的Checksum部分，从偏移量为533的位置（dataStart）开始写Packet数据的Chunk Data部分，直到一个Packet创建完成为止。</li>
+</ul>
+<p><code>注意：当写一个文件的最后一个Block的最后一个Packet时，如果一个Packet的大小未能达到最大长度，也就是上图对应的缓冲区 中，Checksum与Chunk Data之间还保留了一段未被写过的缓冲区位置，在发送这个Packet之前，会检查Chunksum与Chunk Data之间的缓冲区是否为空白缓冲区（gap），如果有则将Chunk Data部分向前移动，使得Chunk Data 1与Chunk Checksum N相邻，然后才会被发送到DataNode节点</code></p>
+<h4 id="hdsf架构-主要组成是节点）"><a href="#hdsf架构-主要组成是节点）" class="headerlink" title="hdsf架构(主要组成是节点）"></a>hdsf架构(主要组成是节点）</h4><p>主要的构成角色有：Client、NameNode、SecondayNameNode、DataNode<br><img src="//img.wqkenqing.ren/file/2017/7/5ba6f1ec6b9c4b0982dc2ce73ff9c444-image.png" alt="5ba6f1ec6b9c4b0982dc2ce73ff9c444-image.png"></p>
+<ul>
+<li>Client：系统使用者，调用HDFS API操作文件；与NN交互获取文件元数据;与DN交互进行数据读写, 注意：写数据时文件切分由Client完成</li>
+<li>Namenode：Master节点 （也称元数据节点）是系统唯一的管理者。负责元数据的管理(名称空间和数据块映射信息);配置副本策略；处理客户端请求</li>
+<li>Datanode：数据存储节点(也称Slave节点)，存储实际的数据；执行数据块的读写；汇报存储信息给NN</li>
+<li>Secondary NameNode：备胎，namenode的工作量；是NameNode的冷备份；合并fsimage和fsedits然后再发给namenode</li>
+</ul>
+<p><code>careful:</code> 注意：在hadoop 2.x 版本，当启用 hdfs ha 时，将没有这一角色<br><strong>热冷备份说明</strong>：<br>热备份：b是a的热备份，如果a坏掉。那么b马上运行代替a的工作  冷备份：b是a的冷备份，如果a坏掉。那么b不能马上代替a工作。但是b上存储a的一些信息，减少a坏掉之后的损失<br><strong>hdfs构架原则</strong></p>
+<ol>
+<li>元数据与数据分离：文件本身的属性（即元数据）与文件所持有的数据分离</li>
+<li>主/从架构：一个HDFS集群是由一个NameNode和一定数目的DataNode组成</li>
+<li>一次写入多次读取：HDFS中的文件在任何时间只能有一个Writer。当文件被创建，接着写入数据，最后，一旦文件被关闭，就不能再修改。</li>
+<li>移动计算比移动数据更划算：数据运算，越靠近数据，执行运算的性能就越好，由于hdfs数据分布在不同机器上，要让网络的消耗最低，并提高系统的吞吐量，最佳方式是将运算的执行移到离它要处理的数据更近的地方，而不是移动数据</li>
+</ol>
+<p><strong>针对第四条的解释</strong>：<br>在上文中交代到hdfs中的文件是以block的形式存放在集群中，所以一个文件可以是被切分成很多block存放在集群的机器中针对第四条，移动计算比移动数据更划算，是因为，从理论上讲，集群的计算能力是很方便扩展的，如服务器的硬件提升，或增加服务器等。但网络带宽等资源却很容易达到瓶颈或增加经济负担，所以将计算转移至每个block就近的机器进行计算，会比将所有的block合到一个机器上再进行计算要划算，所以，叫移动计算要比移动数据划算</p>
+<h5 id="NameNode"><a href="#NameNode" class="headerlink" title="NameNode"></a>NameNode</h5><p>NameNode是整个文件系统的管理与计算节点，是HDFS中最复杂的一个实体，它与管理着HDFS文件系统中最重要的两个关系</p>
+<ol>
+<li>HDFS文件系统中的文件目录树，以及文件的数据块索引，即每个文件对应的数据块列表  数据块和数据节点的对应关系，即某一块数据块保存在哪些数据节点的信息  <strong>第一个关系</strong>即目录树、元数据和数据块的索引信息持久化到物理存储中，具体的实现是保存在命名空间的镜像fsimage和编辑日志edits中，<strong>careful</strong>：在fsimage中，并没有记录每一个block对应到那几个Datanodes的对应表信息</li>
+<li><strong>第二个关系是</strong>在NameNode启动后，每个DataNode对本地的磁盘进行扫描，将本DataNode上保存的block信息上报至NameNode,Namenode在接收到每个Datanode的块信息汇报后，将接收到的块信息，以及其所在的Datanode信息等保存在内存中。HDFS就是通过这种块信息汇报的方式来完成 block -&gt; Datanodes list的对应表构建（<strong>careful</strong>）<br>类似于数据库中的检查点，为了避免edits日志过大，在Hadoop1.X 中，SecondaryNameNode会按照时间阈值（比如24小时）或者edits大小阈值（比如1G），周期性的将fsimage和edits的合 并，然后将最新的fsimage推送给NameNode。而在Hadoop2.X中，这个动作是由Standby NameNode来完成.<br>由此可看出，这两个文件一旦损坏或丢失，将导致整个HDFS文件系统不可用<br>在hadoop1.X为了保证这两种元数据文件的高可用性，一般的做法，将dfs.namenode.name.dir设置成以逗号分隔的多个目录，这多个目录至少不要在一块磁盘上，最好放在不同的机器上，比如：挂载一个共享文件系统<br>fsimage\edits 是序列化后的文件，想要查看或编辑里面的内容，可通过 hdfs 提供的 oiv\oev 命令，<br>命令: hdfs oiv （offline image viewer） 用于将fsimage文件的内容转储到指定文件中以便于阅读,，如文本文件、XML文件，该命令需要以下参数：<br>-i (必填参数) –inputFile <arg> 输入FSImage文件<br>-o (必填参数) –outputFile <arg> 输出转换后的文件，如果存在，则会覆盖<br>-p (可选参数） –processor <arg> 将FSImage文件转换成哪种格式： (Ls|XML|FileDistribution).默认为Ls<br>示例：hdfs oiv -i /data1/hadoop/dfs/name/current/fsimage_0000000000019372521 -o /home/hadoop/fsimage.txt<br>命令：hdfs oev (offline edits viewer 离线edits查看器）的缩写， 该工具只操作文件因而并不需要hadoop集群处于运行状态。<br>示例: hdfs oev -i edits_0000000000000042778-0000000000000042779 -o edits.xml<br>支持的输出格式有binary（hadoop使用的二进制格式）、xml（在不使用参数p时的默认输出格式）和stats（输出edits文件的统计信息）<br>由此可以总结到：NameNode管理着DataNode，接收DataNode的注册、心跳、数据块提交等信息的上报，并且在心跳中发送数据块<strong>复制</strong>、<strong>删除</strong>、<strong>恢复</strong>等指令；同时，NameNode还为客户端对<strong>文件系统目录树的操作</strong>和对<strong>文件数据读写</strong>、对<strong>HDFS系统进行管理提供支持</strong><br>另 Namenode 启动后会进入一个称为<strong>安全模式</strong>的特殊状态。处于安全模式 的 Namenode 是不会进行数据块的复制的。 Namenode 从所有的 Datanode 接收心跳信号和块状态报告。 块状态报告包括了某个 Datanode 所有的数据 块列表。每个数据块都有一个指定的最小副本数。当 Namenode 检测确认某 个数据块的副本数目达到这个最小值，那么该数据块就会被认为是副本安全 (safely replicated) 的；在一定百分比（这个参数可配置）的数据块被 Namenode 检测确认是安全之后（加上一个额外的 30 秒等待时间）， Namenode 将退出安全模式状态。接下来它会确定还有哪些数据块的副本没 有达到指定数目，并将这些数据块复制到其他 Datanode 上。  ##### Secondary NameNode  在HA cluster中又称为standby node<br>主要作用：  1.如上文提到的合并fsimage和eits日志，将eits日志文件大小控制在一个限度下  大致流程如下  namenode 响应 Secondary namenode 请求，将 edit log 推送给 Secondary namenode ， 开始重新写一个新的 edit log  Secondary namenode 收到来自 namenode 的 fsimage 文件和 edit log  Secondary namenode 将 fsimage 加载到内存，应用 edit log ， 并生成一 个新的 fsimage 文件  Secondary namenode 将新的 fsimage 推送给 Namenode  Namenode 用新的 fsimage 取代旧的 fsimage ， 在 fstime 文件中记下检查 点发生的时<br><img src="//img.wqkenqing.ren/file/2017/7/aed541bebcc04fb79e2de3c504b7ee46-image.png" alt="aed541bebcc04fb79e2de3c504b7ee46-image.png"></arg></arg></arg></li>
+</ol>
+<h4 id="HDFS写文件-1-x-默认的block大小是64M-2-X版本默认block的大小是-128M"><a href="#HDFS写文件-1-x-默认的block大小是64M-2-X版本默认block的大小是-128M" class="headerlink" title="HDFS写文件  1.x 默认的block大小是64M 2.X版本默认block的大小是 128M "></a>HDFS写文件  1.x 默认的block大小是64M 2.X版本默认block的大小是 128M <img src="//img.wqkenqing.ren/file/2017/7/d0c33b33bfbc41e8a493553395e52ef0-image.png" alt="d0c33b33bfbc41e8a493553395e52ef0-image.png"></h4><p>如上图所示  + Client预先设置的block参数切分FIle</p>
+<ul>
+<li>CLient向NameNode发送写数据请求，</li>
+<li>NameNode，记录block信息，并返回可用的DataNode(具体的返回规则参考下文)</li>
+<li>client向DataNode发送block1；发送过程是以流式写入具体流程是</li>
+</ul>
+<ol>
+<li>将64M的block1按64k的packet划分</li>
+<li>然后将第一个packet发送给host2</li>
+<li>host2接收完后，将第一个packet发送给host1，同时client想host2发送第二个packet</li>
+<li>host1接收完第一个packet后，发送给host3，同时接收host2发来的第二个packet</li>
+<li>以此类推，如图红线实线所示，直到将block1发送完毕</li>
+<li>host2,host1,host3向NameNode，host2向Client发送通知，说“消息发送完了”。</li>
+<li>client收到host2发来的消息后，向namenode发送消息，说我写完了。这样就真完成了。</li>
+<li><p>发送完block1后，再向host7，host8，host4发送block2  当客户端向 HDFS 文件写入数据的时候，一开始是写到本地临时文件中。假设该文件的副 本系数设置为 3 ，当本地临时文件累积到一个数据块的大小时，客户端会从 Namenode 获取一个 Datanode 列表用于存放副本。然后客户端开始向第一个 Datanode 传输数据，第一个 Datanode 一小部分一小部分 (4 KB) 地接收数据，将每一部分写入本地仓库，并同时传输该部分到列表中 第二个 Datanode 节点。第二个 Datanode 也是这样，一小部分一小部分地接收数据，写入本地 仓库，并同时传给第三个 Datanode 。最后，第三个 Datanode 接收数据并存储在本地。因此， Datanode 能流水线式地从前一个节点接收数据，并在同时转发给下一个节点，数据以流水线的 方式从前一个 Datanode 复制到下一个<br><img src="//img.wqkenqing.ren/file/2017/7/2c77aaad2f684820bf8a6b475b79d2f1-image.png" alt="2c77aaad2f684820bf8a6b475b79d2f1-image.png"></p>
+<p>写入的过程，按hdsf默认设置，1T文件，我们需要3T的存储，3T的网络流量  在执行读或写的过程中，NameNode和DataNode通过HeartBeat进行保存通信，确定DataNode活着。如果发现DataNode死掉了，就将死掉的DataNode上的数据，放到其他节点去。读取时，要读其他节点去  挂掉一个节点，没关系，还有其他节点可以备份；甚至，挂掉某一个机架，也没关系；其他机架上，也有备份</p>
+<h5 id="hdfs读文件"><a href="#hdfs读文件" class="headerlink" title="hdfs读文件"></a>hdfs读文件</h5><p><img src="//img.wqkenqing.ren/file/2017/7/8fb62c84f57a4203a2dbedf5f68920d9-image.png" alt="8fb62c84f57a4203a2dbedf5f68920d9-image.png"></p>
+<p>客户端通过调用FileSystem对象的open()方法来打开希望读取的文件，对于HDFS来说，这个对象时分布文件系统的一个实例；  DistributedFileSystem通过使用RPC来调用NameNode以确定文件起始块的位置，同一Block按照重复数会返回多个位置，这些位置按照Hadoop集群拓扑结构排序，距离客户端近的排在前面  前两步会返回一个FSDataInputStream对象，该对象会被封装成DFSInputStream对象，DFSInputStream可以方便的管理datanode和namenode数据流，客户端对这个输入流调用read()方法  存储着文件起始块的DataNode地址的DFSInputStream随即连接距离最近的DataNode，通过对数据流反复调用read()方法，将数据从DataNode传输到客户端  到达块的末端时，DFSInputStream会关闭与该DataNode的连接，然后寻找下一个块的最佳DataNode，这些操作对客户端来说是透明的，客户端的角度看来只是读一个持续不断的流  一旦客户端完成读取，就对FSDataInputStream调用close()方法关闭文件读取</p>
+<h5 id="block持续化结构"><a href="#block持续化结构" class="headerlink" title="block持续化结构"></a>block持续化结构</h5><p>DataNode节点上一个Block持久化到磁盘上的物理存储结构，如下图所示：  <img src="//img.wqkenqing.ren/file/2017/7/df10f0ac586f4baebc2587842aec5675-image.png" alt="df10f0ac586f4baebc2587842aec5675-image.png"></p>
+<p>每个Block文件（如上图中blk_1084013198文件）都对应一个meta文件（如上图中blk_1084013198_10273532.meta文件），Block文件是一个一个Chunk的二进制数据（每个Chunk的大小是512字节），而meta文件是与每一个Chunk对应的Checksum数据，是序列化形式存储  —  至上我们大致了解了HDFS。正如上文提到的Hadoop的特点，高可能，高容错性。若光从上文提到的特性可能还不足以说明，如NameNode环节就提到了NameNode的重要作用，但若NameNode出现了故障，对整个机集会是毁灭性的打击，于是Hadoop也引入其它的一些手段来保存高可用，高容错。接下来我们就来探讨下</p>
+<h3 id="Hadoop-HA的引入"><a href="#Hadoop-HA的引入" class="headerlink" title="Hadoop HA的引入"></a>Hadoop HA的引入</h3><p>HA：High Available即高可用性集群，是保证业务连续性的有效解决方案，一般有两个或两个以上的节点，且分为活动节点及备用节点。  在HA具体实现方法不同的情况下，HA框架的流程是一致的, 不一致的就是如何存储和管理日志。在Active NN和Standby NN之间要有个共享的存储日志的地方，Active NN把EditLog写到这个共享的存储日志的地方，Standby NN去读取日志然后执行，这样Active和Standby NN内存中的HDFS元数据保持着同步。一旦发生主从切换Standby NN可以尽快接管Active NN的工作; 默认并未启用 hdfs ha。<br>SPOF方案回顾：</p>
+</li>
+<li><p>Secondary NameNode：它不是HA，它只是阶段性的合并edits和fsimage，以缩短集群启动的时间。当NN失效的时候，Secondary NN并无法立刻提供服务，Secondary NN甚至无法保证数据完整性：如果NN数据丢失的话，在上一次合并后的文件系统的改动会丢失</p>
+</li>
+<li>Backup NameNode (HADOOP-4539)：它在内存中复制了NN的当前状态，算是Warm Standby，可也就仅限于此，并没有failover等。它同样是阶段性的做checkpoint，也无法保证数据完整性<br>3. 手动把name.dir指向NFS（Network File System），这是安全的Cold Standby，可以保证元数据不丢失，但集群的恢复则完全靠手动<br>4. Facebook AvatarNode：Facebook有强大的运维做后盾，所以Avatarnode只是Hot Standby，并没有自动切换，当主NN失效的时候，需要管理员确认，然后手动把对外提供服务的虚拟IP映射到Standby NN，这样做的好处是确保不会发生脑裂的场景。其某些设计思想和Hadoop 2.0里的HA非常相似，从时间上来看，Hadoop 2.0应该是借鉴了Facebook的做法 <img src="//img.wqkenqing.ren/file/2017/7/32ec8d45379b4e4d99505b03b1b33e61-image.png" alt="32ec8d45379b4e4d99505b03b1b33e61-image.png"></li>
+</ol>
+<p>5. PrimaryNN 与StandbyNN之间通过NFS来共享FsEdits、FsImage文件，这样主备NN之间就拥有了一致的目录树和block信息；而block的 位置信息，可以根据DN向两个NN上报的信息过程中构建起来。这样再辅以虚IP，可以较好达到主备NN快速热切的目的。但是显然，这里的NFS又引入了新的SPOF<br>6. 在主备NN共享元数据的过程中，也有方案通过主NN将FsEdits的内容通过与备NN建立的网络IO流，实时写入备NN，并且保证整个过程的原子性。这种方案，解决了NFS共享元数据引入的SPOF，但是主备NN之间的网络连接又会成为新的问题</p>
+<h4 id="hadoop2-X-ha-原理-hadoop2-x之后，Clouera提出了QJM-Qurom-Journal-Manager，这是一个基于Paxos算法实现的HDFS-HA方案，它给出了一种较好的解决思路和方案-示意图如下："><a href="#hadoop2-X-ha-原理-hadoop2-x之后，Clouera提出了QJM-Qurom-Journal-Manager，这是一个基于Paxos算法实现的HDFS-HA方案，它给出了一种较好的解决思路和方案-示意图如下：" class="headerlink" title="hadoop2.X ha 原理:  hadoop2.x之后，Clouera提出了QJM/Qurom Journal Manager，这是一个基于Paxos算法实现的HDFS HA方案，它给出了一种较好的解决思路和方案,示意图如下："></a>hadoop2.X ha 原理:  hadoop2.x之后，Clouera提出了QJM/Qurom Journal Manager，这是一个基于Paxos算法实现的HDFS HA方案，它给出了一种较好的解决思路和方案,示意图如下：</h4><p><img src="//img.wqkenqing.ren/file/2017/7/bc057fbb4b4047928bf06b7a43364335-image.png" alt="bc057fbb4b4047928bf06b7a43364335-image.png"></p>
+<ul>
+<li>基本原理就是用2N+1台 JN 存储EditLog，每次写数据操作有大多数（&gt;=N+1）返回成功时即认为该次写成功，数据不会丢失了。当然这个算法所能容忍的是最多有N台机器挂掉，如果多于N台挂掉，这个算法就失效了。这个原理是基于Paxos算法</li>
+<li><p>在HA架构里面SecondaryNameNode这个冷备角色已经不存在了，为了保持standby NN时时的与主Active NN的元数据保持一致，他们之间交互通过一系列守护的轻量级进程JournalNode  + 任何修改操作在 Active NN上执行时，JN进程同时也会记录修改log到至少半数以上的JN中，这时 Standby NN 监测到JN 里面的同步log发生变化了会读取 JN 里面的修改log，然后同步到自己的的目录镜像树里面，<br><img src="//img.wqkenqing.ren/file/2017/7/608621d2ab52466db89e8a95d165f6e7-image.png" alt="608621d2ab52466db89e8a95d165f6e7-image.png"></p>
+<p>当发生故障时，Active的 NN 挂掉后，Standby NN 会在它成为Active NN 前，读取所有的JN里面的修改日志，这样就能高可靠的保证与挂掉的NN的目录镜像树一致，然后无缝的接替它的职责，维护来自客户端请求，从而达到一个高可用的目的  QJM方式来实现HA的主要优势：<br>1. 不需要配置额外的高共享存储，降低了复杂度和维护成本<br>2. 消除spof<br>3. 系统鲁棒性(Robust:健壮)的程度是可配置<br>4. JN不会因为其中一台的延迟而影响整体的延迟，而且也不会因为JN的数量增多而影响性能（因为NN向JN发送日志是并行的）  datanode的fencing: 确保只有一个NN能命令DN。HDFS-1972中详细描述了DN如何实现fencing<br>1. 每个NN改变状态的时候，向DN发送自己的状态和一个序列号<br>2. DN在运行过程中维护此序列号，当failover时，新的NN在返回DN心跳时会返回自己的active状态和一个更大的序列号。DN接收到这个返回则认为该NN为新的active  3. 如果这时原来的active NN恢复，返回给DN的心跳信息包含active状态和原来的序列号，这时DN就会拒绝这个NN的命令  客户端fencing：确保只有一个NN能响应客户端请求，让访问standby nn的客户端直接失败。在RPC层封装了一层，通过FailoverProxyProvider以重试的方式连接NN。通过若干次连接一个NN失败后尝试连接新的NN，对客户端的影响是重试的时候增加一定的延迟。客户端可以设置重试此时和时间  Hadoop提供了ZKFailoverController角色，部署在每个NameNode的节点上，作为一个deamon进程, 简称zkfc，<br><img src="//img.wqkenqing.ren/file/2017/7/3cfc6fc17a8e47509465442f6eaf7c14-image.png" alt="3cfc6fc17a8e47509465442f6eaf7c14-image.png"></p>
+<p>FailoverController主要包括三个组件:<br>1. HealthMonitor: 监控NameNode是否处于unavailable或unhealthy状态。当前通过RPC调用NN相应的方法完成<br>2. ActiveStandbyElector: 管理和监控自己在ZK中的状态<br>3. ZKFailoverController 它订阅HealthMonitor 和ActiveStandbyElector 的事件，并管理NameNode的状态  ZKFailoverController主要职责：      1. 健康监测：周期性的向它监控的NN发送健康探测命令，从而来确定某个NameNode是否处于健康状态，如果机器宕机，心跳失败，那么zkfc就会标记它处于一个不健康的状态<br>2. 会话管理：如 果NN是健康的，zkfc就会在zookeeper中保持一个打开的会话，如果NameNode同时还是Active状态的，那么zkfc还会在 Zookeeper中占有一个类型为短暂类型的znode，当这个NN挂掉时，这个znode将会被删除，然后备用的NN，将会得到这把锁，升级为主 NN，同时标记状态为Active<br>3. 当宕机的NN新启动时，它会再次注册zookeper，发现已经有znode锁了，便会自动变为Standby状态，如此往复循环，保证高可靠，需要注意，目前仅仅支持最多配置2个NN<br>4. master选举：如上所述，通过在zookeeper中维持一个短暂类型的znode，来实现抢占式的锁机制，从而判断那个NameNode为Active状态  <strong>hadoop2.x Federation</strong>：  单Active NN的架构使得HDFS在集群扩展性和性能上都有潜在的问题，当集群大到一定程度后，NN进程使用的内存可能会达到上百G，NN成为了性能的瓶颈  常用的估算公式为1G对应1百万个块，按缺省块大小计算的话，大概是64T (这个估算比例是有比较大的富裕的，其实，即使是每个文件只有一个块，所有元数据信息也不会有1KB/block)  为了解决这个问题,Hadoop 2.x提供了HDFS Federation, 示意图如下：<br><img src="//img.wqkenqing.ren/file/2017/7/e5015b90accf4fe6a7729afe692ffa64-image.png" alt="e5015b90accf4fe6a7729afe692ffa64-image.png"></p>
+<p>多个NN共用一个集群里的存储资源，每个NN都可以单独对外提供服务  每个NN都会定义一个存储池，有单独的id，每个DN都为所有存储池提供存储  DN会按照存储池id向其对应的NN汇报块信息，同时，DN会向所有NN汇报本地存储可用资源情况  如果需要在客户端方便的访问若干个NN上的资源，可以使用客户端挂载表，把不同的目录映射到不同的NN，但NN上必须存在相应的目录  设计优势：  改动最小，向前兼容；现有的NN无需任何配置改动；如果现有的客户端只连某台NN的话  分离命名空间管理和块存储管理  客户端挂载表：通过路径自动对应NN、使Federation的配置改动对应用透明  (与上面ha方案中介绍的最多2个NN冲突？)  至此hadoop中的hdfs高可用特性，高容错的实现又有了更深理解，但针对hdfs还一层设计实现<strong>机架感知</strong></p>
+<h4 id="机架感知"><a href="#机架感知" class="headerlink" title="机架感知"></a>机架感知</h4><p>分布式的集群通常包含非常多的机器，由于受到机架槽位和交换机网口的限制，通常大型的分布式集群都会跨好几个机架，由多个机架上的机器共同组成一个分布 式集群。机架内的机器之间的网络速度通常都会高于跨机架机器之间的网络速度，并且机架之间机器的网络通信通常受到上层交换机间网络带宽的限制。  具体到hadoop集群，由于hadoop的HDFS对数据文件的分布式存放是按照分块block存储，每个block会有多个副本(默认为3)，并且为了数据的安全和高效，所以hadoop默认对3个副本的存放策略为：<br>在本地机器的hdfs目录下存储一个block  在另外一个rack的某个datanode上存储一个block<br>在该机器的同一个rack下的某台机器上存储最后一个block<br>这样的策略可以保证对该block所属文件的访问能够优先在本rack下找到，如果整个rack发生了异常，也可以在另外的rack上找到该block的副本。这样足够的高效，并且同时做到了数据的容错。<br>hadoop对机架的感知并非是自适应的，亦即，hadoop集群分辨某台slave机器是属于哪个rack并非是只能的感知的，而是需要 hadoop的管理者人为的告知hadoop哪台机器属于哪个rack，这样在hadoop的namenode启动初始化时，会将这些机器与rack的对 应信息保存在内存中，用来作为对接下来所有的HDFS的写块操作分配datanode列表时（比如3个block对应三台datanode）的选择 datanode策略，做到hadoop allocate block的策略：尽量将三个副本分布到不同的rack。<br>具体实现本文不在深究，在此附上网上的一些解决方式<br><a href="http://www.cnblogs.com/cloudma/articles/hadoop-topology.html" target="_blank" rel="noopener">机架感知实现1</a>  <a href="http://blog.csdn.net/magicdreaming/article/details/7629773" target="_blank" rel="noopener">机架感知实现2</a></p>
+</li>
+</ul>
+<hr>
+<p>至此对hdfs的理解与总结告一段落，后续有了新的理解再进行补充</p>
 ]]></content>
   </entry>
   <entry>
@@ -306,6 +271,55 @@ Java虚拟机会根据该hash码最终在真正的的堆空间中给该对象分
 <li>前者主要是通过将底层的storage数组长度设置为0</li>
 <li>后者则是另复制一份至另一空间，长度设为0<br>所以后则的效率会相对慢一点</li>
 </ul>
+]]></content>
+  </entry>
+  <entry>
+    <title>Restful架构</title>
+    <url>/2019/07/16/oldblog/Restful%E6%9E%B6%E6%9E%84/</url>
+    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
+<h2 id="Restful架构"><a href="#Restful架构" class="headerlink" title="Restful架构"></a>Restful架构</h2><h3 id="什么是RESTful架构"><a href="#什么是RESTful架构" class="headerlink" title="什么是RESTful架构"></a>什么是RESTful架构</h3><p><code>Representational State Transfer:表现层状态转化</code></p>
+<p>REST的名称”表现层状态转化”中，省略了主语。”表现层”其实指的是”资源”（Resources）的”表现层”。</p>
+<blockquote>
+<p>所谓”资源”，就是网络上的一个实体，或者说是网络上的一个具体信息。它可以是一段文本、一张图片、一首歌曲、一种服务，总之就是一个具体的实在。你可以用一个URI（统一资源定位符）指向它，每种资源对应一个特定的URI。要获取这个资源，访问它的URI就可以，因此URI就成了每一个资源的地址或独一无二的识别符。</p>
+</blockquote>
+<p>“资源”是一种信息实体，它可以有多种外在表现形式。我们把”资源”具体呈现出来的形式，叫做它的”表现层”（Representation）。</p>
+<p>访问一个网站，就代表了客户端和服务器的一个互动过程。在这个过程中，势必涉及到数据和状态的变化。</p>
+<p>互联网通信协议HTTP协议，是一个无状态协议。这意味着，所有的状态都保存在服务器端。因此，如果客户端想要操作服务器，必须通过某种手段，让服务器端发生”状态转化”（State Transfer）。而这种转化是建立在表现层之上的，所以就是”表现层状态转化”。</p>
+<p>客户端用到的手段，只能是HTTP协议。具体来说，就是HTTP协议里面，四个表示操作方式的动词：GET、POST、PUT、DELETE。它们分别对应四种基本操作：GET用来获取资源，POST用来新建资源（也可以用于更新资源），PUT用来更新资源，DELETE用来删除资源。</p>
+<hr>
+<p>综合上面的解释，我们总结一下什么是RESTful架构：</p>
+<ul>
+<li>每一个URI代表一种资源；</li>
+<li>客户端和服务器之间，传递这种资源的某种表现层；</li>
+<li>客户端通过四个HTTP动词，对服务器端资源进行操作，实现”表现层状态转化”。</li>
+</ul>
+<p>最常见的一种设计错误，就是URI包含动词。<strong>因为”资源”表示一种实体，所以应该是名词</strong>，<strong>URI不应该有动词</strong>，动词应该放在HTTP协议中。</p>
+<p>举例来说，某个URI是/posts/show/1，其中show是动词，这个URI就设计错了，正确的写法应该是/posts/1，然后用GET方法表示show。</p>
+<p>如果某些动作是HTTP动词表示不了的，你就应该把动作做成一种资源。比如网上汇款，从账户1向账户2汇款500元，错误的URI是：</p>
+<p>　　POST /accounts/1/transfer/500/to/2</p>
+<p>正确的写法是把动词transfer改成名词transaction，资源不能是动词，但是可以是一种服务：</p>
+<p>　　POST /transaction HTTP/1.1<br>　　Host: 127.0.0.1<br>　　<br>　　from=1&amp;to=2&amp;amount=500.00</p>
+<p>另一个设计误区，就是在URI中加入版本号：</p>
+<p>　　<a href="http://www.example.com/app/1.0/foo" target="_blank" rel="noopener">http://www.example.com/app/1.0/foo</a></p>
+<p>　　<a href="http://www.example.com/app/1.1/foo" target="_blank" rel="noopener">http://www.example.com/app/1.1/foo</a></p>
+<p>　　<a href="http://www.example.com/app/2.0/foo" target="_blank" rel="noopener">http://www.example.com/app/2.0/foo</a></p>
+<p>因为不同的版本，可以理解成同一种资源的不同表现形式，所以应该采用同一个URI。版本号可以在HTTP请求头信息的Accept字段中进行区分（参见Versioning REST Services）：<br>Accept: vnd.example-com.foo+json; version=1.0</p>
+<p>　　Accept: vnd.example-com.foo+json; version=1.1</p>
+<p>　　Accept: vnd.example-com.foo+json; version=2.0</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>flume小结</title>
+    <url>/2019/07/16/oldblog/flume%E5%B0%8F%E7%BB%93/</url>
+    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
+<h2 id="flume小结"><a href="#flume小结" class="headerlink" title="flume小结"></a>flume小结</h2><p><code>此次flume环境的搭建是针对实际日志业务，整个过程还算顺利</code><br>针对flume的引入更多的偏向应用层面。所以更多的要熟悉相关配置与参数的设置</p>
+<h3 id="flume的整体构思"><a href="#flume的整体构思" class="headerlink" title="flume的整体构思"></a>flume的整体构思</h3><p>采用的是flume框架中的flume-ng。整体架构如下图<br><img src="//img.wqkenqing.ren/file/2017/7/c6589103d8ba4dffaf21c52b37cc7e17-image.png" alt="c6589103d8ba4dffaf21c52b37cc7e17-image.png"><br>log_product环节尚有争议，主要针对flume环节进行小结。<br>原从效率上考虑，打算在跳板机上搭建直接接入hadoop的单flume节点，因为网络权限等问题，无法直接写入所以放弃。转而改为在hadoop环境中也引入一个flume节点(flume-server)。因client是单节点，所以没有必要引入fail-over机制。因此flume-server也是单节点<br>。</p>
+<hr>
+<p>###<br>写入hdfs时有三个参数要注意<br>rollSize<br>rollCount<br>rollInterval<br>这三个参数对写入单个hdfs文件时的大小，行，时间。</p>
+<hr>
+<p>flume-ng agent -n agent1 -c conf -f flume-client.properties -Dflume.root.logger=DEBUG,console</p>
+<p>flume-ng agent -n agent1 -c conf -f flume-client.properties -Dflume.root.logger=DEBUG,console &amp;</p>
+<p>flume-ng agent -n a1 -c ../conf -f flume-server.properties -Dflume.root.logger=DEBUG,console &amp;</p>
 ]]></content>
   </entry>
   <entry>
@@ -380,20 +394,6 @@ Java虚拟机会根据该hash码最终在真正的的堆空间中给该对象分
 ]]></content>
   </entry>
   <entry>
-    <title>flume小结</title>
-    <url>/2019/07/16/oldblog/flume%E5%B0%8F%E7%BB%93/</url>
-    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
-<h2 id="flume小结"><a href="#flume小结" class="headerlink" title="flume小结"></a>flume小结</h2><p><code>此次flume环境的搭建是针对实际日志业务，整个过程还算顺利</code><br>针对flume的引入更多的偏向应用层面。所以更多的要熟悉相关配置与参数的设置</p>
-<h3 id="flume的整体构思"><a href="#flume的整体构思" class="headerlink" title="flume的整体构思"></a>flume的整体构思</h3><p>采用的是flume框架中的flume-ng。整体架构如下图<br><img src="//img.wqkenqing.ren/file/2017/7/c6589103d8ba4dffaf21c52b37cc7e17-image.png" alt="c6589103d8ba4dffaf21c52b37cc7e17-image.png"><br>log_product环节尚有争议，主要针对flume环节进行小结。<br>原从效率上考虑，打算在跳板机上搭建直接接入hadoop的单flume节点，因为网络权限等问题，无法直接写入所以放弃。转而改为在hadoop环境中也引入一个flume节点(flume-server)。因client是单节点，所以没有必要引入fail-over机制。因此flume-server也是单节点<br>。</p>
-<hr>
-<p>###<br>写入hdfs时有三个参数要注意<br>rollSize<br>rollCount<br>rollInterval<br>这三个参数对写入单个hdfs文件时的大小，行，时间。</p>
-<hr>
-<p>flume-ng agent -n agent1 -c conf -f flume-client.properties -Dflume.root.logger=DEBUG,console</p>
-<p>flume-ng agent -n agent1 -c conf -f flume-client.properties -Dflume.root.logger=DEBUG,console &amp;</p>
-<p>flume-ng agent -n a1 -c ../conf -f flume-server.properties -Dflume.root.logger=DEBUG,console &amp;</p>
-]]></content>
-  </entry>
-  <entry>
     <title>hbase</title>
     <url>/2019/07/16/oldblog/hbase/</url>
     <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
@@ -401,68 +401,72 @@ Java虚拟机会根据该hash码最终在真正的的堆空间中给该对象分
 ]]></content>
   </entry>
   <entry>
-    <title>java---GC机制</title>
-    <url>/2019/07/16/oldblog/java---GC%E6%9C%BA%E5%88%B6/</url>
-    <content><![CDATA[<p>此处简介</p>
-<a id="more"></a>
-<h3 id="java—GC机制"><a href="#java—GC机制" class="headerlink" title="java—GC机制"></a>java—GC机制</h3><p>JVM会有一个运行时数据区来管理内存</p>
-<ul>
-<li>程序计数器(Program Counter Register)</li>
-<li>虚拟机栈(VM Stack)</li>
-<li>本地方法栈(Native Method Stack)</li>
-<li>方法区(Method Area)</li>
-<li>堆(Heap)</li>
-</ul>
-<h4 id="What-–-哪些内存需要回收？"><a href="#What-–-哪些内存需要回收？" class="headerlink" title="What? – 哪些内存需要回收？"></a>What? – 哪些内存需要回收？</h4><p>而其中程序计数器、虚拟机栈、本地方法栈是每个线程私有的内存空间，随线程而生，随线程而亡。<br>例如栈中每一个栈帧中分配多少内存基本上在类结构去诶是哪个下来时就已知了，因此这3个区域的内存分配和回收都是确定的，无需考虑内存回收的问题。</p>
-<p>但方法区和堆就不同了，一个接口的多个实现类需要的内存可能不一样，我们只有在程序运行期间才会知道会创建哪些对象，这部分内存的分配和回收都是动态的，GC主要关注的是这部分内存。</p>
+    <title>java中枚举的使用</title>
+    <url>/2019/07/16/oldblog/java%E4%B8%AD%E6%9E%9A%E4%B8%BE%E7%9A%84%E4%BD%BF%E7%94%A8/</url>
+    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
+<h3 id="java中枚举的使用"><a href="#java中枚举的使用" class="headerlink" title="java中枚举的使用"></a>java中枚举的使用</h3><p><strong>enum</strong> 的全称为 enumeration 是 JDK 1.5  中引入的新特性，存放在 java.lang 包中。</p>
+<ol>
+<li><p>原始的接口定义常量</p>
+</li>
+<li><p>语法（定义）</p>
+</li>
+<li><p>遍历、switch 等常用操作</p>
+</li>
+<li><p>enum 对象的常用方法介绍</p>
+</li>
+<li><p>给 enum 自定义属性和方法</p>
+</li>
+<li><p>EnumSet，EnumMap 的应用</p>
+</li>
+<li><p>enum 的原理分析</p>
+</li>
+<li><p>总结</p>
+</li>
+</ol>
 <hr>
-<p>总而言之，GC主要进行回收的内存是JVM中的方法区和堆；<br>涉及到多线程(指堆)、多个对该对象不同类型的引用(指方法区)，才会涉及GC的回收。</p>
+<p>原始的接口定义常量</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public interface IConstants &#123;</span><br><span class="line">    String MON = &quot;Mon&quot;;</span><br><span class="line">    String TUE = &quot;Tue&quot;;</span><br><span class="line">    String WED = &quot;Wed&quot;;</span><br><span class="line">    String THU = &quot;Thu&quot;;</span><br><span class="line">    String FRI = &quot;Fri&quot;;</span><br><span class="line">    String SAT = &quot;Sat&quot;;</span><br><span class="line">    String SUN = &quot;Sun&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <hr>
-<h4 id="When-–-什么时候回收？"><a href="#When-–-什么时候回收？" class="headerlink" title="When? – 什么时候回收？"></a>When? – 什么时候回收？</h4><p>堆<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">在面试中经常会碰到这样一个问题（事实上笔者也碰到过）：如何判断一个对象已经死去？</span><br><span class="line"></span><br><span class="line">很容易想到的一个答案是：对一个对象添加引用计数器。每当有地方引用它时，计数器值加1；当引用失效时，计数器值减1.而当计数器的值为0时这个对象就不会再被使用，判断为已死。是不是简单又直观。然而，很遗憾。这种做法是错误的！（面试时可千万别这样回答哦，我就是不假思索这样回答，然后就。。）为什么是错的呢？事实上，用引用计数法确实在大部分情况下是一个不错的解决方案，而在实际的应用中也有不少案例，但它却无法解决对象之间的循环引用问题。比如对象A中有一个字段指向了对象B，而对象B中也有一个字段指向了对象A，而事实上他们俩都不再使用，但计数器的值永远都不可能为0，也就不会被回收，然后就发生了内存泄露。。</span><br></pre></td></tr></table></figure></p>
-<p>在Java，C#等语言中，比较主流的判定一个对象已死的方法是：<strong>可达性分析(Reachability Analysis).</strong><br>所有生成的对象都是一个称为”GC Roots”的根的子树。从GC Roots开始向下搜索，搜索所经过的路径称为引用链(Reference Chain)，当一个对象到GC Roots没有任何引用链可以到达时，就称这个对象是不可达的（不可引用的），也就是可以被GC回收了<br><img src="/2019/07/16/oldblog/java---GC机制/1483447208180.png" alt="Alt text"></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">无论是引用计数器还是可达性分析，判定对象是否存活都与引用有关！那么，如何定义对象的引用呢？</span><br></pre></td></tr></table></figure>
-<ul>
-<li>强引用(Strong Reference):Object obj = new Object();只要强引用还存在，GC永远不会回收掉被引用的对象。</li>
-<li>软引用(Soft Reference)：描述一些还有用但非必需的对象。在系统将会发生内存溢出之前，会把这些对象列入回收范围进行二次回收（即系统将会发生内存溢出了，才会对他们进行回收。）</li>
-<li>弱引用(Weak Reference):程度比软引用还要弱一些。这些对象只能生存到下次GC之前。当GC工作时，无论内存是否足够都会将其回收（即只要进行GC，就会对他们进行回收。）</li>
-<li>虚引用(Phantom Reference):一个对象是否存在虚引用，完全不会对其生存时间构成影响。</li>
-</ul>
-<p><strong>方法区</strong><br>What部分我们已经提到，GC主要回收的是堆和方法区中的内存，而上面的How主要是针对对象的回收，他们一般位于堆内。那么，方法区中的东西该怎么回收呢？</p>
-<p>关于方法区中需要回收的是一些废弃的常量和无用的类</p>
-<ul>
-<li>废弃的常量的回收。这里看引用计数就可以了。没有对象引用该常量就可以放心的回收了。</li>
-<li>无用的类的回收。什么是无用的类呢？</li>
-</ul>
-<ul>
-<li>该类所有的实例都已经被回收。也就是Java堆中不存在该类的任何实例；</li>
-<li>加载该类的ClassLoader已经被回收；</li>
-<li>该类对应的java.lang.Class对象没有任何地方被引用，无法在任何地方通过反射访问该类的方法。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">总而言之，对于堆中的对象，主要用可达性分析判断一个对象是否还存在引用，如果该对象没有任何引用就应该被回收。而根据我们实际对引用的不同需求，又分成了4中引用，每种引用的回收机制也是不同的。</span><br><span class="line">对于方法区中的常量和类，当一个常量没有任何对象引用它，它就可以被回收了。而对于类，如果可以判定它为无用类，就可以被回收了。</span><br></pre></td></tr></table></figure>
-<h4 id="How-–-如何回收？"><a href="#How-–-如何回收？" class="headerlink" title="How? – 如何回收？"></a>How? – 如何回收？</h4><h5 id="标记-清除-Mark-Sweep-算法"><a href="#标记-清除-Mark-Sweep-算法" class="headerlink" title="标记-清除(Mark-Sweep)算法"></a>标记-清除(Mark-Sweep)算法</h5><p>分为两个阶段：首先标记出所有需要回收的对象，在标记完成后统一回收所有被标记的对象。<br>缺点：效率问题，标记和清除两个过程的效率都不高；空间问题，会产生很多碎片。</p>
-<h5 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h5><p>将可用内存按容量划分为大小相等的两块，每次只用其中一块。当这一块用完了，就将还存活的对象复制到另外一块上面，然后把原始空间全部回收。高效、简单。<br>缺点：将内存缩小为原来的一半。</p>
-<h5 id="标记-整理-Mark-Compat-算法"><a href="#标记-整理-Mark-Compat-算法" class="headerlink" title="标记-整理(Mark-Compat)算法"></a>标记-整理(Mark-Compat)算法</h5><p>标记过程与标记-清除算法过程一样，但后面不是简单的清除，而是让所有存活的对象都向一端移动，然后直接清除掉端边界以外的内存。</p>
-<h5 id="分代收集-Generational-Collection-算法"><a href="#分代收集-Generational-Collection-算法" class="headerlink" title="分代收集(Generational Collection)算法"></a>分代收集(Generational Collection)算法</h5><ul>
-<li>新生代中，每次垃圾收集时都有大批对象死去，只有少量存活，就选用复制算法，只需要付出少量存活对象的复制成本就可以完成收集；</li>
-<li>老年代中，其存活率较高、没有额外空间对它进行分配担保，就应该使用“标记-整理”或“标记-清理”算法进行回收。<br>####一些收集器<h5 id="Serial收集器"><a href="#Serial收集器" class="headerlink" title="Serial收集器"></a>Serial收集器</h5>单线程收集器，表示在它进行垃圾收集时，必须暂停其他所有的工作线程，直到它收集结束。”Stop The World”.<h5 id="ParNew收集器"><a href="#ParNew收集器" class="headerlink" title="ParNew收集器"></a>ParNew收集器</h5>实际就是Serial收集器的多线程版本。</li>
-<li>并发(Parallel):指多条垃圾收集线程并行工作，但此时用户线程仍然处于等待状态；</li>
-<li>并行(Concurrent):指用户线程与垃圾收集线程同时执行，用户程序在继续运行，而垃圾收集程序运行于另一个CPU上。<h5 id="Parallel-Scavenge收集器"><a href="#Parallel-Scavenge收集器" class="headerlink" title="Parallel Scavenge收集器"></a>Parallel Scavenge收集器</h5>该收集器比较关注吞吐量(Throughout)(CPU用于用户代码的时间与CPU总消耗时间的比值)，保证吞吐量在一个可控的范围内。<h5 id="CMS-Concurrent-Mark-Sweep-收集器"><a href="#CMS-Concurrent-Mark-Sweep-收集器" class="headerlink" title="CMS(Concurrent Mark Sweep)收集器"></a>CMS(Concurrent Mark Sweep)收集器</h5>CMS收集器是一种以获得最短停顿时间为目标的收集器。<h5 id="G1-Garbage-First-收集器"><a href="#G1-Garbage-First-收集器" class="headerlink" title="G1(Garbage First)收集器"></a>G1(Garbage First)收集器</h5>从JDK1.7 Update 14之后的HotSpot虚拟机正式提供了商用的G1收集器，与其他收集器相比，它具有如下优点：并行与并发；分代收集；空间整合；可预测的停顿等。</li>
-</ul>
-<p>本部分主要分析了三种不同的垃圾回收算法：Mark-Sweep, Copy, Mark-Compact. 每种算法都有不同的优缺点，也有不同的适用范围。而JVM中对垃圾回收器并没有严格的要求，不同的收集器会结合多个算法进行垃圾回收。</p>
-<p>#####内存分配<br>Java技术体系中所提倡的自动内存管理最终可以归结为自动化的解决2个问题：给对象分配内存以及回收分配给对象的内存。</p>
-<p>#####对象优先在Eden分配<br>大多数情况下，对象在新生代Eden区分配。当Eden区没有足够的内存时，虚拟机将发起一次Minor GC。</p>
-<ul>
-<li>Minor GC(新生代GC):指发生在新生代的垃圾收集动作，因为Java对象大多都具备朝生夕灭的特性，所以Minor GC发生的非常频繁。</li>
-<li>Full GC/Major GC(老年代GC):指发生在老年代的GC，出现了Major GC，经常会伴随至少一次的Minor GC。<h5 id="大对象直接进老年代"><a href="#大对象直接进老年代" class="headerlink" title="大对象直接进老年代"></a>大对象直接进老年代</h5>大对象是指需要大量连续内存空间的Java对象（例如很长的字符串以及数组）。<h5 id="长期存活的对象将进入老年代"><a href="#长期存活的对象将进入老年代" class="headerlink" title="长期存活的对象将进入老年代"></a>长期存活的对象将进入老年代</h5>JVM为每个对象定义一个对象年龄计数器。</li>
-</ul>
-<ul>
-<li>如果对象在Eden出生并经历过第一次Minor GC后仍然存活，并且能够被Survivor容纳，则应该被移动到Survivor空间中，并且年龄对象设置为1；</li>
-<li>对象在Survivor区中每熬过一次Minor GC，年龄就会增加1岁，当它的年龄增加到一定程度(默认为15岁，可通过参数-XX:MaxTenuringThreshold设置)，就会被晋升到老年代中。</li>
-<li>要注意的是：JVM并不是永远的要求对象的年龄必须达到MaxTenuringThreshold才能晋升老年代，如果在Survivor空间中相同年龄所有对象大小的总和大于Survivor空间的一般，年龄大于等于该年龄的对象就可以直接进入老年代，无需等到MaxTenuringThreshold中要求的年龄。<h5 id="空间分配担保"><a href="#空间分配担保" class="headerlink" title="空间分配担保"></a>空间分配担保</h5></li>
-<li>在发生Minor GC之前，虚拟机会先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果这个条件成立，则进行Minor GC是安全的；</li>
-<li>如果不成立，则虚拟机会查看HandlePromotionFailure设置值是否允许担保失败。如果允许，则急促检查老年代最大可用连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，将尝试着进行一次Minor GC，尽管它是有风险的；</li>
-<li>如果小于或者HandePromotionFailure设置为不允许冒险，则这时要改为进行一次Full GC.</li>
-</ul>
+<p><strong>语法（定义）</strong><br> 创建枚举类型要使用 enum 关键字，隐含了所创建的类型都是 java.lang.Enum 类的子类（java.lang.Enum 是一个抽象类）。枚举类型符合通用模式 Class Enum&lt;E extends Enum<e>&gt;，而 E 表示枚举类型的名称。枚举类型的每一个值都将映射到 protected Enum(String name, int ordinal) 构造函数中，在这里，每个值的名称都被转换成一个字符串，并且序数设置表示了此设置被创建的顺序。</e></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">package com.hmw.test;</span><br><span class="line">/**</span><br><span class="line"> * 枚举测试类</span><br><span class="line"> * @author &lt;a href=&quot;mailto:hemingwang0902@126.com&quot;&gt;何明旺&lt;/a&gt;</span><br><span class="line"> */</span><br><span class="line">public enum EnumTest &#123;</span><br><span class="line">    MON, TUE, WED, THU, FRI, SAT, SUN;</span><br><span class="line">&#125;</span><br><span class="line">这段代码实际上调用了7次 Enum(String name, int ordinal)：</span><br><span class="line"></span><br><span class="line">new Enum&lt;EnumTest&gt;(&quot;MON&quot;,0);</span><br><span class="line">new Enum&lt;EnumTest&gt;(&quot;TUE&quot;,1);</span><br><span class="line">new Enum&lt;EnumTest&gt;(&quot;WED&quot;,2);</span><br></pre></td></tr></table></figure>
+<hr>
+<p><strong>遍历、switch 等常用操作</strong></p>
+<p>public class Test {<br>    public static void main(String[] args) {<br>        for (EnumTest e : EnumTest.values()) {<br>            System.out.println(e.toString());<br>        }</p>
+<pre><code>    System.out.println(&quot;----------------我是分隔线------------------&quot;);
+
+    EnumTest test = EnumTest.TUE;
+    switch (test) {
+    case MON:
+        System.out.println(&quot;今天是星期一&quot;);
+        break;
+    case TUE:
+        System.out.println(&quot;今天是星期二&quot;);
+        break;
+    // ... ...
+    default:
+        System.out.println(test);
+        break;
+    }
+}
+}
+</code></pre><hr>
+<p><strong>enum 对象的常用方法介绍</strong><br>int compareTo(E o)<br>          比较此枚举与指定对象的顺序。</p>
+<p>Class<e> getDeclaringClass()<br>          返回与此枚举常量的枚举类型相对应的 Class 对象。</e></p>
+<p>String name()<br>          返回此枚举常量的名称，在其枚举声明中对其进行声明。</p>
+<p>int ordinal()<br>          返回枚举常量的序数（它在枚举声明中的位置，其中初始常量序数为零）。</p>
+<p>String toString()</p>
+<pre><code>返回枚举常量的名称，它包含在声明中。
+</code></pre><p>static &lt;T extends Enum<t>&gt; T valueOf(Class<t> enumType, String name)<br>          返回带指定名称的指定枚举类型的枚举常量。</t></t></p>
+<hr>
+<p><strong>给 enum 自定义属性和方法</strong></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">给 enum 对象加一下 value 的属性和 getValue() 的方法：</span><br><span class="line"></span><br><span class="line">package com.hmw.test;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 枚举测试类</span><br><span class="line"> *</span><br><span class="line"> * @author &lt;a href=&quot;mailto:hemingwang0902@126.com&quot;&gt;何明旺&lt;/a&gt;</span><br><span class="line"> */</span><br><span class="line">public enum EnumTest &#123;</span><br><span class="line">    MON(1), TUE(2), WED(3), THU(4), FRI(5), SAT(6) &#123;</span><br><span class="line">        @Override</span><br><span class="line">        public boolean isRest() &#123;</span><br><span class="line">            return true;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    SUN(0) &#123;</span><br><span class="line">        @Override</span><br><span class="line">        public boolean isRest() &#123;</span><br><span class="line">            return true;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    private int value;</span><br><span class="line"></span><br><span class="line">    private EnumTest(int value) &#123;</span><br><span class="line">        this.value = value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public int getValue() &#123;</span><br><span class="line">        return value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public boolean isRest() &#123;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">public class Test &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println(&quot;EnumTest.FRI 的 value = &quot; + EnumTest.FRI.getValue());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">输出结果：</span><br><span class="line">EnumTest.FRI 的 value = 5</span><br></pre></td></tr></table></figure>
+<hr>
+<p><strong>EnumSet，EnumMap 的应用</strong></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class Test &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        // EnumSet的使用</span><br><span class="line">        EnumSet&lt;EnumTest&gt; weekSet = EnumSet.allOf(EnumTest.class);</span><br><span class="line">        for (EnumTest day : weekSet) &#123;</span><br><span class="line">            System.out.println(day);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // EnumMap的使用</span><br><span class="line">        EnumMap&lt;EnumTest, String&gt; weekMap = new EnumMap(EnumTest.class);</span><br><span class="line">        weekMap.put(EnumTest.MON, &quot;星期一&quot;);</span><br><span class="line">        weekMap.put(EnumTest.TUE, &quot;星期二&quot;);</span><br><span class="line">        // ... ...</span><br><span class="line">        for (Iterator&lt;Entry&lt;EnumTest, String&gt;&gt; iter = weekMap.entrySet().iterator(); iter.hasNext();) &#123;</span><br><span class="line">            Entry&lt;EnumTest, String&gt; entry = iter.next();</span><br><span class="line">            System.out.println(entry.getKey().name() + &quot;:&quot; + entry.getValue());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<p>原理分析<br>        enum 的语法结构尽管和 class 的语法不一样，但是经过编译器编译之后产生的是一个class文件。该class文件经过反编译可以看到实际上是生成了一个类，该类继承了java.lang.Enum<e>。EnumTest 经过反编译(javap com.hmw.test.EnumTest 命令)之后得到的内容如下：</e></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class com.hmw.test.EnumTest extends java.lang.Enum&#123;</span><br><span class="line">    public static final com.hmw.test.EnumTest MON;</span><br><span class="line">    public static final com.hmw.test.EnumTest TUE;</span><br><span class="line">    public static final com.hmw.test.EnumTest WED;</span><br><span class="line">    public static final com.hmw.test.EnumTest THU;</span><br><span class="line">    public static final com.hmw.test.EnumTest FRI;</span><br><span class="line">    public static final com.hmw.test.EnumTest SAT;</span><br><span class="line">    public static final com.hmw.test.EnumTest SUN;</span><br><span class="line">    static &#123;&#125;;</span><br><span class="line">    public int getValue();</span><br><span class="line">    public boolean isRest();</span><br><span class="line">    public static com.hmw.test.EnumTest[] values();</span><br><span class="line">    public static com.hmw.test.EnumTest valueOf(java.lang.String);</span><br><span class="line">    com.hmw.test.EnumTest(java.lang.String, int, int, com.hmw.test.EnumTest);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以，实际上 enum 就是一个 class，只不过 java 编译器帮我们做了语法的解析和编译而已。<br>总结<br>    可以把 enum 看成是一个普通的 class，它们都可以定义一些属性和方法，不同之处是：enum 不能使用 extends 关键字继承其他类，因为 enum 已经继承了 java.lang.Enum（java是单一继承）。</p>
 ]]></content>
   </entry>
   <entry>
@@ -556,72 +560,68 @@ Java虚拟机会根据该hash码最终在真正的的堆空间中给该对象分
 ]]></content>
   </entry>
   <entry>
-    <title>java中枚举的使用</title>
-    <url>/2019/07/16/oldblog/java%E4%B8%AD%E6%9E%9A%E4%B8%BE%E7%9A%84%E4%BD%BF%E7%94%A8/</url>
-    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
-<h3 id="java中枚举的使用"><a href="#java中枚举的使用" class="headerlink" title="java中枚举的使用"></a>java中枚举的使用</h3><p><strong>enum</strong> 的全称为 enumeration 是 JDK 1.5  中引入的新特性，存放在 java.lang 包中。</p>
-<ol>
-<li><p>原始的接口定义常量</p>
-</li>
-<li><p>语法（定义）</p>
-</li>
-<li><p>遍历、switch 等常用操作</p>
-</li>
-<li><p>enum 对象的常用方法介绍</p>
-</li>
-<li><p>给 enum 自定义属性和方法</p>
-</li>
-<li><p>EnumSet，EnumMap 的应用</p>
-</li>
-<li><p>enum 的原理分析</p>
-</li>
-<li><p>总结</p>
-</li>
-</ol>
+    <title>java---GC机制</title>
+    <url>/2019/07/16/oldblog/java---GC%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[<p>此处简介</p>
+<a id="more"></a>
+<h3 id="java—GC机制"><a href="#java—GC机制" class="headerlink" title="java—GC机制"></a>java—GC机制</h3><p>JVM会有一个运行时数据区来管理内存</p>
+<ul>
+<li>程序计数器(Program Counter Register)</li>
+<li>虚拟机栈(VM Stack)</li>
+<li>本地方法栈(Native Method Stack)</li>
+<li>方法区(Method Area)</li>
+<li>堆(Heap)</li>
+</ul>
+<h4 id="What-–-哪些内存需要回收？"><a href="#What-–-哪些内存需要回收？" class="headerlink" title="What? – 哪些内存需要回收？"></a>What? – 哪些内存需要回收？</h4><p>而其中程序计数器、虚拟机栈、本地方法栈是每个线程私有的内存空间，随线程而生，随线程而亡。<br>例如栈中每一个栈帧中分配多少内存基本上在类结构去诶是哪个下来时就已知了，因此这3个区域的内存分配和回收都是确定的，无需考虑内存回收的问题。</p>
+<p>但方法区和堆就不同了，一个接口的多个实现类需要的内存可能不一样，我们只有在程序运行期间才会知道会创建哪些对象，这部分内存的分配和回收都是动态的，GC主要关注的是这部分内存。</p>
 <hr>
-<p>原始的接口定义常量</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public interface IConstants &#123;</span><br><span class="line">    String MON = &quot;Mon&quot;;</span><br><span class="line">    String TUE = &quot;Tue&quot;;</span><br><span class="line">    String WED = &quot;Wed&quot;;</span><br><span class="line">    String THU = &quot;Thu&quot;;</span><br><span class="line">    String FRI = &quot;Fri&quot;;</span><br><span class="line">    String SAT = &quot;Sat&quot;;</span><br><span class="line">    String SUN = &quot;Sun&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>总而言之，GC主要进行回收的内存是JVM中的方法区和堆；<br>涉及到多线程(指堆)、多个对该对象不同类型的引用(指方法区)，才会涉及GC的回收。</p>
 <hr>
-<p><strong>语法（定义）</strong><br> 创建枚举类型要使用 enum 关键字，隐含了所创建的类型都是 java.lang.Enum 类的子类（java.lang.Enum 是一个抽象类）。枚举类型符合通用模式 Class Enum&lt;E extends Enum<e>&gt;，而 E 表示枚举类型的名称。枚举类型的每一个值都将映射到 protected Enum(String name, int ordinal) 构造函数中，在这里，每个值的名称都被转换成一个字符串，并且序数设置表示了此设置被创建的顺序。</e></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">package com.hmw.test;</span><br><span class="line">/**</span><br><span class="line"> * 枚举测试类</span><br><span class="line"> * @author &lt;a href=&quot;mailto:hemingwang0902@126.com&quot;&gt;何明旺&lt;/a&gt;</span><br><span class="line"> */</span><br><span class="line">public enum EnumTest &#123;</span><br><span class="line">    MON, TUE, WED, THU, FRI, SAT, SUN;</span><br><span class="line">&#125;</span><br><span class="line">这段代码实际上调用了7次 Enum(String name, int ordinal)：</span><br><span class="line"></span><br><span class="line">new Enum&lt;EnumTest&gt;(&quot;MON&quot;,0);</span><br><span class="line">new Enum&lt;EnumTest&gt;(&quot;TUE&quot;,1);</span><br><span class="line">new Enum&lt;EnumTest&gt;(&quot;WED&quot;,2);</span><br></pre></td></tr></table></figure>
-<hr>
-<p><strong>遍历、switch 等常用操作</strong></p>
-<p>public class Test {<br>    public static void main(String[] args) {<br>        for (EnumTest e : EnumTest.values()) {<br>            System.out.println(e.toString());<br>        }</p>
-<pre><code>    System.out.println(&quot;----------------我是分隔线------------------&quot;);
-
-    EnumTest test = EnumTest.TUE;
-    switch (test) {
-    case MON:
-        System.out.println(&quot;今天是星期一&quot;);
-        break;
-    case TUE:
-        System.out.println(&quot;今天是星期二&quot;);
-        break;
-    // ... ...
-    default:
-        System.out.println(test);
-        break;
-    }
-}
-}
-</code></pre><hr>
-<p><strong>enum 对象的常用方法介绍</strong><br>int compareTo(E o)<br>          比较此枚举与指定对象的顺序。</p>
-<p>Class<e> getDeclaringClass()<br>          返回与此枚举常量的枚举类型相对应的 Class 对象。</e></p>
-<p>String name()<br>          返回此枚举常量的名称，在其枚举声明中对其进行声明。</p>
-<p>int ordinal()<br>          返回枚举常量的序数（它在枚举声明中的位置，其中初始常量序数为零）。</p>
-<p>String toString()</p>
-<pre><code>返回枚举常量的名称，它包含在声明中。
-</code></pre><p>static &lt;T extends Enum<t>&gt; T valueOf(Class<t> enumType, String name)<br>          返回带指定名称的指定枚举类型的枚举常量。</t></t></p>
-<hr>
-<p><strong>给 enum 自定义属性和方法</strong></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">给 enum 对象加一下 value 的属性和 getValue() 的方法：</span><br><span class="line"></span><br><span class="line">package com.hmw.test;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 枚举测试类</span><br><span class="line"> *</span><br><span class="line"> * @author &lt;a href=&quot;mailto:hemingwang0902@126.com&quot;&gt;何明旺&lt;/a&gt;</span><br><span class="line"> */</span><br><span class="line">public enum EnumTest &#123;</span><br><span class="line">    MON(1), TUE(2), WED(3), THU(4), FRI(5), SAT(6) &#123;</span><br><span class="line">        @Override</span><br><span class="line">        public boolean isRest() &#123;</span><br><span class="line">            return true;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    SUN(0) &#123;</span><br><span class="line">        @Override</span><br><span class="line">        public boolean isRest() &#123;</span><br><span class="line">            return true;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    private int value;</span><br><span class="line"></span><br><span class="line">    private EnumTest(int value) &#123;</span><br><span class="line">        this.value = value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public int getValue() &#123;</span><br><span class="line">        return value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public boolean isRest() &#123;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">public class Test &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println(&quot;EnumTest.FRI 的 value = &quot; + EnumTest.FRI.getValue());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">输出结果：</span><br><span class="line">EnumTest.FRI 的 value = 5</span><br></pre></td></tr></table></figure>
-<hr>
-<p><strong>EnumSet，EnumMap 的应用</strong></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class Test &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        // EnumSet的使用</span><br><span class="line">        EnumSet&lt;EnumTest&gt; weekSet = EnumSet.allOf(EnumTest.class);</span><br><span class="line">        for (EnumTest day : weekSet) &#123;</span><br><span class="line">            System.out.println(day);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // EnumMap的使用</span><br><span class="line">        EnumMap&lt;EnumTest, String&gt; weekMap = new EnumMap(EnumTest.class);</span><br><span class="line">        weekMap.put(EnumTest.MON, &quot;星期一&quot;);</span><br><span class="line">        weekMap.put(EnumTest.TUE, &quot;星期二&quot;);</span><br><span class="line">        // ... ...</span><br><span class="line">        for (Iterator&lt;Entry&lt;EnumTest, String&gt;&gt; iter = weekMap.entrySet().iterator(); iter.hasNext();) &#123;</span><br><span class="line">            Entry&lt;EnumTest, String&gt; entry = iter.next();</span><br><span class="line">            System.out.println(entry.getKey().name() + &quot;:&quot; + entry.getValue());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<hr>
-<p>原理分析<br>        enum 的语法结构尽管和 class 的语法不一样，但是经过编译器编译之后产生的是一个class文件。该class文件经过反编译可以看到实际上是生成了一个类，该类继承了java.lang.Enum<e>。EnumTest 经过反编译(javap com.hmw.test.EnumTest 命令)之后得到的内容如下：</e></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">public class com.hmw.test.EnumTest extends java.lang.Enum&#123;</span><br><span class="line">    public static final com.hmw.test.EnumTest MON;</span><br><span class="line">    public static final com.hmw.test.EnumTest TUE;</span><br><span class="line">    public static final com.hmw.test.EnumTest WED;</span><br><span class="line">    public static final com.hmw.test.EnumTest THU;</span><br><span class="line">    public static final com.hmw.test.EnumTest FRI;</span><br><span class="line">    public static final com.hmw.test.EnumTest SAT;</span><br><span class="line">    public static final com.hmw.test.EnumTest SUN;</span><br><span class="line">    static &#123;&#125;;</span><br><span class="line">    public int getValue();</span><br><span class="line">    public boolean isRest();</span><br><span class="line">    public static com.hmw.test.EnumTest[] values();</span><br><span class="line">    public static com.hmw.test.EnumTest valueOf(java.lang.String);</span><br><span class="line">    com.hmw.test.EnumTest(java.lang.String, int, int, com.hmw.test.EnumTest);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>所以，实际上 enum 就是一个 class，只不过 java 编译器帮我们做了语法的解析和编译而已。<br>总结<br>    可以把 enum 看成是一个普通的 class，它们都可以定义一些属性和方法，不同之处是：enum 不能使用 extends 关键字继承其他类，因为 enum 已经继承了 java.lang.Enum（java是单一继承）。</p>
+<h4 id="When-–-什么时候回收？"><a href="#When-–-什么时候回收？" class="headerlink" title="When? – 什么时候回收？"></a>When? – 什么时候回收？</h4><p>堆<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">在面试中经常会碰到这样一个问题（事实上笔者也碰到过）：如何判断一个对象已经死去？</span><br><span class="line"></span><br><span class="line">很容易想到的一个答案是：对一个对象添加引用计数器。每当有地方引用它时，计数器值加1；当引用失效时，计数器值减1.而当计数器的值为0时这个对象就不会再被使用，判断为已死。是不是简单又直观。然而，很遗憾。这种做法是错误的！（面试时可千万别这样回答哦，我就是不假思索这样回答，然后就。。）为什么是错的呢？事实上，用引用计数法确实在大部分情况下是一个不错的解决方案，而在实际的应用中也有不少案例，但它却无法解决对象之间的循环引用问题。比如对象A中有一个字段指向了对象B，而对象B中也有一个字段指向了对象A，而事实上他们俩都不再使用，但计数器的值永远都不可能为0，也就不会被回收，然后就发生了内存泄露。。</span><br></pre></td></tr></table></figure></p>
+<p>在Java，C#等语言中，比较主流的判定一个对象已死的方法是：<strong>可达性分析(Reachability Analysis).</strong><br>所有生成的对象都是一个称为”GC Roots”的根的子树。从GC Roots开始向下搜索，搜索所经过的路径称为引用链(Reference Chain)，当一个对象到GC Roots没有任何引用链可以到达时，就称这个对象是不可达的（不可引用的），也就是可以被GC回收了<br><img src="/2019/07/16/oldblog/java---GC机制/1483447208180.png" alt="Alt text"></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">无论是引用计数器还是可达性分析，判定对象是否存活都与引用有关！那么，如何定义对象的引用呢？</span><br></pre></td></tr></table></figure>
+<ul>
+<li>强引用(Strong Reference):Object obj = new Object();只要强引用还存在，GC永远不会回收掉被引用的对象。</li>
+<li>软引用(Soft Reference)：描述一些还有用但非必需的对象。在系统将会发生内存溢出之前，会把这些对象列入回收范围进行二次回收（即系统将会发生内存溢出了，才会对他们进行回收。）</li>
+<li>弱引用(Weak Reference):程度比软引用还要弱一些。这些对象只能生存到下次GC之前。当GC工作时，无论内存是否足够都会将其回收（即只要进行GC，就会对他们进行回收。）</li>
+<li>虚引用(Phantom Reference):一个对象是否存在虚引用，完全不会对其生存时间构成影响。</li>
+</ul>
+<p><strong>方法区</strong><br>What部分我们已经提到，GC主要回收的是堆和方法区中的内存，而上面的How主要是针对对象的回收，他们一般位于堆内。那么，方法区中的东西该怎么回收呢？</p>
+<p>关于方法区中需要回收的是一些废弃的常量和无用的类</p>
+<ul>
+<li>废弃的常量的回收。这里看引用计数就可以了。没有对象引用该常量就可以放心的回收了。</li>
+<li>无用的类的回收。什么是无用的类呢？</li>
+</ul>
+<ul>
+<li>该类所有的实例都已经被回收。也就是Java堆中不存在该类的任何实例；</li>
+<li>加载该类的ClassLoader已经被回收；</li>
+<li>该类对应的java.lang.Class对象没有任何地方被引用，无法在任何地方通过反射访问该类的方法。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">总而言之，对于堆中的对象，主要用可达性分析判断一个对象是否还存在引用，如果该对象没有任何引用就应该被回收。而根据我们实际对引用的不同需求，又分成了4中引用，每种引用的回收机制也是不同的。</span><br><span class="line">对于方法区中的常量和类，当一个常量没有任何对象引用它，它就可以被回收了。而对于类，如果可以判定它为无用类，就可以被回收了。</span><br></pre></td></tr></table></figure>
+<h4 id="How-–-如何回收？"><a href="#How-–-如何回收？" class="headerlink" title="How? – 如何回收？"></a>How? – 如何回收？</h4><h5 id="标记-清除-Mark-Sweep-算法"><a href="#标记-清除-Mark-Sweep-算法" class="headerlink" title="标记-清除(Mark-Sweep)算法"></a>标记-清除(Mark-Sweep)算法</h5><p>分为两个阶段：首先标记出所有需要回收的对象，在标记完成后统一回收所有被标记的对象。<br>缺点：效率问题，标记和清除两个过程的效率都不高；空间问题，会产生很多碎片。</p>
+<h5 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h5><p>将可用内存按容量划分为大小相等的两块，每次只用其中一块。当这一块用完了，就将还存活的对象复制到另外一块上面，然后把原始空间全部回收。高效、简单。<br>缺点：将内存缩小为原来的一半。</p>
+<h5 id="标记-整理-Mark-Compat-算法"><a href="#标记-整理-Mark-Compat-算法" class="headerlink" title="标记-整理(Mark-Compat)算法"></a>标记-整理(Mark-Compat)算法</h5><p>标记过程与标记-清除算法过程一样，但后面不是简单的清除，而是让所有存活的对象都向一端移动，然后直接清除掉端边界以外的内存。</p>
+<h5 id="分代收集-Generational-Collection-算法"><a href="#分代收集-Generational-Collection-算法" class="headerlink" title="分代收集(Generational Collection)算法"></a>分代收集(Generational Collection)算法</h5><ul>
+<li>新生代中，每次垃圾收集时都有大批对象死去，只有少量存活，就选用复制算法，只需要付出少量存活对象的复制成本就可以完成收集；</li>
+<li>老年代中，其存活率较高、没有额外空间对它进行分配担保，就应该使用“标记-整理”或“标记-清理”算法进行回收。<br>####一些收集器<h5 id="Serial收集器"><a href="#Serial收集器" class="headerlink" title="Serial收集器"></a>Serial收集器</h5>单线程收集器，表示在它进行垃圾收集时，必须暂停其他所有的工作线程，直到它收集结束。”Stop The World”.<h5 id="ParNew收集器"><a href="#ParNew收集器" class="headerlink" title="ParNew收集器"></a>ParNew收集器</h5>实际就是Serial收集器的多线程版本。</li>
+<li>并发(Parallel):指多条垃圾收集线程并行工作，但此时用户线程仍然处于等待状态；</li>
+<li>并行(Concurrent):指用户线程与垃圾收集线程同时执行，用户程序在继续运行，而垃圾收集程序运行于另一个CPU上。<h5 id="Parallel-Scavenge收集器"><a href="#Parallel-Scavenge收集器" class="headerlink" title="Parallel Scavenge收集器"></a>Parallel Scavenge收集器</h5>该收集器比较关注吞吐量(Throughout)(CPU用于用户代码的时间与CPU总消耗时间的比值)，保证吞吐量在一个可控的范围内。<h5 id="CMS-Concurrent-Mark-Sweep-收集器"><a href="#CMS-Concurrent-Mark-Sweep-收集器" class="headerlink" title="CMS(Concurrent Mark Sweep)收集器"></a>CMS(Concurrent Mark Sweep)收集器</h5>CMS收集器是一种以获得最短停顿时间为目标的收集器。<h5 id="G1-Garbage-First-收集器"><a href="#G1-Garbage-First-收集器" class="headerlink" title="G1(Garbage First)收集器"></a>G1(Garbage First)收集器</h5>从JDK1.7 Update 14之后的HotSpot虚拟机正式提供了商用的G1收集器，与其他收集器相比，它具有如下优点：并行与并发；分代收集；空间整合；可预测的停顿等。</li>
+</ul>
+<p>本部分主要分析了三种不同的垃圾回收算法：Mark-Sweep, Copy, Mark-Compact. 每种算法都有不同的优缺点，也有不同的适用范围。而JVM中对垃圾回收器并没有严格的要求，不同的收集器会结合多个算法进行垃圾回收。</p>
+<p>#####内存分配<br>Java技术体系中所提倡的自动内存管理最终可以归结为自动化的解决2个问题：给对象分配内存以及回收分配给对象的内存。</p>
+<p>#####对象优先在Eden分配<br>大多数情况下，对象在新生代Eden区分配。当Eden区没有足够的内存时，虚拟机将发起一次Minor GC。</p>
+<ul>
+<li>Minor GC(新生代GC):指发生在新生代的垃圾收集动作，因为Java对象大多都具备朝生夕灭的特性，所以Minor GC发生的非常频繁。</li>
+<li>Full GC/Major GC(老年代GC):指发生在老年代的GC，出现了Major GC，经常会伴随至少一次的Minor GC。<h5 id="大对象直接进老年代"><a href="#大对象直接进老年代" class="headerlink" title="大对象直接进老年代"></a>大对象直接进老年代</h5>大对象是指需要大量连续内存空间的Java对象（例如很长的字符串以及数组）。<h5 id="长期存活的对象将进入老年代"><a href="#长期存活的对象将进入老年代" class="headerlink" title="长期存活的对象将进入老年代"></a>长期存活的对象将进入老年代</h5>JVM为每个对象定义一个对象年龄计数器。</li>
+</ul>
+<ul>
+<li>如果对象在Eden出生并经历过第一次Minor GC后仍然存活，并且能够被Survivor容纳，则应该被移动到Survivor空间中，并且年龄对象设置为1；</li>
+<li>对象在Survivor区中每熬过一次Minor GC，年龄就会增加1岁，当它的年龄增加到一定程度(默认为15岁，可通过参数-XX:MaxTenuringThreshold设置)，就会被晋升到老年代中。</li>
+<li>要注意的是：JVM并不是永远的要求对象的年龄必须达到MaxTenuringThreshold才能晋升老年代，如果在Survivor空间中相同年龄所有对象大小的总和大于Survivor空间的一般，年龄大于等于该年龄的对象就可以直接进入老年代，无需等到MaxTenuringThreshold中要求的年龄。<h5 id="空间分配担保"><a href="#空间分配担保" class="headerlink" title="空间分配担保"></a>空间分配担保</h5></li>
+<li>在发生Minor GC之前，虚拟机会先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果这个条件成立，则进行Minor GC是安全的；</li>
+<li>如果不成立，则虚拟机会查看HandlePromotionFailure设置值是否允许担保失败。如果允许，则急促检查老年代最大可用连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，将尝试着进行一次Minor GC，尽管它是有风险的；</li>
+<li>如果小于或者HandePromotionFailure设置为不允许冒险，则这时要改为进行一次Full GC.</li>
+</ul>
 ]]></content>
   </entry>
   <entry>
@@ -635,6 +635,107 @@ Java虚拟机会根据该hash码最终在真正的的堆空间中给该对象分
 <p><code>*引用传递：方法调用时，实际参数的引用（是指地址，而不是参数的值）被传递给方法中相应的形式参数，函数接收到的是原始值的内存地址，在方法中，形参与实参的内容相同，方法中对形参的处理会影响实参的值。</code></p>
 <p>1）形参为基本类型时，对形参的处理不会影响实参。<br>2）形参为引用类型时，对形参的处理会影响实参。<br>3）String,Integer,Double等immutable类型的特殊处理，可以理解为值传递，形参操作不会影响实参对象。</p>
 ]]></content>
+  </entry>
+  <entry>
+    <title>kafka小结</title>
+    <url>/2019/07/16/oldblog/kafka%E5%B0%8F%E7%BB%93/</url>
+    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
+<h2 id="kafka小结"><a href="#kafka小结" class="headerlink" title="kafka小结"></a>kafka小结</h2><p>消息系统术语<br>kafka特性</p>
+<ul>
+<li>分布式的</li>
+<li>可分区的</li>
+<li>可复制的</li>
+</ul>
+<p>在普通的消息系统的功上，还有自己独特的设计</p>
+<p>Kafka将消息以topic为单位进行归纳。<br>将向Kafka topic发布消息的程序成为producers.<br>将预订topics并消费消息的程序成为consumer.<br>Kafka以集群的方式运行，可以由一个或多个服务组成，每个服务叫做一个broker.<br>producers通过网络将消息发送到Kafka集群，集群向消费者提供消息，</p>
+<p><img src="//img.wqkenqing.ren/file/2017/7/827fdc820cae4619859042761c3b40a9-image.png" alt="827fdc820cae4619859042761c3b40a9-image.png"></p>
+<p>客户端和服务端通过TCP协议通信。Kafka提供了Java客户端，并且对多种语言都提供了支持。</p>
+<hr>
+<p>Topics 和Logs</p>
+<p>先来看一下Kafka提供的一个抽象概念:topic.<br>一个topic是对一组消息的归纳。对每个topic，Kafka 对它的日志进行了分区<br><img src="//img.wqkenqing.ren/file/2017/7/bf0d2ddee1d14cb29fd54483a622d67c-image.png" alt="bf0d2ddee1d14cb29fd54483a622d67c-image.png"></p>
+<p>一个topic是对一组消息的归纳。<br>对每个topic，Kafka 对它的日志进行了分区，</p>
+<p>每个分区都由一系列有序的、不可变的消息组成，这些消息被连续的追加到分区中。分区中的每个消息都有一个连续的序列号叫做offset,用来在分区中唯一的标识这个消息。</p>
+<hr>
+<h3 id="kafka常用指令收集"><a href="#kafka常用指令收集" class="headerlink" title="kafka常用指令收集"></a>kafka常用指令收集</h3><p><strong>查看topic的详细信息</strong><br>kafka-topics.sh -zookeeper 127.0.0.1:2181 -describe -topic topic name</p>
+<p><strong>为topic增加副本</strong><br>kafka-reassign-partitions.sh -zookeeper 127.0.0.1:2181 -reassignment-json-file json/partitions-to-move.json -execute<br><strong>创建topic</strong><br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic name<br><strong>为topic增加partition</strong><br>kafka-topics.sh –zookeeper 127.0.0.1:2181 –alter –partitions 20 –topic name<br><strong>kafka生产者客户端命令</strong><br>kafka-console-producer.sh –broker-list localhost:9092 –topic name<br><strong>kafka消费者客户端命令</strong><br>kafka-console-consumer.sh -zookeeper localhost:2181 –from-beginning –topic name<br><strong>kafka服务启动</strong><br>kafka-server-start.sh -daemon ../config/server.properties<br><strong>删除topic</strong><br>kafka-run-class.sh kafka.admin.DeleteTopicCommand –topic testKJ1 –zookeeper 127.0.0.1:2181<br>kafka-topics.sh –zookeeper localhost:2181 –delete –topic testKJ1<br><strong>查看consumer组内消费的offset</strong><br>kafka-run-class.sh kafka.tools.ConsumerOffsetChecker –zookeeper localhost:2181 –group test –topic name</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>maven小结</title>
+    <url>/2019/07/16/oldblog/maven%E5%B0%8F%E7%BB%93/</url>
+    <content><![CDATA[<p>此处简介</p>
+<a id="more"></a>
+<h2 id="maven小结"><a href="#maven小结" class="headerlink" title="maven小结"></a>maven小结</h2><h3 id="什么是maven"><a href="#什么是maven" class="headerlink" title="什么是maven"></a>什么是maven</h3><p>就是一款帮助程序员构建项目的工具,我们只需要告诉Maven需要哪些Jar 包，它会帮助我们下载所有的Jar，极大提升开发效率。</p>
+<h3 id="Maven规定的目录结构"><a href="#Maven规定的目录结构" class="headerlink" title="Maven规定的目录结构"></a>Maven规定的目录结构</h3><h3 id="Maven基本命令"><a href="#Maven基本命令" class="headerlink" title="Maven基本命令"></a>Maven基本命令</h3><ul>
+<li><p>-v:查询Maven版本<br><code>本命令用于检查maven是否安装成功。Maven安装完成之后，在命令行输入mvn -v，若出现maven信息，则说明安装成功</code></p>
+</li>
+<li><p>compile：编译</p>
+</li>
+<li>test:测试项目</li>
+<li>package:打包</li>
+<li>clean:删除target文件夹</li>
+<li>install:安装 将当前项目放到Maven的本地仓库中。供其他项目使用</li>
+</ul>
+<h3 id="什么是Maven仓库？"><a href="#什么是Maven仓库？" class="headerlink" title="什么是Maven仓库？"></a>什么是Maven仓库？</h3><p>Maven仓库用来存放Maven管理的所有Jar包。分为：<strong>本地仓库</strong> 和 <strong>本地仓库</strong>。</p>
+<ul>
+<li>本地仓库<br>Maven本地的Jar包仓库。</li>
+<li>中央仓库<br>Maven官方提供的远程仓库。<blockquote>
+<p>当项目编译时，Maven首先从本地仓库中寻找项目所需的Jar包，若本地仓库没有，再到Maven的中央仓库下载所需Jar包。</p>
+</blockquote>
+</li>
+</ul>
+<p>什么是“坐标”？<br>在Maven中，坐标是Jar包的唯一标识，Maven通过坐标在仓库中找到项目所需的Jar包。</p>
+<p>如下代码中，groupId和artifactId构成了一个Jar包的坐标。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;ch.qos.logback&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;logback-classic&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;1.1.1&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>groupId</strong>:所需Jar包的项目名<br><strong>artifactId</strong>:所需Jar包的模块名<br><strong>version</strong>:所需Jar包的版本号</p>
+<p>传递依赖 与 排除依赖</p>
+<ul>
+<li>传递依赖：如果我们的项目引用了一个Jar包，而该Jar包又引用了其他Jar包，那么在默认情况下项目编译时，Maven会把直接引用和简洁引用的Jar包都下载到本地。</li>
+<li>排除依赖：如果我们只想下载直接引用的Jar包，那么需要在pom.xml中做如下配置：(将需要排除的Jar包的坐标写在中)</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;exclusions&gt;</span><br><span class="line">    &lt;exclusion&gt;</span><br><span class="line">        &lt;groupId&gt;ch.qos.logback&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;logback-classic&lt;/artifactId&gt;</span><br><span class="line">    &lt;/exclusion&gt;</span><br><span class="line">&lt;/exclusions&gt;</span><br></pre></td></tr></table></figure>
+<p>依赖冲突<br>若项目中多个Jar同时引用了相同的Jar时，会产生依赖冲突，但Maven采用了两种避免冲突的策略，因此在Maven中是不存在依赖冲突的。<br>短路优先<br>本项目——&gt;A.jar——&gt;B.jar——&gt;X.jar<br>本项目——&gt;C.jar——&gt;X.jar<br>声明优先<br>若引用路径长度相同时，在pom.xml中谁先被声明，就使用谁。</p>
+<p>聚合<br>什么是聚合？<br>将多个项目同时运行就称为聚合。<br>如何实现聚合？<br>只需在pom中作如下配置即可实现聚合：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;modules&gt;</span><br><span class="line">        &lt;module&gt;../模块1&lt;/module&gt;</span><br><span class="line">        &lt;module&gt;../模块2&lt;/module&gt;</span><br><span class="line">        &lt;module&gt;../模块3&lt;/module&gt;</span><br><span class="line">    &lt;/modules&gt;</span><br></pre></td></tr></table></figure>
+<p>继承<br>什么是继承？<br>在聚合多个项目时，如果这些被聚合的项目中需要引入相同的Jar，那么可以将这些Jar写入父pom中，各个子项目继承该pom即可。<br>如何实现继承？<br>父pom配置：将需要继承的Jar包的坐标放入标签即可。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;dependencyManagement&gt;</span><br><span class="line">        &lt;dependencies&gt;</span><br><span class="line">            &lt;dependency&gt;</span><br><span class="line">                &lt;groupId&gt;org.apache.shiro&lt;/groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;shiro-spring&lt;/artifactId&gt;</span><br><span class="line">                &lt;version&gt;1.2.2&lt;/version&gt;</span><br><span class="line">            &lt;/dependency&gt;</span><br><span class="line">        &lt;/dependencies&gt;</span><br><span class="line">    &lt;/dependencyManagement&gt;</span><br></pre></td></tr></table></figure>
+<p>子pom配置：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;parent&gt;</span><br><span class="line">    &lt;groupId&gt;父pom所在项目的groupId&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;父pom所在项目的artifactId&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;父pom所在项目的版本号&lt;/version&gt;</span><br><span class="line">&lt;/parent&gt;</span><br></pre></td></tr></table></figure>
+<hr>
+<p>Maven本地资源库</p>
+<blockquote>
+<p>通常情况下，可改变默认的 .m2 目录下的默认本地存储库文件夹到其他更有意义的名称，例如<br><img src="/2019/07/16/oldblog/maven小结/1489394095038.png" alt="Alt text"></p>
+</blockquote>
+<p>当你建立一个 Maven 的项目，Maven 会检查你的 pom.xml 文件，以确定哪些依赖下载。首先，Maven 将从本地资源库获得 Maven 的本地资源库依赖资源，如果没有找到，然后把它会从默认的 Maven 中央存储库 – <a href="http://repo1.maven.org/maven2/" target="_blank" rel="noopener">http://repo1.maven.org/maven2/</a> 查找下载</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>map总结</title>
+    <url>/2019/07/16/oldblog/map%E6%80%BB%E7%BB%93/</url>
+    <content><![CDATA[<p>此处简介</p>
+<a id="more"></a>
+<h3 id="map总结"><a href="#map总结" class="headerlink" title="map总结"></a>map总结</h3><p>Hashtable<br>├-HashMap<br>└-WeakHashMap</p>
+<p>通用Map，用于在应用程序中管理映射，通常在 java.util 程序包中实现</p>
+<ul>
+<li>HashMap</li>
+<li>Hashtable</li>
+<li>Properties</li>
+<li>LinkedHashMap</li>
+<li>IdentityHashMap</li>
+<li>TreeMap</li>
+<li>WeakHashMap</li>
+<li>ConcurrentHashMap</li>
+</ul>
+<p><strong>HashMap</strong></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">最常用的Map,它根据键的HashCode 值存储数据,根据键可以直接获取它的值，具有很快的访问速度。HashMap最多只允许一条记录的键为Null(多条会覆盖);允许多条记录的值为 Null。非同步的。</span><br></pre></td></tr></table></figure>
+<p><strong>Hashtable</strong></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">与 HashMap类似,不同的是:key和value的值均不允许为null;它支持线程的同步，即任一时刻只有一个线程能写Hashtable,因此也导致了Hashtale在写入时会比较慢。</span><br><span class="line">LinkedHashMap</span><br><span class="line"></span><br><span class="line">保存了记录的插入顺序，在用Iterator遍历LinkedHashMap时，先得到的记录肯定是先插入的.在遍历的时候会比HashMap慢。key和value均允许为空，非同步的。</span><br></pre></td></tr></table></figure>
+<p><strong>TreeMap</strong></p>
+<p><img src="//img.wqkenqing.ren/file/2017/7/d98ba033b20b4f48a430419e96e98fa3-image.png" alt="d98ba033b20b4f48a430419e96e98fa3-image.png"></p>
+<pre><code>+ 增强for循环使用方便，但性能较差，不适合处理超大量级的数据。
++ 迭代器的遍历速度要比增强for循环快很多，是增强for循环的2倍左右。
++ 使用entrySet遍历的速度要比keySet快很多，是keySet的1.5倍左右。
+</code></pre>]]></content>
   </entry>
   <entry>
     <title>java八大数据类型总结</title>
@@ -705,105 +806,47 @@ long min=-9223372036854775808</code></p>
 ]]></content>
   </entry>
   <entry>
-    <title>kafka小结</title>
-    <url>/2019/07/16/oldblog/kafka%E5%B0%8F%E7%BB%93/</url>
-    <content><![CDATA[<p>此处简介<br><a id="more"></a></p>
-<h2 id="kafka小结"><a href="#kafka小结" class="headerlink" title="kafka小结"></a>kafka小结</h2><p>消息系统术语<br>kafka特性</p>
-<ul>
-<li>分布式的</li>
-<li>可分区的</li>
-<li>可复制的</li>
-</ul>
-<p>在普通的消息系统的功上，还有自己独特的设计</p>
-<p>Kafka将消息以topic为单位进行归纳。<br>将向Kafka topic发布消息的程序成为producers.<br>将预订topics并消费消息的程序成为consumer.<br>Kafka以集群的方式运行，可以由一个或多个服务组成，每个服务叫做一个broker.<br>producers通过网络将消息发送到Kafka集群，集群向消费者提供消息，</p>
-<p><img src="//img.wqkenqing.ren/file/2017/7/827fdc820cae4619859042761c3b40a9-image.png" alt="827fdc820cae4619859042761c3b40a9-image.png"></p>
-<p>客户端和服务端通过TCP协议通信。Kafka提供了Java客户端，并且对多种语言都提供了支持。</p>
-<hr>
-<p>Topics 和Logs</p>
-<p>先来看一下Kafka提供的一个抽象概念:topic.<br>一个topic是对一组消息的归纳。对每个topic，Kafka 对它的日志进行了分区<br><img src="//img.wqkenqing.ren/file/2017/7/bf0d2ddee1d14cb29fd54483a622d67c-image.png" alt="bf0d2ddee1d14cb29fd54483a622d67c-image.png"></p>
-<p>一个topic是对一组消息的归纳。<br>对每个topic，Kafka 对它的日志进行了分区，</p>
-<p>每个分区都由一系列有序的、不可变的消息组成，这些消息被连续的追加到分区中。分区中的每个消息都有一个连续的序列号叫做offset,用来在分区中唯一的标识这个消息。</p>
-<hr>
-<h3 id="kafka常用指令收集"><a href="#kafka常用指令收集" class="headerlink" title="kafka常用指令收集"></a>kafka常用指令收集</h3><p><strong>查看topic的详细信息</strong><br>kafka-topics.sh -zookeeper 127.0.0.1:2181 -describe -topic topic name</p>
-<p><strong>为topic增加副本</strong><br>kafka-reassign-partitions.sh -zookeeper 127.0.0.1:2181 -reassignment-json-file json/partitions-to-move.json -execute<br><strong>创建topic</strong><br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic name<br><strong>为topic增加partition</strong><br>kafka-topics.sh –zookeeper 127.0.0.1:2181 –alter –partitions 20 –topic name<br><strong>kafka生产者客户端命令</strong><br>kafka-console-producer.sh –broker-list localhost:9092 –topic name<br><strong>kafka消费者客户端命令</strong><br>kafka-console-consumer.sh -zookeeper localhost:2181 –from-beginning –topic name<br><strong>kafka服务启动</strong><br>kafka-server-start.sh -daemon ../config/server.properties<br><strong>删除topic</strong><br>kafka-run-class.sh kafka.admin.DeleteTopicCommand –topic testKJ1 –zookeeper 127.0.0.1:2181<br>kafka-topics.sh –zookeeper localhost:2181 –delete –topic testKJ1<br><strong>查看consumer组内消费的offset</strong><br>kafka-run-class.sh kafka.tools.ConsumerOffsetChecker –zookeeper localhost:2181 –group test –topic name</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>map总结</title>
-    <url>/2019/07/16/oldblog/map%E6%80%BB%E7%BB%93/</url>
+    <title>python learn</title>
+    <url>/2019/07/16/oldblog/python%20learn/</url>
     <content><![CDATA[<p>此处简介</p>
 <a id="more"></a>
-<h3 id="map总结"><a href="#map总结" class="headerlink" title="map总结"></a>map总结</h3><p>Hashtable<br>├-HashMap<br>└-WeakHashMap</p>
-<p>通用Map，用于在应用程序中管理映射，通常在 java.util 程序包中实现</p>
-<ul>
-<li>HashMap</li>
-<li>Hashtable</li>
-<li>Properties</li>
-<li>LinkedHashMap</li>
-<li>IdentityHashMap</li>
-<li>TreeMap</li>
-<li>WeakHashMap</li>
-<li>ConcurrentHashMap</li>
-</ul>
-<p><strong>HashMap</strong></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">最常用的Map,它根据键的HashCode 值存储数据,根据键可以直接获取它的值，具有很快的访问速度。HashMap最多只允许一条记录的键为Null(多条会覆盖);允许多条记录的值为 Null。非同步的。</span><br></pre></td></tr></table></figure>
-<p><strong>Hashtable</strong></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">与 HashMap类似,不同的是:key和value的值均不允许为null;它支持线程的同步，即任一时刻只有一个线程能写Hashtable,因此也导致了Hashtale在写入时会比较慢。</span><br><span class="line">LinkedHashMap</span><br><span class="line"></span><br><span class="line">保存了记录的插入顺序，在用Iterator遍历LinkedHashMap时，先得到的记录肯定是先插入的.在遍历的时候会比HashMap慢。key和value均允许为空，非同步的。</span><br></pre></td></tr></table></figure>
-<p><strong>TreeMap</strong></p>
-<p><img src="//img.wqkenqing.ren/file/2017/7/d98ba033b20b4f48a430419e96e98fa3-image.png" alt="d98ba033b20b4f48a430419e96e98fa3-image.png"></p>
-<pre><code>+ 增强for循环使用方便，但性能较差，不适合处理超大量级的数据。
-+ 迭代器的遍历速度要比增强for循环快很多，是增强for循环的2倍左右。
-+ 使用entrySet遍历的速度要比keySet快很多，是keySet的1.5倍左右。
-</code></pre>]]></content>
-  </entry>
-  <entry>
-    <title>maven小结</title>
-    <url>/2019/07/16/oldblog/maven%E5%B0%8F%E7%BB%93/</url>
-    <content><![CDATA[<p>此处简介</p>
-<a id="more"></a>
-<h2 id="maven小结"><a href="#maven小结" class="headerlink" title="maven小结"></a>maven小结</h2><h3 id="什么是maven"><a href="#什么是maven" class="headerlink" title="什么是maven"></a>什么是maven</h3><p>就是一款帮助程序员构建项目的工具,我们只需要告诉Maven需要哪些Jar 包，它会帮助我们下载所有的Jar，极大提升开发效率。</p>
-<h3 id="Maven规定的目录结构"><a href="#Maven规定的目录结构" class="headerlink" title="Maven规定的目录结构"></a>Maven规定的目录结构</h3><h3 id="Maven基本命令"><a href="#Maven基本命令" class="headerlink" title="Maven基本命令"></a>Maven基本命令</h3><ul>
-<li><p>-v:查询Maven版本<br><code>本命令用于检查maven是否安装成功。Maven安装完成之后，在命令行输入mvn -v，若出现maven信息，则说明安装成功</code></p>
-</li>
-<li><p>compile：编译</p>
-</li>
-<li>test:测试项目</li>
-<li>package:打包</li>
-<li>clean:删除target文件夹</li>
-<li>install:安装 将当前项目放到Maven的本地仓库中。供其他项目使用</li>
-</ul>
-<h3 id="什么是Maven仓库？"><a href="#什么是Maven仓库？" class="headerlink" title="什么是Maven仓库？"></a>什么是Maven仓库？</h3><p>Maven仓库用来存放Maven管理的所有Jar包。分为：<strong>本地仓库</strong> 和 <strong>本地仓库</strong>。</p>
-<ul>
-<li>本地仓库<br>Maven本地的Jar包仓库。</li>
-<li>中央仓库<br>Maven官方提供的远程仓库。<blockquote>
-<p>当项目编译时，Maven首先从本地仓库中寻找项目所需的Jar包，若本地仓库没有，再到Maven的中央仓库下载所需Jar包。</p>
-</blockquote>
-</li>
-</ul>
-<p>什么是“坐标”？<br>在Maven中，坐标是Jar包的唯一标识，Maven通过坐标在仓库中找到项目所需的Jar包。</p>
-<p>如下代码中，groupId和artifactId构成了一个Jar包的坐标。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;ch.qos.logback&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;logback-classic&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;1.1.1&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
-<p><strong>groupId</strong>:所需Jar包的项目名<br><strong>artifactId</strong>:所需Jar包的模块名<br><strong>version</strong>:所需Jar包的版本号</p>
-<p>传递依赖 与 排除依赖</p>
-<ul>
-<li>传递依赖：如果我们的项目引用了一个Jar包，而该Jar包又引用了其他Jar包，那么在默认情况下项目编译时，Maven会把直接引用和简洁引用的Jar包都下载到本地。</li>
-<li>排除依赖：如果我们只想下载直接引用的Jar包，那么需要在pom.xml中做如下配置：(将需要排除的Jar包的坐标写在中)</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;exclusions&gt;</span><br><span class="line">    &lt;exclusion&gt;</span><br><span class="line">        &lt;groupId&gt;ch.qos.logback&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;logback-classic&lt;/artifactId&gt;</span><br><span class="line">    &lt;/exclusion&gt;</span><br><span class="line">&lt;/exclusions&gt;</span><br></pre></td></tr></table></figure>
-<p>依赖冲突<br>若项目中多个Jar同时引用了相同的Jar时，会产生依赖冲突，但Maven采用了两种避免冲突的策略，因此在Maven中是不存在依赖冲突的。<br>短路优先<br>本项目——&gt;A.jar——&gt;B.jar——&gt;X.jar<br>本项目——&gt;C.jar——&gt;X.jar<br>声明优先<br>若引用路径长度相同时，在pom.xml中谁先被声明，就使用谁。</p>
-<p>聚合<br>什么是聚合？<br>将多个项目同时运行就称为聚合。<br>如何实现聚合？<br>只需在pom中作如下配置即可实现聚合：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;modules&gt;</span><br><span class="line">        &lt;module&gt;../模块1&lt;/module&gt;</span><br><span class="line">        &lt;module&gt;../模块2&lt;/module&gt;</span><br><span class="line">        &lt;module&gt;../模块3&lt;/module&gt;</span><br><span class="line">    &lt;/modules&gt;</span><br></pre></td></tr></table></figure>
-<p>继承<br>什么是继承？<br>在聚合多个项目时，如果这些被聚合的项目中需要引入相同的Jar，那么可以将这些Jar写入父pom中，各个子项目继承该pom即可。<br>如何实现继承？<br>父pom配置：将需要继承的Jar包的坐标放入标签即可。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;dependencyManagement&gt;</span><br><span class="line">        &lt;dependencies&gt;</span><br><span class="line">            &lt;dependency&gt;</span><br><span class="line">                &lt;groupId&gt;org.apache.shiro&lt;/groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;shiro-spring&lt;/artifactId&gt;</span><br><span class="line">                &lt;version&gt;1.2.2&lt;/version&gt;</span><br><span class="line">            &lt;/dependency&gt;</span><br><span class="line">        &lt;/dependencies&gt;</span><br><span class="line">    &lt;/dependencyManagement&gt;</span><br></pre></td></tr></table></figure>
-<p>子pom配置：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;parent&gt;</span><br><span class="line">    &lt;groupId&gt;父pom所在项目的groupId&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;父pom所在项目的artifactId&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;父pom所在项目的版本号&lt;/version&gt;</span><br><span class="line">&lt;/parent&gt;</span><br></pre></td></tr></table></figure>
-<hr>
-<p>Maven本地资源库</p>
-<blockquote>
-<p>通常情况下，可改变默认的 .m2 目录下的默认本地存储库文件夹到其他更有意义的名称，例如<br><img src="/2019/07/16/oldblog/maven小结/1489394095038.png" alt="Alt text"></p>
-</blockquote>
-<p>当你建立一个 Maven 的项目，Maven 会检查你的 pom.xml 文件，以确定哪些依赖下载。首先，Maven 将从本地资源库获得 Maven 的本地资源库依赖资源，如果没有找到，然后把它会从默认的 Maven 中央存储库 – <a href="http://repo1.maven.org/maven2/" target="_blank" rel="noopener">http://repo1.maven.org/maven2/</a> 查找下载</p>
-]]></content>
+<p><code>the record for python</code></p>
+<h3 id="Python-知识点"><a href="#Python-知识点" class="headerlink" title="Python 知识点"></a>Python 知识点</h3><h4 id="标识符号"><a href="#标识符号" class="headerlink" title="标识符号"></a>标识符号</h4><p>在 Python 里，标识符有字母、数字、下划线组成。<br>在 Python 中，所有标识符可以包括英文、数字以及下划线(_)，但不能以数字开头。</p>
+<p>以下划线开头的标识符是有特殊意义的。以单下划线开头 _foo 的代表不能直接访问的类属性，需通过类提供的接口进行访问，不能用 from xxx import * 而导入；</p>
+<p>以双下划线开头的 <strong>foo 代表类的私有成员；以双下划线开头和结尾的 </strong>foo__ 代表 Python 里特殊方法专用的标识，如 <strong>init</strong>() 代表类的构造函数。</p>
+<p>Python 可以同一行显示多条语句，方法是用分号 ; 分开，</p>
+<h4 id="行和缩进"><a href="#行和缩进" class="headerlink" title="行和缩进"></a>行和缩进</h4><p>python 最具特色的就是用缩进来写模块。<br>缩进的空白数量是可变的，但是所有代码块语句必须包含相同的缩进空白数量，这个必须严格执行<br>因此，在 Python 的代码块中必须使用相同数目的行首缩进空格数。<br>建议你在每个缩进层次使用 单个制表符 或 两个空格 或 四个空格 , 切记不能混用</p>
+<h4 id="多行语句"><a href="#多行语句" class="headerlink" title="多行语句"></a>多行语句</h4><p>Python语句中一般以新行作为为语句的结束符。<br>但是我们可以使用斜杠（ \）将一行的语句分为多行显示，</p>
+<h4 id="Python-引号"><a href="#Python-引号" class="headerlink" title="Python 引号"></a>Python 引号</h4><p>Python 可以使用引号( ‘ )、双引号( “ )、三引号( ‘’’ 或 “”” ) 来表示字符串，引号的开始与结束必须的相同类型的。<br>其中三引号可以由多行组成，编写多行文本的快捷语法，常用语文档字符串，在文件的特定地点，被当做注释。</p>
+<h4 id="Python注释"><a href="#Python注释" class="headerlink" title="Python注释"></a>Python注释</h4><p>python 中多行注释使用三个单引号(‘’’)或三个双引号(“””)。</p>
+<h4 id="Python空行"><a href="#Python空行" class="headerlink" title="Python空行"></a>Python空行</h4><p>函数之间或类的方法之间用空行分隔，表示一段新的代码的开始。类和函数入口之间也用一行空行分隔，以突出函数入口的开始。<br>空行与代码缩进不同，空行并不是Python语法的一部分。书写时不插入空行，Python解释器运行也不会出错。但是空行的作用在于分隔两段不同功能或含义的代码，便于日后代码的维护或重构。<br>记住：空行也是程序代码的一部分。</p>
+<h4 id="Python-变量类型"><a href="#Python-变量类型" class="headerlink" title="Python 变量类型"></a>Python 变量类型</h4><p>变量存储在内存中的值。这就意味着在创建变量时会在内存中开辟一个空间。<br>基于变量的数据类型，解释器会分配指定内存，并决定什么数据可以被存储在内存中。<br>因此，变量可以指定不同的数据类型，这些变量可以存储整数，小数或字符。</p>
+<p><strong>变量赋值</strong></p>
+<p>Python 中的变量赋值不需要类型声明。<br>每个变量在内存中创建，都包括变量的标识，名称和数据这些信息。<br>每个变量在使用前都必须赋值，变量赋值以后该变量才会被创建。<br>等号（=）用来给变量赋值。</p>
+<h4 id="python-标准数据类型"><a href="#python-标准数据类型" class="headerlink" title="python 标准数据类型"></a>python 标准数据类型</h4><p>python 定义了一些标准类型，用于存储各种类型的数据。<br>Python有五个标准的数据类型：<br>Numbers（数字）<br>String（字符串）<br>List（列表）<br>Tuple（元组）<br>Dictionary（字典）</p>
+<h4 id="Python数字"><a href="#Python数字" class="headerlink" title="Python数字"></a>Python数字</h4><p>数字数据类型用于存储数值。<br>他们是不可改变的数据类型，这意味着改变数字数据类型会分配一个新的对象。<br>当你指定一个值时，Number对象就会被创建：<br>您也可以使用del语句删除一些对象的引用。<br>del语句的语法是：</p>
+<p>del var1[,var2[,var3[….,varN]]]]</p>
+<p>您可以通过使用del语句删除单个或多个对象的引用。例如：</p>
+<p>del var<br>del var_a, var_b</p>
+<p>Python支持四种不同的数字类型：</p>
+<p>int（有符号整型）</p>
+<p>long（长整型[也可以代表八进制和十六进制]）</p>
+<p>float（浮点型）</p>
+<p>complex（复数）</p>
+<h4 id="Python字符串"><a href="#Python字符串" class="headerlink" title="Python字符串"></a>Python字符串</h4><p>字符串或串(String)是由数字、字母、下划线组成的一串字符。</p>
+<p>一般记为 :<br>s=”a1a2···an”(n&gt;=0)<br>它是编程语言中表示文本的数据类型。</p>
+<p>python的字串列表有2种取值顺序:</p>
+<p>从左到右索引默认0开始的，最大范围是字符串长度少1</p>
+<p>从右到左索引默认-1开始的，最大范围是字符串开头</p>
+<p>当使用以冒号分隔的字符串，python返回一个新的对象，结果包含了以这对偏移标识的连续的内容，左边的开始是包含了下边界。<br>上面的结果包含了s[1]的值l，而取到的最大范围不包括上边界，就是s[5]的值p。</p>
+<p>加号（+）是字符串连接运算符，星号（*）是重复操作</p>
+<h4 id="Python列表"><a href="#Python列表" class="headerlink" title="Python列表"></a>Python列表</h4><p>List（列表） 是 Python 中使用最频繁的数据类型。</p>
+<h4 id="python元组"><a href="#python元组" class="headerlink" title="python元组"></a>python元组</h4><p>元组是另一个数据类型，类似于List（列表）。</p>
+<p>元组用”()”标识。内部元素用逗号隔开。但是元组不能二次赋值，相当于只读列表</p>
+<h4 id="Python-字典"><a href="#Python-字典" class="headerlink" title="Python 字典"></a>Python 字典</h4>]]></content>
+      <tags>
+        <tag>python</tag>
+      </tags>
   </entry>
   <entry>
     <title>sed &amp; awk小结</title>
@@ -853,60 +896,6 @@ long min=-9223372036854775808</code></p>
 ]]></content>
   </entry>
   <entry>
-    <title>python learn</title>
-    <url>/2019/07/16/oldblog/python%20learn/</url>
-    <content><![CDATA[<p>此处简介</p>
-<a id="more"></a>
-<p><code>the record for python</code></p>
-<h3 id="Python-知识点"><a href="#Python-知识点" class="headerlink" title="Python 知识点"></a>Python 知识点</h3><h4 id="标识符号"><a href="#标识符号" class="headerlink" title="标识符号"></a>标识符号</h4><p>在 Python 里，标识符有字母、数字、下划线组成。<br>在 Python 中，所有标识符可以包括英文、数字以及下划线(_)，但不能以数字开头。</p>
-<p>以下划线开头的标识符是有特殊意义的。以单下划线开头 _foo 的代表不能直接访问的类属性，需通过类提供的接口进行访问，不能用 from xxx import * 而导入；</p>
-<p>以双下划线开头的 <strong>foo 代表类的私有成员；以双下划线开头和结尾的 </strong>foo__ 代表 Python 里特殊方法专用的标识，如 <strong>init</strong>() 代表类的构造函数。</p>
-<p>Python 可以同一行显示多条语句，方法是用分号 ; 分开，</p>
-<h4 id="行和缩进"><a href="#行和缩进" class="headerlink" title="行和缩进"></a>行和缩进</h4><p>python 最具特色的就是用缩进来写模块。<br>缩进的空白数量是可变的，但是所有代码块语句必须包含相同的缩进空白数量，这个必须严格执行<br>因此，在 Python 的代码块中必须使用相同数目的行首缩进空格数。<br>建议你在每个缩进层次使用 单个制表符 或 两个空格 或 四个空格 , 切记不能混用</p>
-<h4 id="多行语句"><a href="#多行语句" class="headerlink" title="多行语句"></a>多行语句</h4><p>Python语句中一般以新行作为为语句的结束符。<br>但是我们可以使用斜杠（ \）将一行的语句分为多行显示，</p>
-<h4 id="Python-引号"><a href="#Python-引号" class="headerlink" title="Python 引号"></a>Python 引号</h4><p>Python 可以使用引号( ‘ )、双引号( “ )、三引号( ‘’’ 或 “”” ) 来表示字符串，引号的开始与结束必须的相同类型的。<br>其中三引号可以由多行组成，编写多行文本的快捷语法，常用语文档字符串，在文件的特定地点，被当做注释。</p>
-<h4 id="Python注释"><a href="#Python注释" class="headerlink" title="Python注释"></a>Python注释</h4><p>python 中多行注释使用三个单引号(‘’’)或三个双引号(“””)。</p>
-<h4 id="Python空行"><a href="#Python空行" class="headerlink" title="Python空行"></a>Python空行</h4><p>函数之间或类的方法之间用空行分隔，表示一段新的代码的开始。类和函数入口之间也用一行空行分隔，以突出函数入口的开始。<br>空行与代码缩进不同，空行并不是Python语法的一部分。书写时不插入空行，Python解释器运行也不会出错。但是空行的作用在于分隔两段不同功能或含义的代码，便于日后代码的维护或重构。<br>记住：空行也是程序代码的一部分。</p>
-<h4 id="Python-变量类型"><a href="#Python-变量类型" class="headerlink" title="Python 变量类型"></a>Python 变量类型</h4><p>变量存储在内存中的值。这就意味着在创建变量时会在内存中开辟一个空间。<br>基于变量的数据类型，解释器会分配指定内存，并决定什么数据可以被存储在内存中。<br>因此，变量可以指定不同的数据类型，这些变量可以存储整数，小数或字符。</p>
-<p><strong>变量赋值</strong></p>
-<p>Python 中的变量赋值不需要类型声明。<br>每个变量在内存中创建，都包括变量的标识，名称和数据这些信息。<br>每个变量在使用前都必须赋值，变量赋值以后该变量才会被创建。<br>等号（=）用来给变量赋值。</p>
-<h4 id="python-标准数据类型"><a href="#python-标准数据类型" class="headerlink" title="python 标准数据类型"></a>python 标准数据类型</h4><p>python 定义了一些标准类型，用于存储各种类型的数据。<br>Python有五个标准的数据类型：<br>Numbers（数字）<br>String（字符串）<br>List（列表）<br>Tuple（元组）<br>Dictionary（字典）</p>
-<h4 id="Python数字"><a href="#Python数字" class="headerlink" title="Python数字"></a>Python数字</h4><p>数字数据类型用于存储数值。<br>他们是不可改变的数据类型，这意味着改变数字数据类型会分配一个新的对象。<br>当你指定一个值时，Number对象就会被创建：<br>您也可以使用del语句删除一些对象的引用。<br>del语句的语法是：</p>
-<p>del var1[,var2[,var3[….,varN]]]]</p>
-<p>您可以通过使用del语句删除单个或多个对象的引用。例如：</p>
-<p>del var<br>del var_a, var_b</p>
-<p>Python支持四种不同的数字类型：</p>
-<p>int（有符号整型）</p>
-<p>long（长整型[也可以代表八进制和十六进制]）</p>
-<p>float（浮点型）</p>
-<p>complex（复数）</p>
-<h4 id="Python字符串"><a href="#Python字符串" class="headerlink" title="Python字符串"></a>Python字符串</h4><p>字符串或串(String)是由数字、字母、下划线组成的一串字符。</p>
-<p>一般记为 :<br>s=”a1a2···an”(n&gt;=0)<br>它是编程语言中表示文本的数据类型。</p>
-<p>python的字串列表有2种取值顺序:</p>
-<p>从左到右索引默认0开始的，最大范围是字符串长度少1</p>
-<p>从右到左索引默认-1开始的，最大范围是字符串开头</p>
-<p>当使用以冒号分隔的字符串，python返回一个新的对象，结果包含了以这对偏移标识的连续的内容，左边的开始是包含了下边界。<br>上面的结果包含了s[1]的值l，而取到的最大范围不包括上边界，就是s[5]的值p。</p>
-<p>加号（+）是字符串连接运算符，星号（*）是重复操作</p>
-<h4 id="Python列表"><a href="#Python列表" class="headerlink" title="Python列表"></a>Python列表</h4><p>List（列表） 是 Python 中使用最频繁的数据类型。</p>
-<h4 id="python元组"><a href="#python元组" class="headerlink" title="python元组"></a>python元组</h4><p>元组是另一个数据类型，类似于List（列表）。</p>
-<p>元组用”()”标识。内部元素用逗号隔开。但是元组不能二次赋值，相当于只读列表</p>
-<h4 id="Python-字典"><a href="#Python-字典" class="headerlink" title="Python 字典"></a>Python 字典</h4>]]></content>
-      <tags>
-        <tag>python</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>异常处理机制小结</title>
-    <url>/2019/07/16/oldblog/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%9C%BA%E5%88%B6%E5%B0%8F%E7%BB%93/</url>
-    <content><![CDATA[<p>此处简介</p>
-<a id="more"></a>
-<h3 id="异常处理机制小结"><a href="#异常处理机制小结" class="headerlink" title="异常处理机制小结"></a>异常处理机制小结</h3><p><img src="//img.wqkenqing.ren/file/2017/7/b89a2f8ca9684364889768d339985ef6-image.png" alt="b89a2f8ca9684364889768d339985ef6-image.png"></p>
-<p> 在 Java 中，所有的异常都有一个共同的祖先 Throwable（可抛出）。Throwable 指定代码中可用异常传播机制通过 Java 应用程序传输的任何问题的共性。<br>       Throwable： 有两个重要的子类：Exception（异常）和 Error（错误），二者都是 Java 异常处理的重要子类，各自都包含大量子类。<br>        Error（错误）:是程序无法处理的错误，表示运行应用程序中较严重问题。大多数错误与代码编写者执行的操作无关，而表示代码运行时 JVM（Java 虚拟机）出现的问题。例如，Java虚拟机运行错误（Virtual MachineError），当 JVM 不再有继续执行操作所需的内存资源时，将出现 OutOfMemoryError。这些异常发生时，Java虚拟机（JVM）一般会选择线程终止。<br>           Exception（异常）:是程序本身可以处理的异常。Exception 类有一个重要的子类 RuntimeException。RuntimeException 类及其子类表示“JVM 常用操作”引发的错误。例如，若试图使用空值对象引用、除数为零或数组越界，则分别引发运行时异常（NullPointerException、 ArithmeticException）和 ArrayIndexOutOfBoundException。</p>
-<p><code>注意：异常和错误的区别：异常能被程序本身可以处理，错误是无法处理。</code></p>
-<p>通常，Java的异常(包括Exception和Error)分为可查的异常（checked exceptions）和不可查的异常（unchecked exceptions）。<br>      可查异常（编译器要求必须处置的异常）：正确的程序在运行中，很容易出现的、情理可容的异常状况。可查异常虽然是异常状况，但在一定程度上它的发生是可以预计的，而且一旦发生这种异常状况，就必须采取某种方式进行处理。</p>
-]]></content>
-  </entry>
-  <entry>
     <title>反射小结</title>
     <url>/2019/07/16/oldblog/%E5%8F%8D%E5%B0%84%E5%B0%8F%E7%BB%93/</url>
     <content><![CDATA[<p>此处简介</p>
@@ -923,6 +912,17 @@ long min=-9223372036854775808</code></p>
 <li>实例.getClass();</li>
 </ol>
 <p><code>要访问私有属性，要设置setAccessible</code><br>Class cls ~~<br>Field file =cls.getDeclaredFields();</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>异常处理机制小结</title>
+    <url>/2019/07/16/oldblog/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%9C%BA%E5%88%B6%E5%B0%8F%E7%BB%93/</url>
+    <content><![CDATA[<p>此处简介</p>
+<a id="more"></a>
+<h3 id="异常处理机制小结"><a href="#异常处理机制小结" class="headerlink" title="异常处理机制小结"></a>异常处理机制小结</h3><p><img src="//img.wqkenqing.ren/file/2017/7/b89a2f8ca9684364889768d339985ef6-image.png" alt="b89a2f8ca9684364889768d339985ef6-image.png"></p>
+<p> 在 Java 中，所有的异常都有一个共同的祖先 Throwable（可抛出）。Throwable 指定代码中可用异常传播机制通过 Java 应用程序传输的任何问题的共性。<br>       Throwable： 有两个重要的子类：Exception（异常）和 Error（错误），二者都是 Java 异常处理的重要子类，各自都包含大量子类。<br>        Error（错误）:是程序无法处理的错误，表示运行应用程序中较严重问题。大多数错误与代码编写者执行的操作无关，而表示代码运行时 JVM（Java 虚拟机）出现的问题。例如，Java虚拟机运行错误（Virtual MachineError），当 JVM 不再有继续执行操作所需的内存资源时，将出现 OutOfMemoryError。这些异常发生时，Java虚拟机（JVM）一般会选择线程终止。<br>           Exception（异常）:是程序本身可以处理的异常。Exception 类有一个重要的子类 RuntimeException。RuntimeException 类及其子类表示“JVM 常用操作”引发的错误。例如，若试图使用空值对象引用、除数为零或数组越界，则分别引发运行时异常（NullPointerException、 ArithmeticException）和 ArrayIndexOutOfBoundException。</p>
+<p><code>注意：异常和错误的区别：异常能被程序本身可以处理，错误是无法处理。</code></p>
+<p>通常，Java的异常(包括Exception和Error)分为可查的异常（checked exceptions）和不可查的异常（unchecked exceptions）。<br>      可查异常（编译器要求必须处置的异常）：正确的程序在运行中，很容易出现的、情理可容的异常状况。可查异常虽然是异常状况，但在一定程度上它的发生是可以预计的，而且一旦发生这种异常状况，就必须采取某种方式进行处理。</p>
 ]]></content>
   </entry>
   <entry>
@@ -1057,6 +1057,46 @@ long min=-9223372036854775808</code></p>
 ]]></content>
       <tags>
         <tag>elasticsearch kibana head vscode</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>flink学习</title>
+    <url>/2019/07/31/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/flink/Flink/</url>
+    <content><![CDATA[<p>flink内容记录</p>
+<a id="more"></a>
+<h2 id="搭建"><a href="#搭建" class="headerlink" title="搭建"></a>搭建</h2><h2 id="创建maven项目"><a href="#创建maven项目" class="headerlink" title="创建maven项目"></a>创建maven项目</h2><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mvn archetype:generate \</span><br><span class="line">    -DarchetypeGroupId=org.apache.flink \</span><br><span class="line">    -DarchetypeArtifactId=flink-quickstart-java \</span><br><span class="line">    -DarchetypeVersion=1.6.1 \</span><br><span class="line">    -DgroupId=my-flink-project \</span><br><span class="line">    -DartifactId=my-flink-project \</span><br><span class="line">    -Dversion=0.1 \</span><br><span class="line">    -Dpackage=myflink \</span><br><span class="line">    -DinteractiveMode=false</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">mvn clean package -Dmaven.test.skip=true</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">flink run -c myflink.demo.SocketTextStreamWordCount my-flink-project-0.1.jar 127.0.0.1 9000</span><br></pre></td></tr></table></figure>
+<h2 id="DataStream-API"><a href="#DataStream-API" class="headerlink" title="DataStream API"></a>DataStream API</h2><p>flink程序工作解剖图<br><img src="http://img.wqkenqing.ren/FIyXNI.png" alt></p>
+<h3 id="执行环境"><a href="#执行环境" class="headerlink" title="执行环境"></a>执行环境</h3><p>flink支持</p>
+<ul>
+<li>获取已经存在的flink环境</li>
+<li>创建一个本地环境</li>
+<li>创建一个远程环境</li>
+</ul>
+<h3 id="DataSource"><a href="#DataSource" class="headerlink" title="DataSource"></a>DataSource</h3><h4 id="预置source"><a href="#预置source" class="headerlink" title="预置source"></a>预置source</h4><p>Socket-based</p>
+<ul>
+<li>socketTextStream();</li>
+</ul>
+<p>File-based</p>
+<h3 id="Transfomations"><a href="#Transfomations" class="headerlink" title="Transfomations"></a>Transfomations</h3><ul>
+<li>map</li>
+<li>flatMap</li>
+<li>filter</li>
+<li>keyBy</li>
+<li>reduce</li>
+<li>fold</li>
+</ul>
+<p>合计</p>
+<ul>
+<li>min</li>
+<li>max</li>
+<li>sum</li>
+</ul>
+<p>窗口</p>
+]]></content>
+      <tags>
+        <tag>flink</tag>
       </tags>
   </entry>
   <entry>
@@ -1209,43 +1249,29 @@ long min=-9223372036854775808</code></p>
 ]]></content>
   </entry>
   <entry>
-    <title>flink学习</title>
-    <url>/2019/07/31/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/flink/Flink/</url>
-    <content><![CDATA[<p>flink内容记录</p>
-<a id="more"></a>
-<h2 id="搭建"><a href="#搭建" class="headerlink" title="搭建"></a>搭建</h2><h2 id="创建maven项目"><a href="#创建maven项目" class="headerlink" title="创建maven项目"></a>创建maven项目</h2><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mvn archetype:generate \</span><br><span class="line">    -DarchetypeGroupId=org.apache.flink \</span><br><span class="line">    -DarchetypeArtifactId=flink-quickstart-java \</span><br><span class="line">    -DarchetypeVersion=1.6.1 \</span><br><span class="line">    -DgroupId=my-flink-project \</span><br><span class="line">    -DartifactId=my-flink-project \</span><br><span class="line">    -Dversion=0.1 \</span><br><span class="line">    -Dpackage=myflink \</span><br><span class="line">    -DinteractiveMode=false</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">mvn clean package -Dmaven.test.skip=true</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">flink run -c myflink.demo.SocketTextStreamWordCount my-flink-project-0.1.jar 127.0.0.1 9000</span><br></pre></td></tr></table></figure>
-<h2 id="DataStream-API"><a href="#DataStream-API" class="headerlink" title="DataStream API"></a>DataStream API</h2><p>flink程序工作解剖图<br><img src="http://img.wqkenqing.ren/FIyXNI.png" alt></p>
-<h3 id="执行环境"><a href="#执行环境" class="headerlink" title="执行环境"></a>执行环境</h3><p>flink支持</p>
-<ul>
-<li>获取已经存在的flink环境</li>
-<li>创建一个本地环境</li>
-<li>创建一个远程环境</li>
-</ul>
-<h3 id="DataSource"><a href="#DataSource" class="headerlink" title="DataSource"></a>DataSource</h3><h4 id="预置source"><a href="#预置source" class="headerlink" title="预置source"></a>预置source</h4><p>Socket-based</p>
-<ul>
-<li>socketTextStream();</li>
-</ul>
-<p>File-based</p>
-<h3 id="Transfomations"><a href="#Transfomations" class="headerlink" title="Transfomations"></a>Transfomations</h3><ul>
-<li>map</li>
-<li>flatMap</li>
-<li>filter</li>
-<li>keyBy</li>
-<li>reduce</li>
-<li>fold</li>
-</ul>
-<p>合计</p>
-<ul>
-<li>min</li>
-<li>max</li>
-<li>sum</li>
-</ul>
-<p>窗口</p>
+    <title>Lambda&amp;Stream.md</title>
+    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/Lamda%E7%A7%AF%E7%B4%AF/</url>
+    <content><![CDATA[<h1 id="Lambda-amp-Stream积累"><a href="#Lambda-amp-Stream积累" class="headerlink" title="Lambda&amp;Stream积累"></a>Lambda&amp;Stream积累</h1><a id="more"></a>
+<h2 id="Lambda"><a href="#Lambda" class="headerlink" title="Lambda"></a>Lambda</h2><p>Lambda主要是一个类语法长糖,尽量为java引入函数编程等实现,细节后续再补充</p>
+<h2 id="Stream"><a href="#Stream" class="headerlink" title="Stream"></a>Stream</h2><p>java8提拱的新特性之一就有stream.stream主要是针对集合的处理类.提供了一系列集合处理方式.<br>配合使用lambda写出简介优美的代码</p>
+<h3 id="Stream的使用"><a href="#Stream的使用" class="headerlink" title="Stream的使用"></a>Stream的使用</h3><p>通过如<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">List&lt;Integer&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">list.stream();<span class="comment">//即可以开启串行流;</span></span><br><span class="line">list.parallelStream().filter(a -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> a &gt; <span class="number">20</span>;</span><br><span class="line">        &#125;);<span class="comment">//开启并行流</span></span><br></pre></td></tr></table></figure></p>
+<p>串行流即内部单线程顺序执行,并行则是启用多线程执行.<br>后者并不一定效率就比前者高.因为并行执行启用分配线程资源时同样要消耗时间和资源,在一定量级下,前者的执行效率一度要高过后者.        </p>
+<p>我这里对三种对集合的处理形式的比较,可以简单参考一下</p>
+<ol>
+<li>stream 串行流</li>
+<li>parallelStream 并行流</li>
+<li>常规循环式</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">List&lt;Integer&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">          list.add(getRandomNum());</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      DateUtil.setBegin();</span><br><span class="line">      list.stream().filter(a -&gt; &#123;</span><br><span class="line">          <span class="keyword">return</span> a &gt; <span class="number">20</span>;</span><br><span class="line">      &#125;);</span><br><span class="line"></span><br><span class="line">      DateUtil.setStop();</span><br><span class="line">      System.out.println(<span class="string">"串行耗时"</span>+DateUtil.calCostTime());</span><br><span class="line"></span><br><span class="line">      DateUtil.setBegin();</span><br><span class="line">      list.parallelStream().filter(a -&gt; &#123;</span><br><span class="line">          <span class="keyword">return</span> a &gt; <span class="number">20</span>;</span><br><span class="line">      &#125;);</span><br><span class="line">      DateUtil.setStop();</span><br><span class="line">      System.out.println(<span class="string">"并行耗时"</span>+DateUtil.calCostTime());</span><br><span class="line">      <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">      DateUtil.setBegin();</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> l : list) &#123;</span><br><span class="line">          <span class="keyword">if</span> (l &gt; <span class="number">20</span>) &#123;</span><br><span class="line">              count++;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      DateUtil.setStop();</span><br><span class="line">      System.out.println(<span class="string">"循环耗时"</span>+DateUtil.calCostTime());</span><br></pre></td></tr></table></figure>
+<p>经由相当量次的测试后,我觉得如果要对集合中的数据进行遍历操作,根据量级的不同,<br>建议低量级还是采用普通循环,量级特别大,可考虑用并行流.书写方便,又不是大批量数据处理操作<br>可以直接采用串行流</p>
+<h3 id="Stream的操作分类"><a href="#Stream的操作分类" class="headerlink" title="Stream的操作分类"></a>Stream的操作分类</h3><ol>
+<li>Intermediate</li>
+<li>Terminal</li>
+<li>Short-circuiting</li>
+</ol>
 ]]></content>
       <tags>
-        <tag>flink</tag>
+        <tag>日常总结</tag>
       </tags>
   </entry>
   <entry>
@@ -1283,66 +1309,8 @@ long min=-9223372036854775808</code></p>
 ]]></content>
   </entry>
   <entry>
-    <title>Lambda&amp;Stream.md</title>
-    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/Lamda%E7%A7%AF%E7%B4%AF/</url>
-    <content><![CDATA[<h1 id="Lambda-amp-Stream积累"><a href="#Lambda-amp-Stream积累" class="headerlink" title="Lambda&amp;Stream积累"></a>Lambda&amp;Stream积累</h1><a id="more"></a>
-<h2 id="Lambda"><a href="#Lambda" class="headerlink" title="Lambda"></a>Lambda</h2><p>Lambda主要是一个类语法长糖,尽量为java引入函数编程等实现,细节后续再补充</p>
-<h2 id="Stream"><a href="#Stream" class="headerlink" title="Stream"></a>Stream</h2><p>java8提拱的新特性之一就有stream.stream主要是针对集合的处理类.提供了一系列集合处理方式.<br>配合使用lambda写出简介优美的代码</p>
-<h3 id="Stream的使用"><a href="#Stream的使用" class="headerlink" title="Stream的使用"></a>Stream的使用</h3><p>通过如<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">List&lt;Integer&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">list.stream();<span class="comment">//即可以开启串行流;</span></span><br><span class="line">list.parallelStream().filter(a -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> a &gt; <span class="number">20</span>;</span><br><span class="line">        &#125;);<span class="comment">//开启并行流</span></span><br></pre></td></tr></table></figure></p>
-<p>串行流即内部单线程顺序执行,并行则是启用多线程执行.<br>后者并不一定效率就比前者高.因为并行执行启用分配线程资源时同样要消耗时间和资源,在一定量级下,前者的执行效率一度要高过后者.        </p>
-<p>我这里对三种对集合的处理形式的比较,可以简单参考一下</p>
-<ol>
-<li>stream 串行流</li>
-<li>parallelStream 并行流</li>
-<li>常规循环式</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">List&lt;Integer&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">          list.add(getRandomNum());</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      DateUtil.setBegin();</span><br><span class="line">      list.stream().filter(a -&gt; &#123;</span><br><span class="line">          <span class="keyword">return</span> a &gt; <span class="number">20</span>;</span><br><span class="line">      &#125;);</span><br><span class="line"></span><br><span class="line">      DateUtil.setStop();</span><br><span class="line">      System.out.println(<span class="string">"串行耗时"</span>+DateUtil.calCostTime());</span><br><span class="line"></span><br><span class="line">      DateUtil.setBegin();</span><br><span class="line">      list.parallelStream().filter(a -&gt; &#123;</span><br><span class="line">          <span class="keyword">return</span> a &gt; <span class="number">20</span>;</span><br><span class="line">      &#125;);</span><br><span class="line">      DateUtil.setStop();</span><br><span class="line">      System.out.println(<span class="string">"并行耗时"</span>+DateUtil.calCostTime());</span><br><span class="line">      <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">      DateUtil.setBegin();</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> l : list) &#123;</span><br><span class="line">          <span class="keyword">if</span> (l &gt; <span class="number">20</span>) &#123;</span><br><span class="line">              count++;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      DateUtil.setStop();</span><br><span class="line">      System.out.println(<span class="string">"循环耗时"</span>+DateUtil.calCostTime());</span><br></pre></td></tr></table></figure>
-<p>经由相当量次的测试后,我觉得如果要对集合中的数据进行遍历操作,根据量级的不同,<br>建议低量级还是采用普通循环,量级特别大,可考虑用并行流.书写方便,又不是大批量数据处理操作<br>可以直接采用串行流</p>
-<h3 id="Stream的操作分类"><a href="#Stream的操作分类" class="headerlink" title="Stream的操作分类"></a>Stream的操作分类</h3><ol>
-<li>Intermediate</li>
-<li>Terminal</li>
-<li>Short-circuiting</li>
-</ol>
-]]></content>
-      <tags>
-        <tag>日常总结</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>hbase积累.md</title>
-    <url>/2018/06/04/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/hbase%E7%A7%AF%E7%B4%AF/</url>
-    <content><![CDATA[<h1 id="hbase积累"><a href="#hbase积累" class="headerlink" title="hbase积累"></a>hbase积累</h1><a id="more"></a>
-<h2 id="细节点"><a href="#细节点" class="headerlink" title="细节点"></a>细节点</h2><h3 id="1-Rowkey设计原则"><a href="#1-Rowkey设计原则" class="headerlink" title="1.Rowkey设计原则"></a>1.Rowkey设计原则</h3><!-- more -->
-<p>1.1 <strong>长度原则</strong> rowkey 在hbase以二进制码流,可以是任意字符串,</p>
-<ul>
-<li><p><strong>最大长度是64kb</strong>,实际应用主要是100~100bytes</p>
-</li>
-<li><p>长度尽量为8的整数倍,因为现在的系统主要是64位,内存8字节对齐.控制在16字节,符合操作系统特性</p>
-</li>
-</ul>
-<p>1.2 <strong>散列原则</strong>:因为hbase是分布式存储,rowkey的高位尽量是散列字段,散列性弱的尽量放在低位段.如Time AND Device_id的组合,相对而言device_id 应该量级较小,散列性高.而TIME散列性低,如果TIME放在高位,可能造成数据在某个RegeionServer上堆积的情况.所以较合理的rowkey组合应是<br>device_id+time.</p>
-<p>1.3 <strong>RowKey唯一原则</strong>：必须在设计上保证其唯一性.<br>hbase 中以KeyValue形式存储,key若重复,行内容则会被覆盖.</p>
-<hr>
-<h3 id="2-Hbase的Regeion热点问题解决"><a href="#2-Hbase的Regeion热点问题解决" class="headerlink" title="2.Hbase的Regeion热点问题解决"></a>2.Hbase的Regeion热点问题解决</h3><p><code>因为在创建表是没有提前预分区,创建的表默认就只会有一个region,这个region的rowkey是没有边界的,即没有startkey与stopkey.数据在写入时,都会写入到这个region.随着数据的不断增加,达到某个阈值时,才会split成2个region.在这个过程中就会产生所有数据囤积在一个regionServer上,出现热点问题.另在split时,会占用集群的I/O资源.通过预分区可以解决该问题</code></p>
-<h4 id="2-1-预分区"><a href="#2-1-预分区" class="headerlink" title="2.1 预分区"></a>2.1 预分区</h4><p>预分区,”预”字是核心.我们在建表时,预先对表中要存放的数据形式和可能的量级,心中必然会有所估量,即这里应<strong>预</strong>估数据量.若数据量较大,则在建表时又应该预分区.即根据数据形式,量级,事先预设好一定量的region,后面数据写入时,则会写入到相应的分区.从而避免热点,减少split.</p>
-<p>2.1.2 salting(加盐)<br>hbase rowkey设计,避免热点,常会用到该操作,这里的加盐本身不是加密操作,而是在原数据前加入一些随机数据,从而起到分散不同region的作用.</p>
-<p>2.1.3 预习区具体方案</p>
-<p>hbase预分区的相关操作,如shell形式,可直接在hbase shell<br>操作.如</p>
-<p><a href="Hbase shell 预分区操作.">https://blog.csdn.net/xiao_jun_0820/article/details/24419793</a></p>
-<p>java形式<br><a href="Hbase 预分区 java API形式">https://blog.csdn.net/qq_20641565/article/details/56482407</a></p>
-<p>以上操作形式有个问题就是rowkey是随机生成的,虽起到了散列存储,避免了热点堆积,但因为加盐的缘故,想要直接的获取某行数据较为困难.若针对的是高频使用的数据,则会出现问题.</p>
-<p>2.1.4 hash分区</p>
-<p>在原先预分区的基础上,通过相关规则将原数据hash,从而获得这个原数据对应在哪个分区,使当拿到相关原数据,就能推演出相关rowkey.从而能准确的get数据.</p>
-<h3 id="hbase优化"><a href="#hbase优化" class="headerlink" title="hbase优化"></a>hbase优化</h3><h4 id="确定优化目标"><a href="#确定优化目标" class="headerlink" title="确定优化目标"></a>确定优化目标</h4><p>沟通交流后，业务方更看重降低成本。数据量梳理后略有降低，保证吞吐，无长期请求堆积前提下可以放宽延时要求。为了更快的进行优化，放宽稳定性可以要求接受短期波动。<br>另外，该分组的RegionServer之前存在不稳定的问题，这次优化也一并解决。</p>
-<hr>
-]]></content>
-      <tags>
-        <tag>日常总结</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>hive总结</title>
-    <url>/2018/12/24/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/hive%E6%80%BB%E7%BB%93/</url>
+    <title>hive2总结</title>
+    <url>/2019/12/24/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/hive2%E6%80%BB%E7%BB%93/</url>
     <content><![CDATA[<h1 id="Hive相关点小结"><a href="#Hive相关点小结" class="headerlink" title="Hive相关点小结"></a>Hive相关点小结</h1><a id="more"></a>
 <h2 id="启动指令"><a href="#启动指令" class="headerlink" title="启动指令"></a>启动指令</h2><ol>
 <li>hive ==  hive –service cli<br>不需要启动server，使用本地的metastore，可以直接做一些简单的数据操作和测试。</li>
@@ -1393,27 +1361,40 @@ FIELDS TERMINATED BY &apos;,&apos; ;
       </tags>
   </entry>
   <entry>
-    <title>kafka</title>
-    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/kafka/</url>
-    <content><![CDATA[<p>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic sparkstreaming<br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic flumetest<br><a id="more"></a></p>
-<p>kafka-console-producer.sh –broker-list localhost:9092 –topic flumetest :创建生产者</p>
-<p>kafka-console-consumer.sh –bootstrap-server namenode:9092  –topic  flume-ng</p>
-<h1 id="Kafka相关小结"><a href="#Kafka相关小结" class="headerlink" title="Kafka相关小结"></a>Kafka相关小结</h1><h2 id="kafka-相关指令"><a href="#kafka-相关指令" class="headerlink" title="kafka 相关指令"></a>kafka 相关指令</h2><p>kafka-server-start.sh config/server.properties &amp; 启动<br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic topic_name  :创建topic<br>kafka-console-producer.sh –broker-list localhost:9092 –topic topic_name :创建生产者</p>
-<p>kafka-console-consumer.sh –bootstrap-server localhost:9092 –topic topic_name :创建消费者</p>
-<p>kafka-console-producer.sh –broker-list namenode:9092 –topic sparkstreaming</p>
-<p>删除group</p>
-<p>kafka-consumer-groups –bootstrap-server 192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092  —group traffic_history —delete</p>
-<h2 id="kafka-java-api"><a href="#kafka-java-api" class="headerlink" title="kafka java api"></a>kafka java api</h2><p>kafka 虽然搭建较为简单,但想要对针它编程体验还是有些问题.初步使用下来明显感觉对版本的强约束性.以我线上版本</p>
-<p><img src="http://img.wqkenqing.ren/2019-03-12-11-02-43.png" alt="2019-03-12-11-02-43">为例,我java项目对应的版本则是<br><figure class="highlight"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka_2.10&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;0.8.1&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;0.8.2.1&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure></p>
-<p>以上版本搭配经由我亲测通过</p>
+    <title>hbase积累.md</title>
+    <url>/2018/06/04/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/hbase%E7%A7%AF%E7%B4%AF/</url>
+    <content><![CDATA[<h1 id="hbase积累"><a href="#hbase积累" class="headerlink" title="hbase积累"></a>hbase积累</h1><a id="more"></a>
+<h2 id="细节点"><a href="#细节点" class="headerlink" title="细节点"></a>细节点</h2><h3 id="1-Rowkey设计原则"><a href="#1-Rowkey设计原则" class="headerlink" title="1.Rowkey设计原则"></a>1.Rowkey设计原则</h3><!-- more -->
+<p>1.1 <strong>长度原则</strong> rowkey 在hbase以二进制码流,可以是任意字符串,</p>
+<ul>
+<li><p><strong>最大长度是64kb</strong>,实际应用主要是100~100bytes</p>
+</li>
+<li><p>长度尽量为8的整数倍,因为现在的系统主要是64位,内存8字节对齐.控制在16字节,符合操作系统特性</p>
+</li>
+</ul>
+<p>1.2 <strong>散列原则</strong>:因为hbase是分布式存储,rowkey的高位尽量是散列字段,散列性弱的尽量放在低位段.如Time AND Device_id的组合,相对而言device_id 应该量级较小,散列性高.而TIME散列性低,如果TIME放在高位,可能造成数据在某个RegeionServer上堆积的情况.所以较合理的rowkey组合应是<br>device_id+time.</p>
+<p>1.3 <strong>RowKey唯一原则</strong>：必须在设计上保证其唯一性.<br>hbase 中以KeyValue形式存储,key若重复,行内容则会被覆盖.</p>
+<hr>
+<h3 id="2-Hbase的Regeion热点问题解决"><a href="#2-Hbase的Regeion热点问题解决" class="headerlink" title="2.Hbase的Regeion热点问题解决"></a>2.Hbase的Regeion热点问题解决</h3><p><code>因为在创建表是没有提前预分区,创建的表默认就只会有一个region,这个region的rowkey是没有边界的,即没有startkey与stopkey.数据在写入时,都会写入到这个region.随着数据的不断增加,达到某个阈值时,才会split成2个region.在这个过程中就会产生所有数据囤积在一个regionServer上,出现热点问题.另在split时,会占用集群的I/O资源.通过预分区可以解决该问题</code></p>
+<h4 id="2-1-预分区"><a href="#2-1-预分区" class="headerlink" title="2.1 预分区"></a>2.1 预分区</h4><p>预分区,”预”字是核心.我们在建表时,预先对表中要存放的数据形式和可能的量级,心中必然会有所估量,即这里应<strong>预</strong>估数据量.若数据量较大,则在建表时又应该预分区.即根据数据形式,量级,事先预设好一定量的region,后面数据写入时,则会写入到相应的分区.从而避免热点,减少split.</p>
+<p>2.1.2 salting(加盐)<br>hbase rowkey设计,避免热点,常会用到该操作,这里的加盐本身不是加密操作,而是在原数据前加入一些随机数据,从而起到分散不同region的作用.</p>
+<p>2.1.3 预习区具体方案</p>
+<p>hbase预分区的相关操作,如shell形式,可直接在hbase shell<br>操作.如</p>
+<p><a href="Hbase shell 预分区操作.">https://blog.csdn.net/xiao_jun_0820/article/details/24419793</a></p>
+<p>java形式<br><a href="Hbase 预分区 java API形式">https://blog.csdn.net/qq_20641565/article/details/56482407</a></p>
+<p>以上操作形式有个问题就是rowkey是随机生成的,虽起到了散列存储,避免了热点堆积,但因为加盐的缘故,想要直接的获取某行数据较为困难.若针对的是高频使用的数据,则会出现问题.</p>
+<p>2.1.4 hash分区</p>
+<p>在原先预分区的基础上,通过相关规则将原数据hash,从而获得这个原数据对应在哪个分区,使当拿到相关原数据,就能推演出相关rowkey.从而能准确的get数据.</p>
+<h3 id="hbase优化"><a href="#hbase优化" class="headerlink" title="hbase优化"></a>hbase优化</h3><h4 id="确定优化目标"><a href="#确定优化目标" class="headerlink" title="确定优化目标"></a>确定优化目标</h4><p>沟通交流后，业务方更看重降低成本。数据量梳理后略有降低，保证吞吐，无长期请求堆积前提下可以放宽延时要求。为了更快的进行优化，放宽稳定性可以要求接受短期波动。<br>另外，该分组的RegionServer之前存在不稳定的问题，这次优化也一并解决。</p>
+<hr>
 ]]></content>
       <tags>
-        <tag>kafka</tag>
+        <tag>日常总结</tag>
       </tags>
   </entry>
   <entry>
-    <title>hive2总结</title>
-    <url>/2019/12/24/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/hive2%E6%80%BB%E7%BB%93/</url>
+    <title>hive总结</title>
+    <url>/2018/12/24/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/hive%E6%80%BB%E7%BB%93/</url>
     <content><![CDATA[<h1 id="Hive相关点小结"><a href="#Hive相关点小结" class="headerlink" title="Hive相关点小结"></a>Hive相关点小结</h1><a id="more"></a>
 <h2 id="启动指令"><a href="#启动指令" class="headerlink" title="启动指令"></a>启动指令</h2><ol>
 <li>hive ==  hive –service cli<br>不需要启动server，使用本地的metastore，可以直接做一些简单的数据操作和测试。</li>
@@ -1507,6 +1488,25 @@ FIELDS TERMINATED BY &apos;,&apos; ;
       </tags>
   </entry>
   <entry>
+    <title>kafka</title>
+    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/kafka/</url>
+    <content><![CDATA[<p>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic sparkstreaming<br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic flumetest<br><a id="more"></a></p>
+<p>kafka-console-producer.sh –broker-list localhost:9092 –topic flumetest :创建生产者</p>
+<p>kafka-console-consumer.sh –bootstrap-server namenode:9092  –topic  flume-ng</p>
+<h1 id="Kafka相关小结"><a href="#Kafka相关小结" class="headerlink" title="Kafka相关小结"></a>Kafka相关小结</h1><h2 id="kafka-相关指令"><a href="#kafka-相关指令" class="headerlink" title="kafka 相关指令"></a>kafka 相关指令</h2><p>kafka-server-start.sh config/server.properties &amp; 启动<br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic topic_name  :创建topic<br>kafka-console-producer.sh –broker-list localhost:9092 –topic topic_name :创建生产者</p>
+<p>kafka-console-consumer.sh –bootstrap-server localhost:9092 –topic topic_name :创建消费者</p>
+<p>kafka-console-producer.sh –broker-list namenode:9092 –topic sparkstreaming</p>
+<p>删除group</p>
+<p>kafka-consumer-groups –bootstrap-server 192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092  —group traffic_history —delete</p>
+<h2 id="kafka-java-api"><a href="#kafka-java-api" class="headerlink" title="kafka java api"></a>kafka java api</h2><p>kafka 虽然搭建较为简单,但想要对针它编程体验还是有些问题.初步使用下来明显感觉对版本的强约束性.以我线上版本</p>
+<p><img src="http://img.wqkenqing.ren/2019-03-12-11-02-43.png" alt="2019-03-12-11-02-43">为例,我java项目对应的版本则是<br><figure class="highlight"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka_2.10&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;0.8.1&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;0.8.2.1&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure></p>
+<p>以上版本搭配经由我亲测通过</p>
+]]></content>
+      <tags>
+        <tag>kafka</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>spark学习</title>
     <url>/2018/03/04/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/spark%E5%AD%A6%E4%B9%A0/</url>
     <content><![CDATA[<h1 id="spark-学习"><a href="#spark-学习" class="headerlink" title="spark 学习"></a>spark 学习</h1><a id="more"></a>
@@ -1550,6 +1550,20 @@ FIELDS TERMINATED BY &apos;,&apos; ;
 ]]></content>
       <tags>
         <tag>学习spark</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>spark学习2</title>
+    <url>/2018/03/04/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/spark%E5%AD%A6%E4%B9%A02/</url>
+    <content><![CDATA[<h1 id="spark学习2"><a href="#spark学习2" class="headerlink" title="spark学习2"></a>spark学习2</h1><h2 id="spark-运行的四种模式"><a href="#spark-运行的四种模式" class="headerlink" title="spark 运行的四种模式"></a>spark 运行的四种模式</h2><a id="more"></a>
+<h3 id="本地模式"><a href="#本地模式" class="headerlink" title="本地模式"></a>本地模式</h3><p>如<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</span><br></pre></td></tr></table></figure></p>
+<h3 id="standlone模式"><a href="#standlone模式" class="headerlink" title="standlone模式"></a>standlone模式</h3><h4 id="client"><a href="#client" class="headerlink" title="client"></a>client</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</p>
+<h4 id="cluster"><a href="#cluster" class="headerlink" title="cluster"></a>cluster</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –deploy-mode cluster –supervise –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100</p>
+<h3 id="Yarn模式"><a href="#Yarn模式" class="headerlink" title="Yarn模式"></a>Yarn模式</h3><h4 id="client模式"><a href="#client模式" class="headerlink" title="client模式"></a>client模式</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">client模式：</span><br><span class="line">结果xshell可见：</span><br><span class="line">./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --executor-memory 1G --num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100</span><br></pre></td></tr></table></figure>
+<h4 id="cluster模式"><a href="#cluster模式" class="headerlink" title="cluster模式"></a>cluster模式</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master yarn-cluster –executor-memory 1G –num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</p>
+<h2 id="spark-sql"><a href="#spark-sql" class="headerlink" title="spark sql"></a>spark sql</h2>]]></content>
+      <tags>
+        <tag>学习spark2</tag>
       </tags>
   </entry>
   <entry>
@@ -1868,6 +1882,22 @@ FIELDS TERMINATED BY &apos;,&apos; ;
 ]]></content>
   </entry>
   <entry>
+    <title>updateStateByKey&amp;mapStateWithKey</title>
+    <url>/2019/07/15/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/stream/</url>
+    <content><![CDATA[<p>spark中如何实现全局count</p>
+<a id="more"></a>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>两种方式都可以实现对同一key的累计统计</p>
+<p>区别<br>updateStateByKey会返回无增量数据的状态,所以会相对较大的数据资源开销<br>mapStateWithKey 相当于增量统计</p>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>updateStateByKey :</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Function2&lt;List&lt;Integer&gt;, Optional&lt;Integer&gt;, Optional&lt;Integer&gt;&gt; updateFunctionByUpdate() &#123;</span><br><span class="line">       Function2&lt;List&lt;Integer&gt;, Optional&lt;Integer&gt;, Optional&lt;Integer&gt;&gt; updateFunction = (values, s1) -&gt; &#123;</span><br><span class="line">           Integer newSum = <span class="number">0</span>;</span><br><span class="line">           <span class="keyword">if</span> (s1.isPresent()) &#123;</span><br><span class="line">               newSum = s1.get();</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           Iterator&lt;Integer&gt; i = values.iterator();</span><br><span class="line">           <span class="keyword">while</span> (i.hasNext()) &#123;</span><br><span class="line">               newSum += i.next();</span><br><span class="line">           &#125;</span><br><span class="line">           <span class="keyword">return</span> Optional.of(newSum);</span><br><span class="line">       &#125;;</span><br><span class="line">       <span class="keyword">return</span> updateFunction;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>mapStateWithKey :</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Function3&lt;String, Optional&lt;Integer&gt;, State&lt;Integer&gt;, Tuple2&lt;String, Integer&gt;&gt; updateFunctionByMap() &#123;</span><br><span class="line">       Function3&lt;String, Optional&lt;Integer&gt;, State&lt;Integer&gt;, Tuple2&lt;String, Integer&gt;&gt; updateFunction2 = (word, one,</span><br><span class="line">                                                                                                        state) -&gt; &#123;</span><br><span class="line">           <span class="keyword">int</span> sum = one.or(<span class="number">0</span>) + (state.exists() ? state.get() : <span class="number">0</span>);</span><br><span class="line">           Tuple2&lt;String, Integer&gt; output = <span class="keyword">new</span> Tuple2&lt;String, Integer&gt;(word, sum);</span><br><span class="line">           state.update(sum);</span><br><span class="line">           <span class="keyword">return</span> output;</span><br><span class="line">       &#125;;</span><br><span class="line">       <span class="keyword">return</span> updateFunction2;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>sparkstream</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>sparkstreaming 窗口操作</title>
     <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/stream2/</url>
     <content><![CDATA[<p>sparkstreaming时间窗口设置</p>
@@ -1919,36 +1949,6 @@ FIELDS TERMINATED BY &apos;,&apos; ;
       </tags>
   </entry>
   <entry>
-    <title>updateStateByKey&amp;mapStateWithKey</title>
-    <url>/2019/07/15/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/stream/</url>
-    <content><![CDATA[<p>spark中如何实现全局count</p>
-<a id="more"></a>
-<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>两种方式都可以实现对同一key的累计统计</p>
-<p>区别<br>updateStateByKey会返回无增量数据的状态,所以会相对较大的数据资源开销<br>mapStateWithKey 相当于增量统计</p>
-<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>updateStateByKey :</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Function2&lt;List&lt;Integer&gt;, Optional&lt;Integer&gt;, Optional&lt;Integer&gt;&gt; updateFunctionByUpdate() &#123;</span><br><span class="line">       Function2&lt;List&lt;Integer&gt;, Optional&lt;Integer&gt;, Optional&lt;Integer&gt;&gt; updateFunction = (values, s1) -&gt; &#123;</span><br><span class="line">           Integer newSum = <span class="number">0</span>;</span><br><span class="line">           <span class="keyword">if</span> (s1.isPresent()) &#123;</span><br><span class="line">               newSum = s1.get();</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           Iterator&lt;Integer&gt; i = values.iterator();</span><br><span class="line">           <span class="keyword">while</span> (i.hasNext()) &#123;</span><br><span class="line">               newSum += i.next();</span><br><span class="line">           &#125;</span><br><span class="line">           <span class="keyword">return</span> Optional.of(newSum);</span><br><span class="line">       &#125;;</span><br><span class="line">       <span class="keyword">return</span> updateFunction;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
-<p>mapStateWithKey :</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Function3&lt;String, Optional&lt;Integer&gt;, State&lt;Integer&gt;, Tuple2&lt;String, Integer&gt;&gt; updateFunctionByMap() &#123;</span><br><span class="line">       Function3&lt;String, Optional&lt;Integer&gt;, State&lt;Integer&gt;, Tuple2&lt;String, Integer&gt;&gt; updateFunction2 = (word, one,</span><br><span class="line">                                                                                                        state) -&gt; &#123;</span><br><span class="line">           <span class="keyword">int</span> sum = one.or(<span class="number">0</span>) + (state.exists() ? state.get() : <span class="number">0</span>);</span><br><span class="line">           Tuple2&lt;String, Integer&gt; output = <span class="keyword">new</span> Tuple2&lt;String, Integer&gt;(word, sum);</span><br><span class="line">           state.update(sum);</span><br><span class="line">           <span class="keyword">return</span> output;</span><br><span class="line">       &#125;;</span><br><span class="line">       <span class="keyword">return</span> updateFunction2;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <tags>
-        <tag>sparkstream</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>spark学习2</title>
-    <url>/2018/03/04/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/spark%E5%AD%A6%E4%B9%A02/</url>
-    <content><![CDATA[<h1 id="spark学习2"><a href="#spark学习2" class="headerlink" title="spark学习2"></a>spark学习2</h1><h2 id="spark-运行的四种模式"><a href="#spark-运行的四种模式" class="headerlink" title="spark 运行的四种模式"></a>spark 运行的四种模式</h2><a id="more"></a>
-<h3 id="本地模式"><a href="#本地模式" class="headerlink" title="本地模式"></a>本地模式</h3><p>如<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./bin/spark-submit --class org.apache.spark.examples.SparkPi --master local[1] ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</span><br></pre></td></tr></table></figure></p>
-<h3 id="standlone模式"><a href="#standlone模式" class="headerlink" title="standlone模式"></a>standlone模式</h3><h4 id="client"><a href="#client" class="headerlink" title="client"></a>client</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</p>
-<h4 id="cluster"><a href="#cluster" class="headerlink" title="cluster"></a>cluster</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master spark://spark001:7077 –deploy-mode cluster –supervise –executor-memory 1G –total-executor-cores 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100</p>
-<h3 id="Yarn模式"><a href="#Yarn模式" class="headerlink" title="Yarn模式"></a>Yarn模式</h3><h4 id="client模式"><a href="#client模式" class="headerlink" title="client模式"></a>client模式</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">client模式：</span><br><span class="line">结果xshell可见：</span><br><span class="line">./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --executor-memory 1G --num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.7.0.jar 100</span><br></pre></td></tr></table></figure>
-<h4 id="cluster模式"><a href="#cluster模式" class="headerlink" title="cluster模式"></a>cluster模式</h4><p>./bin/spark-submit –class org.apache.spark.examples.SparkPi –master yarn-cluster –executor-memory 1G –num-executors 1 ./lib/spark-examples-1.3.1-hadoop2.4.0.jar 100</p>
-<h2 id="spark-sql"><a href="#spark-sql" class="headerlink" title="spark sql"></a>spark sql</h2>]]></content>
-      <tags>
-        <tag>学习spark2</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>宽窄依赖</title>
     <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/%E5%AE%BD%E7%AA%84%E4%BE%9D%E8%B5%96/</url>
     <content><![CDATA[<p>spark依赖说明</p>
@@ -1967,6 +1967,119 @@ FIELDS TERMINATED BY &apos;,&apos; ;
 ]]></content>
       <tags>
         <tag>spark dependency</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>5.7</title>
+    <url>/2020/05/07/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E6%9C%80%E8%BF%91/5.7/</url>
+    <content><![CDATA[<p>Q: git 本地与远程分支建立联系</p>
+]]></content>
+      <tags>
+        <tag>spark es kafka</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>python 小结2</title>
+    <url>/2020/05/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/python/</url>
+    <content><![CDATA[<a id="more"></a>
+<!-- TOC -->
+<ul>
+<li><a href="#python中的变量创建">python中的变量创建</a><ul>
+<li><a href="#python-变量命名">python 变量命名</a></li>
+<li><a href="#多个变量赋值">多个变量赋值</a></li>
+</ul>
+</li>
+<li><a href="#列表与元组">列表与元组</a><ul>
+<li><a href="#列表">列表</a><ul>
+<li><a href="#如何访问列表中的值">如何访问列表中的值</a></li>
+<li><a href="#列表运算符">列表运算符</a></li>
+</ul>
+</li>
+<li><a href="#元组tuple">元组(tuple)</a><ul>
+<li><a href="#创建元组">创建元组</a></li>
+<li><a href="#访问元组">访问元组</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#dict字典">dict(字典)</a><ul>
+<li><a href="#什么是字典">什么是字典</a></li>
+<li><a href="#字典的创建">字典的创建</a></li>
+</ul>
+</li>
+<li><a href="#set">set()</a><ul>
+<li><a href="#什么是set">什么是set</a></li>
+<li><a href="#set的创建">set的创建</a></li>
+</ul>
+</li>
+</ul>
+<!-- /TOC -->
+<h2 id="python中的变量创建"><a href="#python中的变量创建" class="headerlink" title="python中的变量创建"></a>python中的变量创建</h2><h3 id="python-变量命名"><a href="#python-变量命名" class="headerlink" title="python 变量命名"></a>python 变量命名</h3><p>在 Python 程序中，变量是用一个变量名表示，可以是任意数据类型，变量名必须是大小写英文、数字和下划线（_）的组合，且不能用数字开头</p>
+<h3 id="多个变量赋值"><a href="#多个变量赋值" class="headerlink" title="多个变量赋值"></a>多个变量赋值</h3><p>eg:<br>a=b=c=1</p>
+<p>eg:<br>a,b,c=1,2,”the is varible”<br><img src="http://img.wqkenqing.ren/2020-05-25-14-48-23.png" alt="2020-05-25-14-48-23"></p>
+<h2 id="列表与元组"><a href="#列表与元组" class="headerlink" title="列表与元组"></a>列表与元组</h2><p><img src="http://img.wqkenqing.ren/2020-05-25-14-54-41.png" alt="2020-05-25-14-54-41"></p>
+<h3 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h3><p>eg:</p>
+<p>list1=[“1”,2,”three”]</p>
+<p>即列表名,’[]’ 列表符组成</p>
+<p>列表中的元素类型可以不一致.</p>
+<h4 id="如何访问列表中的值"><a href="#如何访问列表中的值" class="headerlink" title="如何访问列表中的值"></a>如何访问列表中的值</h4><ol>
+<li>通过索引下标来访问</li>
+</ol>
+<p>即已知索引长度为3</p>
+<p>我们可以通过<br>list1[i]</p>
+<p>i为0~2之间的整数</p>
+<p>这与java中的数组类似</p>
+<p>2.通过下标区间来访问</p>
+<p>如 list1[0:2]<br>可以取到list[0],list[1]<br>这里是因为[0:2]是左闭右开的</p>
+<p><img src="http://img.wqkenqing.ren/2020-05-25-15-09-50.png" alt="2020-05-25-15-09-50"><br>`</p>
+<h4 id="列表运算符"><a href="#列表运算符" class="headerlink" title="列表运算符"></a>列表运算符</h4><table>
+<thead>
+<tr>
+<th>Python 表达式</th>
+<th>结果</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>len(list1)</td>
+<td>3</td>
+<td>list的长度</td>
+</tr>
+<tr>
+<td>[1, 2, 3] + [4, 5, 6]</td>
+<td>[1, 2, 3, 4, 5, 6]</td>
+<td>组合</td>
+</tr>
+<tr>
+<td>[“yes”]*2</td>
+<td>[“yes”,”yes”]</td>
+<td>复制</td>
+</tr>
+<tr>
+<td>2 in [1,2,3]</td>
+<td>True</td>
+<td>元素是否存在于列表中</td>
+</tr>
+<tr>
+<td>for a in list : function</td>
+<td></td>
+<td>迭代</td>
+</tr>
+</tbody>
+</table>
+<p>一些常见的方法<br><img src="http://img.wqkenqing.ren/2020-05-25-15-26-54.png" alt="2020-05-25-15-26-54"></p>
+<h3 id="元组-tuple"><a href="#元组-tuple" class="headerlink" title="元组(tuple)"></a>元组(tuple)</h3><p>uple 一旦初始化就不能修改。 也就是说元组（tuple）是不可变的，那么不可变是指什么意思呢？<br>即声明元组后,只可获取相应的内容,但不能再通过insert ,append ,pop,remove等方法再操作其内容</p>
+<h4 id="创建元组"><a href="#创建元组" class="headerlink" title="创建元组"></a>创建元组</h4><p>tuple1=(1,”2”,”three”)</p>
+<p><code>空元组</code><br>tuple2=()</p>
+<h4 id="访问元组"><a href="#访问元组" class="headerlink" title="访问元组"></a>访问元组</h4><p><img src="http://img.wqkenqing.ren/2020-05-25-15-45-07.png" alt="2020-05-25-15-45-07"><br><img src="http://img.wqkenqing.ren/2020-05-25-15-44-48.png" alt="2020-05-25-15-44-48"></p>
+<h2 id="dict-字典"><a href="#dict-字典" class="headerlink" title="dict(字典)"></a>dict(字典)</h2><h3 id="什么是字典"><a href="#什么是字典" class="headerlink" title="什么是字典"></a>什么是字典</h3><p>类似java中的map key-val形式</p>
+<h3 id="字典的创建"><a href="#字典的创建" class="headerlink" title="字典的创建"></a>字典的创建</h3><p>dict={“key1”:”val1”,”key2”:”val2”}</p>
+<h2 id="set"><a href="#set" class="headerlink" title="set()"></a>set()</h2><h3 id="什么是set"><a href="#什么是set" class="headerlink" title="什么是set"></a>什么是set</h3><p>set与java中的set异同,这里是一个无序不重复的元素集,基本功能包括数据存放与消除重复元素</p>
+<h3 id="set的创建"><a href="#set的创建" class="headerlink" title="set的创建"></a>set的创建</h3><p>创建一个set,需要提供一个list</p>
+]]></content>
+      <tags>
+        <tag>python learn</tag>
       </tags>
   </entry>
   <entry>
@@ -2142,119 +2255,6 @@ FIELDS TERMINATED BY &apos;,&apos; ;
       </tags>
   </entry>
   <entry>
-    <title>5.7</title>
-    <url>/2020/05/07/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E6%9C%80%E8%BF%91/5.7/</url>
-    <content><![CDATA[<p>Q: git 本地与远程分支建立联系</p>
-]]></content>
-      <tags>
-        <tag>spark es kafka</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>python 小结2</title>
-    <url>/2020/05/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/python/</url>
-    <content><![CDATA[<a id="more"></a>
-<!-- TOC -->
-<ul>
-<li><a href="#python中的变量创建">python中的变量创建</a><ul>
-<li><a href="#python-变量命名">python 变量命名</a></li>
-<li><a href="#多个变量赋值">多个变量赋值</a></li>
-</ul>
-</li>
-<li><a href="#列表与元组">列表与元组</a><ul>
-<li><a href="#列表">列表</a><ul>
-<li><a href="#如何访问列表中的值">如何访问列表中的值</a></li>
-<li><a href="#列表运算符">列表运算符</a></li>
-</ul>
-</li>
-<li><a href="#元组tuple">元组(tuple)</a><ul>
-<li><a href="#创建元组">创建元组</a></li>
-<li><a href="#访问元组">访问元组</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#dict字典">dict(字典)</a><ul>
-<li><a href="#什么是字典">什么是字典</a></li>
-<li><a href="#字典的创建">字典的创建</a></li>
-</ul>
-</li>
-<li><a href="#set">set()</a><ul>
-<li><a href="#什么是set">什么是set</a></li>
-<li><a href="#set的创建">set的创建</a></li>
-</ul>
-</li>
-</ul>
-<!-- /TOC -->
-<h2 id="python中的变量创建"><a href="#python中的变量创建" class="headerlink" title="python中的变量创建"></a>python中的变量创建</h2><h3 id="python-变量命名"><a href="#python-变量命名" class="headerlink" title="python 变量命名"></a>python 变量命名</h3><p>在 Python 程序中，变量是用一个变量名表示，可以是任意数据类型，变量名必须是大小写英文、数字和下划线（_）的组合，且不能用数字开头</p>
-<h3 id="多个变量赋值"><a href="#多个变量赋值" class="headerlink" title="多个变量赋值"></a>多个变量赋值</h3><p>eg:<br>a=b=c=1</p>
-<p>eg:<br>a,b,c=1,2,”the is varible”<br><img src="http://img.wqkenqing.ren/2020-05-25-14-48-23.png" alt="2020-05-25-14-48-23"></p>
-<h2 id="列表与元组"><a href="#列表与元组" class="headerlink" title="列表与元组"></a>列表与元组</h2><p><img src="http://img.wqkenqing.ren/2020-05-25-14-54-41.png" alt="2020-05-25-14-54-41"></p>
-<h3 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h3><p>eg:</p>
-<p>list1=[“1”,2,”three”]</p>
-<p>即列表名,’[]’ 列表符组成</p>
-<p>列表中的元素类型可以不一致.</p>
-<h4 id="如何访问列表中的值"><a href="#如何访问列表中的值" class="headerlink" title="如何访问列表中的值"></a>如何访问列表中的值</h4><ol>
-<li>通过索引下标来访问</li>
-</ol>
-<p>即已知索引长度为3</p>
-<p>我们可以通过<br>list1[i]</p>
-<p>i为0~2之间的整数</p>
-<p>这与java中的数组类似</p>
-<p>2.通过下标区间来访问</p>
-<p>如 list1[0:2]<br>可以取到list[0],list[1]<br>这里是因为[0:2]是左闭右开的</p>
-<p><img src="http://img.wqkenqing.ren/2020-05-25-15-09-50.png" alt="2020-05-25-15-09-50"><br>`</p>
-<h4 id="列表运算符"><a href="#列表运算符" class="headerlink" title="列表运算符"></a>列表运算符</h4><table>
-<thead>
-<tr>
-<th>Python 表达式</th>
-<th>结果</th>
-<th>描述</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>len(list1)</td>
-<td>3</td>
-<td>list的长度</td>
-</tr>
-<tr>
-<td>[1, 2, 3] + [4, 5, 6]</td>
-<td>[1, 2, 3, 4, 5, 6]</td>
-<td>组合</td>
-</tr>
-<tr>
-<td>[“yes”]*2</td>
-<td>[“yes”,”yes”]</td>
-<td>复制</td>
-</tr>
-<tr>
-<td>2 in [1,2,3]</td>
-<td>True</td>
-<td>元素是否存在于列表中</td>
-</tr>
-<tr>
-<td>for a in list : function</td>
-<td></td>
-<td>迭代</td>
-</tr>
-</tbody>
-</table>
-<p>一些常见的方法<br><img src="http://img.wqkenqing.ren/2020-05-25-15-26-54.png" alt="2020-05-25-15-26-54"></p>
-<h3 id="元组-tuple"><a href="#元组-tuple" class="headerlink" title="元组(tuple)"></a>元组(tuple)</h3><p>uple 一旦初始化就不能修改。 也就是说元组（tuple）是不可变的，那么不可变是指什么意思呢？<br>即声明元组后,只可获取相应的内容,但不能再通过insert ,append ,pop,remove等方法再操作其内容</p>
-<h4 id="创建元组"><a href="#创建元组" class="headerlink" title="创建元组"></a>创建元组</h4><p>tuple1=(1,”2”,”three”)</p>
-<p><code>空元组</code><br>tuple2=()</p>
-<h4 id="访问元组"><a href="#访问元组" class="headerlink" title="访问元组"></a>访问元组</h4><p><img src="http://img.wqkenqing.ren/2020-05-25-15-45-07.png" alt="2020-05-25-15-45-07"><br><img src="http://img.wqkenqing.ren/2020-05-25-15-44-48.png" alt="2020-05-25-15-44-48"></p>
-<h2 id="dict-字典"><a href="#dict-字典" class="headerlink" title="dict(字典)"></a>dict(字典)</h2><h3 id="什么是字典"><a href="#什么是字典" class="headerlink" title="什么是字典"></a>什么是字典</h3><p>类似java中的map key-val形式</p>
-<h3 id="字典的创建"><a href="#字典的创建" class="headerlink" title="字典的创建"></a>字典的创建</h3><p>dict={“key1”:”val1”,”key2”:”val2”}</p>
-<h2 id="set"><a href="#set" class="headerlink" title="set()"></a>set()</h2><h3 id="什么是set"><a href="#什么是set" class="headerlink" title="什么是set"></a>什么是set</h3><p>set与java中的set异同,这里是一个无序不重复的元素集,基本功能包括数据存放与消除重复元素</p>
-<h3 id="set的创建"><a href="#set的创建" class="headerlink" title="set的创建"></a>set的创建</h3><p>创建一个set,需要提供一个list</p>
-]]></content>
-      <tags>
-        <tag>python learn</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>pythonQA</title>
     <url>/2020/05/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/pythonQA/</url>
     <content><![CDATA[<a id="more"></a>
@@ -2305,20 +2305,17 @@ FIELDS TERMINATED BY &apos;,&apos; ;
       </tags>
   </entry>
   <entry>
-    <title>日常运维</title>
-    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/</url>
-    <content><![CDATA[<p>此处是简介</p>
-<a id="more"></a>
-<h2 id="hexo-加速"><a href="#hexo-加速" class="headerlink" title="hexo 加速"></a>hexo 加速</h2><p>通过更换公共CDN的js css资源.实现了较大改变</p>
-<h2 id="hexo-LocalSearch一直转圈问题修复"><a href="#hexo-LocalSearch一直转圈问题修复" class="headerlink" title="hexo LocalSearch一直转圈问题修复"></a>hexo LocalSearch一直转圈问题修复</h2><p>主要成因有两,一是search.xml没有成功加载,二是search.xml中的数据有问题.</p>
-<p>前者通过配置_config.yml文档和对应主题下的_config.yml配置</p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">search:</span></span><br><span class="line">  <span class="attr">path:</span> <span class="string">search.xml</span></span><br><span class="line">  <span class="attr">field:</span> <span class="string">post</span></span><br><span class="line">  <span class="attr">format:</span> <span class="string">html</span></span><br><span class="line">  <span class="attr">limit:</span> <span class="number">10000</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">local_search:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="comment"># if auto, trigger search by changing input</span></span><br><span class="line">  <span class="comment"># if manual, trigger search by pressing enter key or search button</span></span><br><span class="line">  <span class="attr">trigger:</span> <span class="string">auto</span></span><br><span class="line">  <span class="comment"># show top n results per article, show all results by setting to -1</span></span><br><span class="line">  <span class="attr">top_n_per_article:</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
-<p><strong>同时记得关闭Algolia_Search</strong></p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Algolia Search</span></span><br><span class="line"><span class="attr">algolia_search:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+    <title>vscode插件</title>
+    <url>/2020/05/21/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/vscode%E6%8F%92%E4%BB%B6/</url>
+    <content><![CDATA[<a id="more"></a>
+<h1 id="vscode插件"><a href="#vscode插件" class="headerlink" title="vscode插件"></a>vscode插件</h1><h2 id="draw-io-思维导图"><a href="#draw-io-思维导图" class="headerlink" title="draw.io(思维导图)"></a>draw.io(思维导图)</h2><p>在应用商店搜索<br>Draw.io Integration</p>
+<p>并install<br>即可安装draw.io</p>
+<p>然后创建drawio后缀的文件即可使用对应的导图功能</p>
+<p>这个好处是免费并与vscode集成.即实现all in one 的功能</p>
+<p><img src="http://img.wqkenqing.ren/2020-05-21-16-35-19.png" alt="2020-05-21-16-35-19"></p>
 ]]></content>
       <tags>
-        <tag>运维 cdn 加速</tag>
+        <tag>elasticsearch drawio</tag>
       </tags>
   </entry>
   <entry>
@@ -2407,17 +2404,20 @@ FIELDS TERMINATED BY &apos;,&apos; ;
       </tags>
   </entry>
   <entry>
-    <title>vscode插件</title>
-    <url>/2020/05/21/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/vscode%E6%8F%92%E4%BB%B6/</url>
-    <content><![CDATA[<a id="more"></a>
-<h1 id="vscode插件"><a href="#vscode插件" class="headerlink" title="vscode插件"></a>vscode插件</h1><h2 id="draw-io-思维导图"><a href="#draw-io-思维导图" class="headerlink" title="draw.io(思维导图)"></a>draw.io(思维导图)</h2><p>在应用商店搜索<br>Draw.io Integration</p>
-<p>并install<br>即可安装draw.io</p>
-<p>然后创建drawio后缀的文件即可使用对应的导图功能</p>
-<p>这个好处是免费并与vscode集成.即实现all in one 的功能</p>
-<p><img src="http://img.wqkenqing.ren/2020-05-21-16-35-19.png" alt="2020-05-21-16-35-19"></p>
+    <title>日常运维</title>
+    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/</url>
+    <content><![CDATA[<p>此处是简介</p>
+<a id="more"></a>
+<h2 id="hexo-加速"><a href="#hexo-加速" class="headerlink" title="hexo 加速"></a>hexo 加速</h2><p>通过更换公共CDN的js css资源.实现了较大改变</p>
+<h2 id="hexo-LocalSearch一直转圈问题修复"><a href="#hexo-LocalSearch一直转圈问题修复" class="headerlink" title="hexo LocalSearch一直转圈问题修复"></a>hexo LocalSearch一直转圈问题修复</h2><p>主要成因有两,一是search.xml没有成功加载,二是search.xml中的数据有问题.</p>
+<p>前者通过配置_config.yml文档和对应主题下的_config.yml配置</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">search:</span></span><br><span class="line">  <span class="attr">path:</span> <span class="string">search.xml</span></span><br><span class="line">  <span class="attr">field:</span> <span class="string">post</span></span><br><span class="line">  <span class="attr">format:</span> <span class="string">html</span></span><br><span class="line">  <span class="attr">limit:</span> <span class="number">10000</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">local_search:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="comment"># if auto, trigger search by changing input</span></span><br><span class="line">  <span class="comment"># if manual, trigger search by pressing enter key or search button</span></span><br><span class="line">  <span class="attr">trigger:</span> <span class="string">auto</span></span><br><span class="line">  <span class="comment"># show top n results per article, show all results by setting to -1</span></span><br><span class="line">  <span class="attr">top_n_per_article:</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p><strong>同时记得关闭Algolia_Search</strong></p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Algolia Search</span></span><br><span class="line"><span class="attr">algolia_search:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
 ]]></content>
       <tags>
-        <tag>elasticsearch drawio</tag>
+        <tag>运维 cdn 加速</tag>
       </tags>
   </entry>
   <entry>
@@ -2462,6 +2462,37 @@ FIELDS TERMINATED BY &apos;,&apos; ;
       </tags>
   </entry>
   <entry>
+    <title>Beats</title>
+    <url>/2020/02/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/ELK/Beats/</url>
+    <content><![CDATA[<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">本文拟用的beats版本是6.7</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<h1 id="Beats"><a href="#Beats" class="headerlink" title="Beats"></a>Beats</h1><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">beats 是一款开源的轻量级采集组件,用于采集流转的数据.</span><br></pre></td></tr></table></figure>
+<p>常见的beats类型有</p>
+<ul>
+<li><a href="https://www.elastic.co/products/beats/auditbeat" target="_blank" rel="noopener"> Auditbeat</a></li>
+<li><a href="https://www.elastic.co/products/beats/filebeat" target="_blank" rel="noopener"> Filebeat</a></li>
+<li><a href="https://www.elastic.co/products/beats/functionbeat" target="_blank" rel="noopener">Functionbeat</a></li>
+<li><a href="https://www.elastic.co/products/beats/heartbeat" target="_blank" rel="noopener"> Heartbeat</a></li>
+<li><a href="https://www.elastic.co/downloads/beats/journalbeat" target="_blank" rel="noopener"> Journalbeat</a></li>
+<li><a href="https://www.elastic.co/products/beats/metricbeat" target="_blank" rel="noopener">Metricbeat</a></li>
+<li><a href="https://www.elastic.co/products/beats/packetbeat" target="_blank" rel="noopener"> Packetbeat</a></li>
+<li><a href="https://www.elastic.co/products/beats/winlogbeat" target="_blank" rel="noopener"> Winlogbeat</a></li>
+</ul>
+<hr>
+<p>beats 能直接将数据采集发送到Logstash 或elasticsearch</p>
+<h2 id="Auditbeat"><a href="#Auditbeat" class="headerlink" title="Auditbeat"></a>Auditbeat</h2><h2 id="Filebeat"><a href="#Filebeat" class="headerlink" title="Filebeat"></a>Filebeat</h2>]]></content>
+  </entry>
+  <entry>
+    <title>hbaes操作</title>
+    <url>/2019/05/17/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/hadoop/hbase/hbase%E6%93%8D%E4%BD%9C/</url>
+    <content><![CDATA[<p>对hbase常规api进行封装</p>
+<a id="more"></a>
+<h1 id="hbase日常api类封装"><a href="#hbase日常api类封装" class="headerlink" title="hbase日常api类封装"></a>hbase日常api类封装</h1>]]></content>
+      <tags>
+        <tag>常规api封装</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ELK使用</title>
     <url>/2020/02/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/ELK/ELK/</url>
     <content><![CDATA[<p>针对ELK使用</p>
@@ -2489,25 +2520,11 @@ FIELDS TERMINATED BY &apos;,&apos; ;
       </tags>
   </entry>
   <entry>
-    <title>Beats</title>
-    <url>/2020/02/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/ELK/Beats/</url>
-    <content><![CDATA[<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">本文拟用的beats版本是6.7</span><br></pre></td></tr></table></figure>
+    <title>SparkSql</title>
+    <url>/2019/06/13/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/sql/SparkSql/</url>
+    <content><![CDATA[<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">spark sql 相关内容</span><br></pre></td></tr></table></figure>
 <a id="more"></a>
-<h1 id="Beats"><a href="#Beats" class="headerlink" title="Beats"></a>Beats</h1><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">beats 是一款开源的轻量级采集组件,用于采集流转的数据.</span><br></pre></td></tr></table></figure>
-<p>常见的beats类型有</p>
-<ul>
-<li><a href="https://www.elastic.co/products/beats/auditbeat" target="_blank" rel="noopener"> Auditbeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/filebeat" target="_blank" rel="noopener"> Filebeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/functionbeat" target="_blank" rel="noopener">Functionbeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/heartbeat" target="_blank" rel="noopener"> Heartbeat</a></li>
-<li><a href="https://www.elastic.co/downloads/beats/journalbeat" target="_blank" rel="noopener"> Journalbeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/metricbeat" target="_blank" rel="noopener">Metricbeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/packetbeat" target="_blank" rel="noopener"> Packetbeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/winlogbeat" target="_blank" rel="noopener"> Winlogbeat</a></li>
-</ul>
-<hr>
-<p>beats 能直接将数据采集发送到Logstash 或elasticsearch</p>
-<h2 id="Auditbeat"><a href="#Auditbeat" class="headerlink" title="Auditbeat"></a>Auditbeat</h2><h2 id="Filebeat"><a href="#Filebeat" class="headerlink" title="Filebeat"></a>Filebeat</h2>]]></content>
+<h1 id="sparksql"><a href="#sparksql" class="headerlink" title="sparksql"></a>sparksql</h1>]]></content>
   </entry>
   <entry>
     <title>hdfs操作细节</title>
@@ -2527,22 +2544,5 @@ FIELDS TERMINATED BY &apos;,&apos; ;
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.client.block.write.replace-datanode-on-failure.enable<span class="tag">&lt;/<span class="name">name</span>&gt;</span>         <span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">   </span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.client.block.write.replace-datanode-on-failure.policy<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>NEVER<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <p>对于dfs.client.block.write.replace-datanode-on-failure.enable，客户端在写失败的时候，是否使用更换策略，默认是true没有问题<br>对于，dfs.client.block.write.replace-datanode-on-failure.policy，default在3个或以上备份的时候，是会尝试更换结点尝试写入datanode。而在两个备份的时候，不更换datanode，直接开始写。对于3个datanode的集群，只要一个节点没响应写入就会出问题，所以可以关掉。</p>
 ]]></content>
-  </entry>
-  <entry>
-    <title>hbaes操作</title>
-    <url>/2019/05/17/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/hadoop/hbase/hbase%E6%93%8D%E4%BD%9C/</url>
-    <content><![CDATA[<p>对hbase常规api进行封装</p>
-<a id="more"></a>
-<h1 id="hbase日常api类封装"><a href="#hbase日常api类封装" class="headerlink" title="hbase日常api类封装"></a>hbase日常api类封装</h1>]]></content>
-      <tags>
-        <tag>常规api封装</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>SparkSql</title>
-    <url>/2019/06/13/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/sql/SparkSql/</url>
-    <content><![CDATA[<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">spark sql 相关内容</span><br></pre></td></tr></table></figure>
-<a id="more"></a>
-<h1 id="sparksql"><a href="#sparksql" class="headerlink" title="sparksql"></a>sparksql</h1>]]></content>
   </entry>
 </search>
