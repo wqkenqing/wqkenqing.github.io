@@ -172,8 +172,8 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 </li>
 <li><p>Task ： Task 分为Map Task 和Reduce Task 两种，均由TaskTracker 启动。HDFS 以固定大小的block 为基本单位存储数据，而对于MapReduce 而言，其处理单位是split。</p>
 </li>
-<li><p>Map Task 执行过程如下图 所示：由该图可知，Map Task 先将对应的split 迭代解析成一个个key&#x2F;value 对，依次调用用户 自定义的map() 函数进行处理，最终将临时结果存放到本地磁盘上, 其中临时数据被分成若干个partition，每个partition 将被一个Reduce Task 处理。<br>   <img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/09d902f773ff4e30b1cf995705d4f03c-image.png" alt="09d902f773ff4e30b1cf995705d4f03c-image.png"></p>
-<p>Reduce Task 执行过程下图所示。该过程分为三个阶段<br><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/2f9ff84d09cf424cb8a1c4d24db637c0-image.png" alt="2f9ff84d09cf424cb8a1c4d24db637c0-image.png"></p>
+<li><p>Map Task 执行过程如下图 所示：由该图可知，Map Task 先将对应的split 迭代解析成一个个key&#x2F;value 对，依次调用用户 自定义的map() 函数进行处理，最终将临时结果存放到本地磁盘上, 其中临时数据被分成若干个partition，每个partition 将被一个Reduce Task 处理。<br>   <img src="http://img.wqkenqing.ren//file/2017/10/09d902f773ff4e30b1cf995705d4f03c-image.png" alt="09d902f773ff4e30b1cf995705d4f03c-image.png"></p>
+<p>Reduce Task 执行过程下图所示。该过程分为三个阶段<br><img src="http://img.wqkenqing.ren//file/2017/10/2f9ff84d09cf424cb8a1c4d24db637c0-image.png" alt="2f9ff84d09cf424cb8a1c4d24db637c0-image.png"></p>
 </li>
 </ul>
 <p><strong>提交作业</strong></p>
@@ -199,7 +199,7 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 <p><strong>作业的完成</strong></p>
 <ul>
 <li>JobTracker 是在接受到最后一个任务运行完成后，才会将任务标志为成功</li>
-<li>此时会做删除中间结果等善后处理工作<br>  <img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/8fba570574f6491c96b51698743466b2-image.png" alt="8fba570574f6491c96b51698743466b2-image.png"></li>
+<li>此时会做删除中间结果等善后处理工作<br>  <img src="http://img.wqkenqing.ren//file/2017/10/8fba570574f6491c96b51698743466b2-image.png" alt="8fba570574f6491c96b51698743466b2-image.png"></li>
 </ul>
 <h3 id="MapReduce任务执行流程与数据处理流程详解"><a href="#MapReduce任务执行流程与数据处理流程详解" class="headerlink" title="MapReduce任务执行流程与数据处理流程详解"></a>MapReduce任务执行流程与数据处理流程详解</h3><p><code>就任务流程而言，上文中有些或已经涉及，有些也介绍的比较详细了。但就整体而言，不是特别具体，或这个整体性，所以在此我们再集中总结一下，即使重复内容，就也当加深印象吧。</code></p>
 <h4 id="任务执行流程详解"><a href="#任务执行流程详解" class="headerlink" title="任务执行流程详解"></a>任务执行流程详解</h4><ol>
@@ -216,7 +216,7 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 <li>JobTracker中的MRAppMaster将每个Split信息计算出需要的MapTask的实例数量，然后向集群申请机器启动相应数量的mapTask进程</li>
 <li>进程启动后，根据给定的数据切片范围进行数据处理，主要流程为<br>a)通过inputFormat来获取RecordReader读取数据，并形成输入的KV对<br>b)将输入KV对传递给用户定义的map（）方法，做逻辑处理，并map()方法的输出的kv对手机到缓存中(这里用到了缓存机制)<br>简而言之map中输入时要做的事是<br>1.反射构造InputFormat.<br>2.反射构造InputSplit.<br>3.创建RecordReader.<br>4.反射创建MapperRunner</li>
 </ul>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/3a461434b0604118aad45a4d38cf3649-image.png" alt="3a461434b0604118aad45a4d38cf3649-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/3a461434b0604118aad45a4d38cf3649-image.png" alt="3a461434b0604118aad45a4d38cf3649-image.png"></p>
 <p>而map输出时相对复杂，主要涉及到的有Partitioner，shuffle，sort，combiner等概念，我们就来一一讨论。<br>在map（）方法执行后，map阶段是会有处理的数据输出，正常来说，就是每个split对应的每一行。如上图MapRunner的next为false时，对输入数据的map完成，这时对存内中这些map的数据，会对其进行sort,如果我们事先设置的有combiner那么，还会对sort完的数据执行combiner(<strong>一个类reduce操作，不过是对本地数据的reduce，使用它的原则是combiner的输入不会影响到reduce计算的最终输入，例如：如果计算只是求总数，最大值，最小值可以使用combiner，但是做平均值计算使用combiner的话，最终的reduce计算结果就会出错。</strong>)，然后开始map的内容spill到磁盘中，如果频繁的spill对磁盘会带来较大的损耗和效率影响。所以引入了一个写缓冲区的概念，即每一个Map Task都拥有一个“环形缓冲区”作为Mapper输出的写缓冲区。写缓冲区大小默认为100MB（通过属性io.sort.mb调整），当写缓冲区的数据量达到一定的容量限额时（默认为80%，通过属性io.sort.spill.percent调整），后台线程开始将写缓冲区的数据溢写到本地磁盘。在数据溢写的过程中，只要写缓冲区没有被写满，Mappper依然可以将数据写出到缓冲区中；否则Mapper的执行过程将被阻塞，直到溢写结束。<br>溢写以循环的方式进行（即写缓冲区的数据量大致限额时就会执行溢写），可以通过属性mapred.local.dir指定写出的目录。<br>spill结束前 溢写线程将数据最终写出到本地磁盘之前，首先根据Reducer的数目对这部分数据进行分区（即每一个分区中的数据会被传送至同一个Reducer进行处理，分区数目与Reducer数据保持一致）即 <strong>partition</strong>，partition是一个类inputSplit()的操作，即根据有多少个ReduceTask生成多少个partition,并通过jobTracker指定给相应的ReduceTask。<br>当spill完成后，本地磁盘中会有多个溢出文件存在。在MapTask结束前，这些文件会根据相应的分区进行合并，并排序，合并可能发生多次，具体由<strong>io.sort.factor控制一次最多合并多少个文件。</strong></p>
 <p>如果溢写文件个数超过3（通过属性min.num.spills.for.combine设置），会对合并且分区排序后的结果执行Combine过程（如果MapReduce有设置Combiner），而且combine过程在不影响最终结果的前提下可能会被执行多次；否则不会执行Combine过程（相对而言，Combine开销过大）。</p>
 <p>注意：Map Task执行过程中，Combine可能出现在两个地方：写缓冲区溢写过程中、溢写文件合并过程中。</p>
@@ -229,19 +229,19 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 <p>通常这里还有一个“Group”的阶段，这个阶段决定着哪些键值对属于同一个键。如果没有特殊设置，只有在Map Task输出时那些键完全一样的数据属于同一个键，但这是可以被改变的。</p>
 <p>描述至这里终于能引用mapreduce中相当重要的一个概念，即shuffle。这个词在这里该怎么定义，我暂未找到个一个比较满意的答案，但我比较喜欢有人把这个比作是搓完牌一桌子人，在下一局开始前的整个过程。<br>即Shuffle操作，涉及到数据的partition、sort、[combine]、spill、[comress]、[merge]、copy、[combine]、merge、group，而这些操作不但决定着程序逻辑的正确性，也决定着MapReduce的运行效率。</p>
 <p>shuffle完后进入了ReduceTask的reduce()方法中<br>在Reduce Phase的过程中，它处理的是所有Map Tasks输出结果中某一个分区中的所有数据，这些数据整体表现为一个根据键有序的输入，对于每一个键都会相应地调用一次Reduce Function（同一个键对应的值可能有多个，这些值将作为Reduce Function的参数）</p>
-<p>至此MapReduce的逻辑过程基本描述完成，虽然洋洋洒洒可能会有数千字，但本文的出发点就不是简析，而更多是自我概念原理部份的总结，所以力求整个流程完整详细。后面我配上一些网络图片，方便大家快速理解，结合文字加深印象。<br><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/b26c54ff10ad4e2b9832a960ef4aab90-image.png" alt="b26c54ff10ad4e2b9832a960ef4aab90-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/a179f15b88cc403b8bd84d7963823762-image.png" alt="a179f15b88cc403b8bd84d7963823762-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/4a5b5498dd764087ade380db394e6f84-image.png" alt="4a5b5498dd764087ade380db394e6f84-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/74ed215c305747a49348430782e5636a-image.png" alt="74ed215c305747a49348430782e5636a-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/b55be177bd514ce79b7444c2dd3ddcfb-image.png" alt="b55be177bd514ce79b7444c2dd3ddcfb-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/286bb24da172471793924b2b9b7c857c-image.png" alt="286bb24da172471793924b2b9b7c857c-image.png"><br><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/68bbc5f114f3496d886402cbb0da8fc1-image.png" alt="68bbc5f114f3496d886402cbb0da8fc1-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/38d8bf9498274367b22856f62a8f7fcf-image.png" alt="38d8bf9498274367b22856f62a8f7fcf-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/7b7e5da815064fdfa0d060910f8dfb9b-image.png" alt="7b7e5da815064fdfa0d060910f8dfb9b-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/a4ac8a6f758b4bdfb5e1a752a02f0654-image.png" alt="a4ac8a6f758b4bdfb5e1a752a02f0654-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/9e91f8a6b0ab488abbad0714487fe10f-image.png" alt="9e91f8a6b0ab488abbad0714487fe10f-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/87a4d55fff15408c87f94029b8fb2aea-image.png" alt="87a4d55fff15408c87f94029b8fb2aea-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/eb099e53d6fa44a5b76410040f41f3ae-image.png" alt="eb099e53d6fa44a5b76410040f41f3ae-image.png"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com//file/2017/10/98aac8b77be64d53b276f7a112aba12d-image.png" alt="98aac8b77be64d53b276f7a112aba12d-image.png"></p>
+<p>至此MapReduce的逻辑过程基本描述完成，虽然洋洋洒洒可能会有数千字，但本文的出发点就不是简析，而更多是自我概念原理部份的总结，所以力求整个流程完整详细。后面我配上一些网络图片，方便大家快速理解，结合文字加深印象。<br><img src="http://img.wqkenqing.ren//file/2017/10/b26c54ff10ad4e2b9832a960ef4aab90-image.png" alt="b26c54ff10ad4e2b9832a960ef4aab90-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/a179f15b88cc403b8bd84d7963823762-image.png" alt="a179f15b88cc403b8bd84d7963823762-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/4a5b5498dd764087ade380db394e6f84-image.png" alt="4a5b5498dd764087ade380db394e6f84-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/74ed215c305747a49348430782e5636a-image.png" alt="74ed215c305747a49348430782e5636a-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/b55be177bd514ce79b7444c2dd3ddcfb-image.png" alt="b55be177bd514ce79b7444c2dd3ddcfb-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/286bb24da172471793924b2b9b7c857c-image.png" alt="286bb24da172471793924b2b9b7c857c-image.png"><br><img src="http://img.wqkenqing.ren//file/2017/10/68bbc5f114f3496d886402cbb0da8fc1-image.png" alt="68bbc5f114f3496d886402cbb0da8fc1-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/38d8bf9498274367b22856f62a8f7fcf-image.png" alt="38d8bf9498274367b22856f62a8f7fcf-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/7b7e5da815064fdfa0d060910f8dfb9b-image.png" alt="7b7e5da815064fdfa0d060910f8dfb9b-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/a4ac8a6f758b4bdfb5e1a752a02f0654-image.png" alt="a4ac8a6f758b4bdfb5e1a752a02f0654-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/9e91f8a6b0ab488abbad0714487fe10f-image.png" alt="9e91f8a6b0ab488abbad0714487fe10f-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/87a4d55fff15408c87f94029b8fb2aea-image.png" alt="87a4d55fff15408c87f94029b8fb2aea-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/eb099e53d6fa44a5b76410040f41f3ae-image.png" alt="eb099e53d6fa44a5b76410040f41f3ae-image.png"></p>
+<p><img src="http://img.wqkenqing.ren//file/2017/10/98aac8b77be64d53b276f7a112aba12d-image.png" alt="98aac8b77be64d53b276f7a112aba12d-image.png"></p>
 ]]></content>
   </entry>
   <entry>
@@ -1083,20 +1083,10 @@ System.out.println(ok==ok1)
 <p>类似的问题还会出现一些如text ,content过长的问题，初次搭建我这先建议改小试试，后面还有根治的方式。</p>
 <p>修改了gora-sql-mapping.xml文件后，执行抓取指令，以bin&#x2F;nutch crawl urlfile  -threads number -deepth num 这是nutch 普遍用的一个指行指令，这个指令执行时会默认将数据持久化到webpage的表中，这种方式缺点是不太灵活，复杂任务的时候不好操作。</p>
 <p>另一种bin&#x2F;crawl urlfile -crawlId name (这个name会作为对应的表名组成部份) “solrrl” “num”用于指定解析程度<br>这种方式相对而言更灵活，后面我主要采用这种方式。这里有个小细节，bin&#x2F;crawl 这个脚本是可以尝试更改的，它默认执行任务时只创建了50，而这种方式无法像上面那样指定创建线程数，所以我更改了crawl文件的初始值，将参数调值2000.所以可以根据自己需求，酌情更改。</p>
-<p>bin&#x2F;nutch parse 有些fetch 任务执行完成后，parse数据同步至数据库时可能会产生一些错误，那么可以通过这个指令尝试进行解析。<br>示例：bin&#x2F;nutch parse -crawlId name -all<br>这里容易出现前面提到过的一个问题，就是在解析时，content 或text 中的内容格式不对，或text 内容中出现在了emoji等情况，都可能使解析任务中断。我经过一翻调整，算是有一个统一解决方案：在这里贴出来参考<br>1、将数据库编码格式设置为utf8mb4；<br>2、将text和content的gora-mapping.xml文件中添加jdbc-type&#x3D;“text” 或jdbc-type&#x3D;”blob”的设置，即指明其数据库中对应的类型，避免长度等问题<br>3、上两者结合的一个情况，text存入文中的内容有编码格式，相对读取轻松，blob以二进制形式存放，取值需要转码，所以在不出错的情况下优先设为text，而这时，数据库设为utf8mb4时就不要在jdbc url 中设置utf8格式了，这样反而会出现问题。<br><img src="//http://rgr3ifyzo.sabkt.gdipper.com//file/2017/9/ae5a036dcc9c45a29fdfa0ed2d345eca-image.png" alt="ae5a036dcc9c45a29fdfa0ed2d345eca-image.png"></p>
+<p>bin&#x2F;nutch parse 有些fetch 任务执行完成后，parse数据同步至数据库时可能会产生一些错误，那么可以通过这个指令尝试进行解析。<br>示例：bin&#x2F;nutch parse -crawlId name -all<br>这里容易出现前面提到过的一个问题，就是在解析时，content 或text 中的内容格式不对，或text 内容中出现在了emoji等情况，都可能使解析任务中断。我经过一翻调整，算是有一个统一解决方案：在这里贴出来参考<br>1、将数据库编码格式设置为utf8mb4；<br>2、将text和content的gora-mapping.xml文件中添加jdbc-type&#x3D;“text” 或jdbc-type&#x3D;”blob”的设置，即指明其数据库中对应的类型，避免长度等问题<br>3、上两者结合的一个情况，text存入文中的内容有编码格式，相对读取轻松，blob以二进制形式存放，取值需要转码，所以在不出错的情况下优先设为text，而这时，数据库设为utf8mb4时就不要在jdbc url 中设置utf8格式了，这样反而会出现问题。<br><img src="//http://img.wqkenqing.ren//file/2017/9/ae5a036dcc9c45a29fdfa0ed2d345eca-image.png" alt="ae5a036dcc9c45a29fdfa0ed2d345eca-image.png"></p>
 <p>至此 nutch日常的主要使用指令就这两个，还有些 如果bin&#x2F;nutch fetch bin&#x2F;nutch gernate<br>这些相对出错较少，出错的影响和对策网上也相对较多，就不再缀述了。</p>
 <hr>
 <p>至此爬虫服务的总结就要告一段落了，这篇文章体量相对较大，我是断断续续逐步完成的，所以，后面更多是凭回忆出的之前深刻影响且在网上少有明确解决方案的一些问题，给出我的解决方式，所以，如果这篇总结针对的算是nutch使用过程中，尝试更进一步的助力，而非特别基础的。如果看到此篇文章的你对nutch还有其它的一些问题，可以尝试留言，我们一起探讨。</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>CDH搭建细节</title>
-    <url>/2019/05/27/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/CDH/%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<p>…..</p>
-<span id="more"></span>
-
-<h2 id="CDH安装准备"><a href="#CDH安装准备" class="headerlink" title="CDH安装准备"></a>CDH安装准备</h2><p><img src="http://rgr3ifyzo.sabkt.gdipper.com/Ibp691.png"></p>
-<p>ubuntu ulimit</p>
 ]]></content>
   </entry>
   <entry>
@@ -1111,7 +1101,7 @@ System.out.println(ok==ok1)
 
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flink run -c myflink.demo.SocketTextStreamWordCount my-flink-project-0.1.jar 127.0.0.1 9000</span><br></pre></td></tr></table></figure>
 
-<h2 id="DataStream-API"><a href="#DataStream-API" class="headerlink" title="DataStream API"></a>DataStream API</h2><p>flink程序工作解剖图<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/FIyXNI.png"></p>
+<h2 id="DataStream-API"><a href="#DataStream-API" class="headerlink" title="DataStream API"></a>DataStream API</h2><p>flink程序工作解剖图<br><img src="http://img.wqkenqing.ren/FIyXNI.png"></p>
 <h3 id="执行环境"><a href="#执行环境" class="headerlink" title="执行环境"></a>执行环境</h3><p>flink支持</p>
 <ul>
 <li>获取已经存在的flink环境</li>
@@ -1253,7 +1243,7 @@ System.out.println(ok==ok1)
 <h2 id="建视图"><a href="#建视图" class="headerlink" title="建视图"></a>建视图</h2><p>Hive也可以建立视图，是一张虚表，方便我们进行操作.</p>
 <p>create view v1 as select a.id aid,a.name ,b.id bid , b.order from customers a left outer join default.tt b on a.id &#x3D; b.cid ;</p>
 <h2 id="Hive的严格模式"><a href="#Hive的严格模式" class="headerlink" title="Hive的严格模式"></a>Hive的严格模式</h2><p>Hive提供了一个严格模式，可以防止用户执行那些产生意想不到的不好的影响的查询。<br>使用了严格模式之后主要对以下3种不良操作进行控制：</p>
-<p>1.分区表必须指定分区进行查询。<br>2.order by时必须使用limit子句。<br>3.不允许笛卡尔积。<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-03-18-17-13-36.png" alt="2019-03-18-17-13-36"></p>
+<p>1.分区表必须指定分区进行查询。<br>2.order by时必须使用limit子句。<br>3.不允许笛卡尔积。<br><img src="http://img.wqkenqing.ren/2019-03-18-17-13-36.png" alt="2019-03-18-17-13-36"></p>
 <h2 id="Hive的动态分区"><a href="#Hive的动态分区" class="headerlink" title="Hive的动态分区"></a>Hive的动态分区</h2><p>像分区表里面存储了数据。我们在进行存储数据的时候，都是明确的指定了分区。在这个过程中Hive也提供了一种比较任性化的操作，就是动态分区，不需要我们指定分区目录，Hive能够把数据进行动态的分发,<strong>我们需要将当前的严格模式设置成非严格模式，否则不允许使用动态分区</strong><br>set hive.exec.dynamic.partition.mode&#x3D;nonstrict&#x2F;&#x2F;设置非严格模式</p>
 <h2 id="Hive的排序"><a href="#Hive的排序" class="headerlink" title="Hive的排序"></a>Hive的排序</h2><p>Hive也提供了一些排序的语法，包括order by,sort by。</p>
 <p>order by&#x3D;MapReduce的全排序<br>sort by&#x3D;MapReduce的部分排序<br>distribute by&#x3D;MapReduce的分区</p>
@@ -1291,7 +1281,7 @@ System.out.println(ok==ok1)
 <p>删除group</p>
 <p>kafka-consumer-groups –bootstrap-server 192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092  —group traffic_history —delete</p>
 <h2 id="kafka-java-api"><a href="#kafka-java-api" class="headerlink" title="kafka java api"></a>kafka java api</h2><p>kafka 虽然搭建较为简单,但想要对针它编程体验还是有些问题.初步使用下来明显感觉对版本的强约束性.以我线上版本</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-03-12-11-02-43.png" alt="2019-03-12-11-02-43">为例,我java项目对应的版本则是</p>
+<p><img src="http://img.wqkenqing.ren/2019-03-12-11-02-43.png" alt="2019-03-12-11-02-43">为例,我java项目对应的版本则是</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka_2<span class="number">.10</span>&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;<span class="number">0.8</span><span class="number">.1</span>&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;<span class="number">0.8</span><span class="number">.2</span><span class="number">.1</span>&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
 
 <p>以上版本搭配经由我亲测通过</p>
@@ -1327,7 +1317,7 @@ System.out.println(ok==ok1)
 <h2 id="建视图"><a href="#建视图" class="headerlink" title="建视图"></a>建视图</h2><p>Hive也可以建立视图，是一张虚表，方便我们进行操作.</p>
 <p>create view v1 as select a.id aid,a.name ,b.id bid , b.order from customers a left outer join default.tt b on a.id &#x3D; b.cid ;</p>
 <h2 id="Hive的严格模式"><a href="#Hive的严格模式" class="headerlink" title="Hive的严格模式"></a>Hive的严格模式</h2><p>Hive提供了一个严格模式，可以防止用户执行那些产生意想不到的不好的影响的查询。<br>使用了严格模式之后主要对以下3种不良操作进行控制：</p>
-<p>1.分区表必须指定分区进行查询。<br>2.order by时必须使用limit子句。<br>3.不允许笛卡尔积。<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-03-18-17-13-36.png" alt="2019-03-18-17-13-36"></p>
+<p>1.分区表必须指定分区进行查询。<br>2.order by时必须使用limit子句。<br>3.不允许笛卡尔积。<br><img src="http://img.wqkenqing.ren/2019-03-18-17-13-36.png" alt="2019-03-18-17-13-36"></p>
 <h2 id="Hive的动态分区"><a href="#Hive的动态分区" class="headerlink" title="Hive的动态分区"></a>Hive的动态分区</h2><p>像分区表里面存储了数据。我们在进行存储数据的时候，都是明确的指定了分区。在这个过程中Hive也提供了一种比较任性化的操作，就是动态分区，不需要我们指定分区目录，Hive能够把数据进行动态的分发,<strong>我们需要将当前的严格模式设置成非严格模式，否则不允许使用动态分区</strong><br>set hive.exec.dynamic.partition.mode&#x3D;nonstrict&#x2F;&#x2F;设置非严格模式</p>
 <h2 id="Hive的排序"><a href="#Hive的排序" class="headerlink" title="Hive的排序"></a>Hive的排序</h2><p>Hive也提供了一些排序的语法，包括order by,sort by。</p>
 <p>order by&#x3D;MapReduce的全排序<br>sort by&#x3D;MapReduce的部分排序<br>distribute by&#x3D;MapReduce的分区</p>
@@ -1367,7 +1357,7 @@ System.out.println(ok==ok1)
 <li>GroupComparator</li>
 <li>Reduce</li>
 </ol>
-<h1 id="shuffle"><a href="#shuffle" class="headerlink" title="shuffle"></a>shuffle</h1><p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-03-19-15-39-59.png" alt="2019-03-19-15-39-59"><br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-03-19-16-46-06.png" alt="2019-03-19-16-46-06"></p>
+<h1 id="shuffle"><a href="#shuffle" class="headerlink" title="shuffle"></a>shuffle</h1><p><img src="http://img.wqkenqing.ren/2019-03-19-15-39-59.png" alt="2019-03-19-15-39-59"><br><img src="http://img.wqkenqing.ren/2019-03-19-16-46-06.png" alt="2019-03-19-16-46-06"></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shuffle 被称为mapreduce的核心,一个真正让奇迹发生的地方.但它到底是什么呢?简练的讲,它就是 map out 到 reduce in 这段过程中对数据的处理过程.</span><br></pre></td></tr></table></figure>
 <p>shuffle过程中主要发生的操作有,Partion,Sort,spill,merge,copy,sort,merge.(还有可能有combine操作)</p>
 <p>具体流程是<br>map out后,Collector 对out后的数据进行处理. 数据将会写入到内存缓冲区,该内存缓冲区的数据达到80%后,会开启一个溢写线程,在磁盘本地创建一个文件.如果reduce设置了多个分区,写入buffer区的数据,会被打上一个分区标记.通过sortAndSpill()方法进行指对数据按分区号,key排序.最后溢出的文件是分区的,按key有序的文件.若buffer区中的20%一直未被填满,buffer写入进程不会断.但若达到100%,Buffer写入进程则会阻塞.并在buffer区中的数据全部spill完后才会再开启. (buffer区的内存默认是100M),spill过程中,若设置过combiner.则会对数据先进行combiner逻辑处理,再将处理后的数据写出</p>
@@ -1409,7 +1399,7 @@ System.out.println(ok==ok1)
 <li>容错</li>
 <li>spark体系整合</li>
 </ul>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-03-04-15-45-38.png" alt="spark&amp;storm对比"></p>
+<p><img src="http://img.wqkenqing.ren/2019-03-04-15-45-38.png" alt="spark&amp;storm对比"></p>
 <h2 id="RDD详解"><a href="#RDD详解" class="headerlink" title="RDD详解"></a>RDD详解</h2><h3 id="RDD是什么"><a href="#RDD是什么" class="headerlink" title="RDD是什么"></a>RDD是什么</h3><p>RDD：Spark的核心概念是RDD (resilientdistributed dataset)，指的是一个只读的，可分区的分布式数据集，这个数据集的全部或部分可以缓存在内存中，在多次计算间重用。</p>
 <p>另:RDD即弹性分布式数据集，有容错机制并可以被并行操作的元素集合，具有只读、分区、容错、高效、无需物化、可以缓存、RDD依赖等特征。RDD只是数据集的抽象，分区内部并不会存储具体的数据。</p>
 <p>RDD的五个特性</p>
@@ -1434,8 +1424,8 @@ System.out.println(ok==ok1)
 <h3 id="Spark-RDD算子"><a href="#Spark-RDD算子" class="headerlink" title="Spark RDD算子"></a>Spark RDD算子</h3><ol>
 <li>Transformation<br>不触发提交作业，完成作业中间处理过程。</li>
 </ol>
-<h2 id="DStream"><a href="#DStream" class="headerlink" title="DStream"></a>DStream</h2><h3 id="什么是DStream"><a href="#什么是DStream" class="headerlink" title="什么是DStream"></a>什么是DStream</h3><p>Discretized Stream :代表持续性的数据流和经过各种Spark原语操作后的结果数据流,在内部实现上是一系列连续的RDD来表示.每个RDD含有一段时间间隔内的数据,如下图<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-03-04-15-50-41.png" alt="DStream"></p>
-<p>计算则由spark engine来完成<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-03-04-15-51-58.png" alt="spark engine流程"></p>
+<h2 id="DStream"><a href="#DStream" class="headerlink" title="DStream"></a>DStream</h2><h3 id="什么是DStream"><a href="#什么是DStream" class="headerlink" title="什么是DStream"></a>什么是DStream</h3><p>Discretized Stream :代表持续性的数据流和经过各种Spark原语操作后的结果数据流,在内部实现上是一系列连续的RDD来表示.每个RDD含有一段时间间隔内的数据,如下图<br><img src="http://img.wqkenqing.ren/2019-03-04-15-50-41.png" alt="DStream"></p>
+<p>计算则由spark engine来完成<br><img src="http://img.wqkenqing.ren/2019-03-04-15-51-58.png" alt="spark engine流程"></p>
 <h2 id="spark-java"><a href="#spark-java" class="headerlink" title="spark java"></a>spark java</h2><p>因为我是主要掌握的语言是java,从效率上来考虑,这里</p>
 <h2 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h2><p><a href="https://blog.csdn.net/wangxiaotongfan/article/details/51395769">https://blog.csdn.net/wangxiaotongfan/article/details/51395769</a> RDD详解<br><a href="https://blog.csdn.net/zuochang_liu/article/details/81459185">https://blog.csdn.net/zuochang_liu/article/details/81459185</a>  spark streaming学习<br><a href="https://blog.csdn.net/hellozhxy/article/details/81672845">https://blog.csdn.net/hellozhxy/article/details/81672845</a> spark java 使用指南<br><a href="https://blog.csdn.net/t1dmzks/article/details/70198430">https://blog.csdn.net/t1dmzks/article/details/70198430</a> sparkRDD算子介绍<br><a href="https://blog.csdn.net/wxycx11111/article/details/79123482">https://blog.csdn.net/wxycx11111/article/details/79123482</a> <strong>sparkRDD入门介绍</strong><br><a href="https://github.com/zhaikaishun/spark_tutorial">https://github.com/zhaikaishun/spark_tutorial</a> <strong>RDD算子介绍</strong></p>
 ]]></content>
@@ -1458,18 +1448,6 @@ System.out.println(ok==ok1)
 <h2 id="spark-sql"><a href="#spark-sql" class="headerlink" title="spark sql"></a>spark sql</h2>]]></content>
       <tags>
         <tag>学习spark2</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>spark go on</title>
-    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/spark%E5%AD%A6%E4%B9%A03/</url>
-    <content><![CDATA[<p>spark-core,spark-streaming再深造</p>
-<span id="more"></span>
-<h1 id="spark-go-on"><a href="#spark-go-on" class="headerlink" title="spark go on"></a>spark go on</h1><p>初始规划</p>
-<p>spark-core<br>spark-streaming</p>
-]]></content>
-      <tags>
-        <tag>bigdata</tag>
       </tags>
   </entry>
   <entry>
@@ -1711,7 +1689,7 @@ System.out.println(ok==ok1)
 <li>文本数据</li>
 <li>出行数据(gps,手机定位等)</li>
 </ul>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-15-10-36-53.png" alt="2019-04-15-10-36-53"></p>
+<p><img src="http://img.wqkenqing.ren/2019-04-15-10-36-53.png" alt="2019-04-15-10-36-53"></p>
 <ul>
 <li>sqoop flume crawler datax kettle  elk</li>
 </ul>
@@ -1719,7 +1697,7 @@ System.out.println(ok==ok1)
 <li>Flume(水槽) 是 Cloudera 提供的一个高可用的，高可靠的，分布式的海量日志采集、聚合和传输的系统。Flume基于流式架构，灵活简单,可拓展</li>
 <li>Sqoop是一个在结构化数据和Hadoop之间进行批量数据迁移的工具，结构化数据可以是Mysql、Oracle等RDBMS。Sqoop底层用MapReduce程序实现抽取、转换、加载，MapReduce天生的特性保证了并行化和高容错率，而且相比Kettle等传统ETL工具，任务跑在Hadoop集群上，减少了ETL服务器资源的使用情况。在特定场景下，抽取过程会有很大的性能提升。</li>
 <li>crawler , jsoup ,httpclient, nutch 等.</li>
-<li>elk  集中式日志系统 ELK 协议栈详解<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-15-10-11-16.png" alt="2019-04-15-10-11-16"></li>
+<li>elk  集中式日志系统 ELK 协议栈详解<br><img src="http://img.wqkenqing.ren/2019-04-15-10-11-16.png" alt="2019-04-15-10-11-16"></li>
 </ol>
 <hr>
 <h2 id="存储类"><a href="#存储类" class="headerlink" title="存储类"></a>存储类</h2><ul>
@@ -1744,12 +1722,12 @@ System.out.println(ok==ok1)
 * 只支持一次写入多次读取，同一时刻只有一个写入者
 * 只能追加，不能修改
 </code></pre>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-15-11-12-40.png" alt="2019-04-15-11-12-40"></p>
+<p><img src="http://img.wqkenqing.ren/2019-04-15-11-12-40.png" alt="2019-04-15-11-12-40"></p>
 <h3 id="hbase"><a href="#hbase" class="headerlink" title="hbase"></a>hbase</h3><p>Base是一个构建在HDFS上的分布式列存储系统；<br>Base是基于Google BigTable模型开发的，典型的key&#x2F;value系统；<br>Base是Apache Hadoop生态系统中的重要一员，主要用于海量结构化数据存储；</p>
 <p>大：一个表可以有数十亿行，上百万列；无模式：每行都有一个可排序的主键和任意多的列，列可以根据需要动态的增加，同一张表中不同的行可以有截然不同的列；面向列：面向列（族）的存储和权限控制，列（族）独立检索；稀疏：空（null）列并不占用存储空间，表可以设计的非常稀疏；数据多版本：每个单元中的数据可以有多个版本，默认情况下版本号自动分配，是单元格插入时的时间戳；数据类型单一：Hbase中的数据都是字符串，没有类型</p>
-<h4 id="openTSDB"><a href="#openTSDB" class="headerlink" title="openTSDB"></a>openTSDB</h4><p>基于Hbase的分布式的，可伸缩的时间序列数据库。<br>主要用途，就是做监控系统；譬如收集大规模集群（包括网络设备、操作系统、应用程序）的监控数据并进行存储，查询。<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-15-11-27-46.png" alt="2019-04-15-11-27-46"></p>
+<h4 id="openTSDB"><a href="#openTSDB" class="headerlink" title="openTSDB"></a>openTSDB</h4><p>基于Hbase的分布式的，可伸缩的时间序列数据库。<br>主要用途，就是做监控系统；譬如收集大规模集群（包括网络设备、操作系统、应用程序）的监控数据并进行存储，查询。<br><img src="http://img.wqkenqing.ren/2019-04-15-11-27-46.png" alt="2019-04-15-11-27-46"></p>
 <h4 id="solr-amp-Phoenix"><a href="#solr-amp-Phoenix" class="headerlink" title="solr &amp; Phoenix"></a>solr &amp; Phoenix</h4><p>二级索引</p>
-<h3 id="hive"><a href="#hive" class="headerlink" title="hive"></a>hive</h3><p>ive 是一个基于 Hadoop 文件系统之上的数据仓库架构。它可以将结构化的数据文件映射为一张数据库表，并提供简单的 sql 查询功能。还可以将 sql 语句转换为 MapReduce 任务运行。<br>底部计算引擎还可以用用Tez, spark等.<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-15-11-36-43.png" alt="2019-04-15-11-36-43"></p>
+<h3 id="hive"><a href="#hive" class="headerlink" title="hive"></a>hive</h3><p>ive 是一个基于 Hadoop 文件系统之上的数据仓库架构。它可以将结构化的数据文件映射为一张数据库表，并提供简单的 sql 查询功能。还可以将 sql 语句转换为 MapReduce 任务运行。<br>底部计算引擎还可以用用Tez, spark等.<br><img src="http://img.wqkenqing.ren/2019-04-15-11-36-43.png" alt="2019-04-15-11-36-43"></p>
 <h5 id="Impala"><a href="#Impala" class="headerlink" title="Impala"></a>Impala</h5><p>Impala是Cloudera公司推出，提供对HDFS、Hbase数据的高性能、低延迟的交互式SQL查询功能。</p>
 <ul>
 <li>基于Hive使用内存计算，兼顾数据仓库、具有实时、批处理、多并发等优点</li>
@@ -1763,7 +1741,7 @@ System.out.println(ok==ok1)
 <li>flink</li>
 </ul>
 <h3 id="mapreduce"><a href="#mapreduce" class="headerlink" title="mapreduce"></a>mapreduce</h3><p>Mapreduce是一个计算框架，既然是做计算的框架，那么表现形式就是有个输入（input），mapreduce操作这个输（input），通过本身定义好的计算模型，得到一个输出（output），这个输出就是我们所需要的结果。我们要学习的就是这个计算模型的运行规则。在运行一个mapreduce计算任务时候，任务过程被分为两个阶段：map阶段和reduce阶段，每个阶段都是用键值对（key&#x2F;value）作为输入（input）和输出（output）。而程序员要做的就是定义好这两个阶段的函数：map函数和reduce函数。</p>
-<p>分布式计算；<br>移动计算而不移动数据。<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-15-11-59-56.png" alt="2019-04-15-11-59-56"></p>
+<p>分布式计算；<br>移动计算而不移动数据。<br><img src="http://img.wqkenqing.ren/2019-04-15-11-59-56.png" alt="2019-04-15-11-59-56"></p>
 <h3 id="spark"><a href="#spark" class="headerlink" title="spark"></a>spark</h3><p>相比一二代计算引擎,在兼并了一二代的特色之外,还引放了流计算这一能力,还丰富了计算函数.<br>其中比较有代表性的主要就是spark&amp;storm.<br>也就是说这代计算引擎兼具无边界数据与有边界数据同样的处理能力.同时还具有DAG特性.<br>这里主要介绍spark</p>
 <p>spark主要组成有以下</p>
 <ul>
@@ -1779,21 +1757,21 @@ System.out.println(ok==ok1)
 <p>…</p>
 <h3 id="flink-x2F-blink"><a href="#flink-x2F-blink" class="headerlink" title="flink&#x2F;blink"></a>flink&#x2F;blink</h3><p>略</p>
 <h2 id="传输类"><a href="#传输类" class="headerlink" title="传输类"></a>传输类</h2><h3 id="kafka"><a href="#kafka" class="headerlink" title="kafka"></a>kafka</h3><p>Kafka是分布式发布-订阅消息系统,一个分布式的，可划分的，冗余备份的持久性的日志服务。它主要用于处理活跃的流式数据。日常中常与spark-streaming结合实用,为其提供无边界数据</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-16-15-06-25.png" alt="2019-04-16-15-06-25"></p>
+<p><img src="http://img.wqkenqing.ren/2019-04-16-15-06-25.png" alt="2019-04-16-15-06-25"></p>
 <h2 id="管理类-Hue-cloudera-manager"><a href="#管理类-Hue-cloudera-manager" class="headerlink" title="管理类 Hue cloudera-manager"></a>管理类 Hue cloudera-manager</h2><p>ue与cm 都是由cloudera提供,后面cloudera将hue开源给了apache.如果基础集群环境是采用的是开源自主搭建,可考虑引入hue.另一些大数据服务公司,有集成打包自己的一些大数据产品,如cdh等.但这些服务收费,涉及到成本问题.所以如何选用,需要相关斟酌.</p>
 <h2 id="其它类-zookeeper-yarn等"><a href="#其它类-zookeeper-yarn等" class="headerlink" title="其它类 zookeeper ,yarn等"></a>其它类 zookeeper ,yarn等</h2><p>zookeeper在集中基础环境中主要作为配置分享中心,与kafka,hbase等组件集成.yarn则作为资源管理组件,可以与mapreduce ,spark等集成</p>
 <h2 id="各类组件架构"><a href="#各类组件架构" class="headerlink" title="各类组件架构"></a>各类组件架构</h2><p>以上,已经大致介绍了各类工具,基本了解了相应的特性和使用场景,而根据它们的特性,进行合理的配备,架构,从而实现一个功能全面,稳定的大数据环境.</p>
-<p>于我个人经历与平时了解来讲,一般的架构主要如下<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-17-09-23-07.png" alt="2019-04-17-09-23-07"><br>另:<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-16-10-42-08.png" alt="2019-04-16-10-42-08"></p>
+<p>于我个人经历与平时了解来讲,一般的架构主要如下<br><img src="http://img.wqkenqing.ren/2019-04-17-09-23-07.png" alt="2019-04-17-09-23-07"><br>另:<br><img src="http://img.wqkenqing.ren/2019-04-16-10-42-08.png" alt="2019-04-16-10-42-08"></p>
 <p>总得来说,各类组件供选型一般来讲都不是单一的.所以,我们的大数据环境各部份组件都是插销式可插拔的.所以不同公司可能不一而同,具体看自身需求和实际情况.比如上图中的storm流式计算模块,就可以替换成spark-streaming等.</p>
 <p>通过对上图的架构的拆解,再组合,可能还会有以下组织架构.</p>
 <p>数据仓库<br>可以理解为上图中间部份.作为一个数据集市的存在,算作数据中心的一部份.</p>
 <ul>
 <li>ODS：是数据仓库第一层数据，直接从原始数据过来的，经过简单地处理，比喻：字段体重的数据为175cm等数据。</li>
 <li>DW*：这个是数据仓库的第二层数据，DWD和DWS很多情况下是并列存在的，这一层储存经过处理后的标准数据，比喻订单、用户、页面点击流量等数据。</li>
-<li>ADS：这个是数据仓库的最后一层数据，为应用层数据，直接可以给业务人员使用。<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-16-11-01-33.png" alt="2019-04-16-11-01-33"></li>
+<li>ADS：这个是数据仓库的最后一层数据，为应用层数据，直接可以给业务人员使用。<br><img src="http://img.wqkenqing.ren/2019-04-16-11-01-33.png" alt="2019-04-16-11-01-33"></li>
 </ul>
 <p>星型模型</p>
-<p>星型模型中有两个重要的概念：事实表和维度表。<br>事实表：一些主键ID的集合，没有存放任何实际的内容<br>维度表：存放详细的数据信息，有唯一的主键ID。如上面的关键词表、用户表等等。<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-16-11-04-52.png" alt="2019-04-16-11-04-52"></p>
+<p>星型模型中有两个重要的概念：事实表和维度表。<br>事实表：一些主键ID的集合，没有存放任何实际的内容<br>维度表：存放详细的数据信息，有唯一的主键ID。如上面的关键词表、用户表等等。<br><img src="http://img.wqkenqing.ren/2019-04-16-11-04-52.png" alt="2019-04-16-11-04-52"></p>
 <p> 数据中心:<br>概念相对更大一些,可能即作为具体平台产品集合,也可能是一个团队行政划分.总得来说,是如</p>
 <ul>
 <li>大数据基础平台</li>
@@ -1803,7 +1781,7 @@ System.out.println(ok==ok1)
 </ul>
 <p>数据中台:<br>这个是由阿里于15年率先提出.主导思想是大中台,小前台.这块暂无特别明确的解释说法,但现在也有不少公司效仿.我个人从它的主导思想”大中台,小前台”的理解是,这个可能是体量更大,壁垒更少的一个数据集成体.比如阿里系的旗下公司,数据流都会归集到中台,同时阿里系下的公司也能获得不仅自己公司数据中心归集的数据反馈,还能获得阿里中台整合后流出的反馈数据.</p>
 <h2 id="应用落地"><a href="#应用落地" class="headerlink" title="应用落地"></a>应用落地</h2><h3 id="公共服务"><a href="#公共服务" class="headerlink" title="公共服务"></a>公共服务</h3><ul>
-<li>交通出行<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-16-16-15-42.png" alt="2019-04-16-16-15-42"></li>
+<li>交通出行<br><img src="http://img.wqkenqing.ren/2019-04-16-16-15-42.png" alt="2019-04-16-16-15-42"></li>
 <li>智慧城市</li>
 <li>…</li>
 </ul>
@@ -1817,7 +1795,7 @@ System.out.println(ok==ok1)
 <h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>以上,就是我今天分享的主要内容.今天的主题是”器”,但对这些工具的讲解浅尝辄止,在实际的开发实战中涉及的情况是更为复杂,需要掌握的内容更多,深度也更深.我这里主要是想抛砖引玉,为大家提供一点自己的理解,若能有所帮助,不胜荣幸.</p>
 <p>另外,工具始终是工具,菜刀再利也要厨子好,才能做好菜.所以如何利用这些工具,与我们的业务结合,实现我们想要的价值,这是我一直在探索的,也愿与各位同仁一同前行.</p>
 <p>附上图中涉及到的技术栈</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2019-04-17-09-09-00.png" alt="2019-04-17-09-09-00"></p>
+<p><img src="http://img.wqkenqing.ren/2019-04-17-09-09-00.png" alt="2019-04-17-09-09-00"></p>
 ]]></content>
       <tags>
         <tag>日常总结</tag>
@@ -1921,7 +1899,7 @@ System.out.println(ok==ok1)
 
 
 <h1 id="数据仓库分享"><a href="#数据仓库分享" class="headerlink" title="数据仓库分享"></a>数据仓库分享</h1><h2 id="1-数仓基础理论"><a href="#1-数仓基础理论" class="headerlink" title="1. 数仓基础理论"></a>1. 数仓基础理论</h2><h3 id="Q1-什么叫数据仓库？"><a href="#Q1-什么叫数据仓库？" class="headerlink" title="Q1: 什么叫数据仓库？"></a>Q1: 什么叫数据仓库？</h3><p>这本书里对数据仓库的定义是为了构建新的分析处理环境而出现的一种<strong>数据存储和组织技术</strong></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/20210716151756.png" alt="img"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/20210716151756.png" alt="img"></p>
 <h3 id="Q2-数仓与数据库的区别是什么？"><a href="#Q2-数仓与数据库的区别是什么？" class="headerlink" title="Q2: 数仓与数据库的区别是什么？"></a>Q2: 数仓与数据库的区别是什么？</h3><ol>
 <li>业务场景不同，数据库主要用于支撑基本的、日常的事务处理。如银行交易流水，电商交易订单等，承担存储功能，支持修改，而数据仓库主要是用于OLAP等复杂的分析操作，侧重决策支持，并辅以可视化技术，将查询结果直观的，易化展示</li>
 <li>前者数据的写入，修改等操作随时发生，而后者一般是一次写入，写入后很少修改。</li>
@@ -1953,7 +1931,7 @@ System.out.println(ok==ok1)
 <li>DWM层 （中间数据层）</li>
 <li>DWD层 （数据明细层）</li>
 </ol>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/image-20210716112822786.png" alt="image-20210716112822786"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112822786.png" alt="image-20210716112822786"></p>
 <h3 id="2-2-数据仓库的构建"><a href="#2-2-数据仓库的构建" class="headerlink" title="2.2 数据仓库的构建"></a>2.2 <strong>数据仓库的构建</strong></h3><h4 id="2-2-1-确定一个引擎"><a href="#2-2-1-确定一个引擎" class="headerlink" title="2.2.1 确定一个引擎"></a><strong>2.2.1 确定一个引擎</strong></h4><p>建立数仓，必定是基于某个引擎载体来实现的，不同的引擎载体，对应的特点也会有一些区别，所以建立数仓，根据自己的需求选取对应的数仓引擎</p>
 <p><strong>现在来讲一般确定使用那些存储后计算引擎，基本也就确定了数仓的架构设计，这里后面再说明。</strong></p>
 <p>根据实时性，可以分为两个方向</p>
@@ -2030,14 +2008,14 @@ System.out.println(ok==ok1)
 <li>每个维表的主码为单列，且该主码放置在事实表中，作为两边连接的外码；</li>
 <li>以事实表为核心，维表围绕核心呈星形分布；</li>
 </ol>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/image-20210716112804525.png" alt="image-20210716112804525"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112804525.png" alt="image-20210716112804525"></p>
 <h5 id="雪花模式"><a href="#雪花模式" class="headerlink" title="雪花模式"></a><strong>雪花模式</strong></h5><p>对星形模式的扩展，每个维表可继续向外连接多个子维表。</p>
 <p>下图为使用雪花模式进行维度建模的关系结构：</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/image-20210716112812742.png" alt="image-20210716112812742"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112812742.png" alt="image-20210716112812742"></p>
 <h5 id="星座模式"><a href="#星座模式" class="headerlink" title="星座模式"></a><strong>星座模式</strong></h5><p>星座模式(Fact Constellations Schema)也是星型模式的扩展。基于这种思想就有了星座模式：</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/image-20210716112726249.png" alt="image-20210716112726249"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112726249.png" alt="image-20210716112726249"></p>
 <p>星形模式&#x2F;雪花模式&#x2F;星座模式的关系</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/image-20210716112733244.png" alt="image-20210716112733244"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112733244.png" alt="image-20210716112733244"></p>
 <h3 id="2-3-构建数仓"><a href="#2-3-构建数仓" class="headerlink" title="2.3 构建数仓"></a>2.3 构建数仓</h3><h4 id="2-3-1-按层级划分存储组件"><a href="#2-3-1-按层级划分存储组件" class="headerlink" title="2.3.1 按层级划分存储组件"></a>2.3.1 按层级划分存储组件</h4><ol>
 <li>数据源：通过消息组件kafka来实时传输消息</li>
 <li>数据明细层: 根据量级而动，涉及和组件有kafka、druid、hbase等</li>
@@ -2050,19 +2028,19 @@ System.out.println(ok==ok1)
 <li>kappa架构： 批流合一，离线处理和实时处理整合成一套代码，运维成本小，目前发展旺盛，大有直接成为数仓架构的趋势 采用的是flink</li>
 </ol>
 <h4 id="2-3-3-架构设计示意图"><a href="#2-3-3-架构设计示意图" class="headerlink" title="2.3.3 架构设计示意图"></a>2.3.3 <strong>架构设计示意图</strong></h4><p>1、离线式数仓</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/image-20210716112742727.png" alt="image-20210716112742727"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112742727.png" alt="image-20210716112742727"></p>
 <ol start="2">
 <li><p>实时数仓架构设计</p>
 </li>
 <li><p>lambda</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/image-20210716112748310.png" alt="image-20210716112748310"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/image-20210716142722673.png" alt="image-20210716142722673"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112748310.png" alt="image-20210716112748310"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716142722673.png" alt="image-20210716142722673"></p>
 </li>
 <li><p>kappa</p>
 </li>
 </ol>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/image-20210716112753527.png" alt="image-20210716112753527"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/image-20210716142744656.png" alt="image-20210716142744656"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112753527.png" alt="image-20210716112753527"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716142744656.png" alt="image-20210716142744656"></p>
 <h2 id="3、数仓的使用场景"><a href="#3、数仓的使用场景" class="headerlink" title="3、数仓的使用场景"></a>3、数仓的使用场景</h2><ol>
 <li>ETL</li>
 <li>OLAP</li>
@@ -2070,8 +2048,8 @@ System.out.println(ok==ok1)
 <li>DMP</li>
 <li>建模</li>
 </ol>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF3.jpg" alt="数据仓库服务的应用场景3"></p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/typora_img/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF4.jpg" alt="数据仓库服务的应用场景4"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF3.jpg" alt="数据仓库服务的应用场景3"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF4.jpg" alt="数据仓库服务的应用场景4"></p>
 <h2 id="4、我们数仓的建设思路"><a href="#4、我们数仓的建设思路" class="headerlink" title="4、我们数仓的建设思路"></a>4、我们数仓的建设思路</h2><ol>
 <li><p>自顶向下的方式</p>
 </li>
@@ -2102,21 +2080,12 @@ System.out.println(ok==ok1)
 <h3 id="mapreduce-site-xml"><a href="#mapreduce-site-xml" class="headerlink" title="mapreduce-site.xml"></a>mapreduce-site.xml</h3><p>变动不大</p>
 <h3 id="yarn-site-xml"><a href="#yarn-site-xml" class="headerlink" title="yarn-site.xml"></a>yarn-site.xml</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span>?&gt;</span></span><br><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span></span><br><span class="line"><span class="comment">  you may not use this file except in compliance with the License.</span></span><br><span class="line"><span class="comment">  You may obtain a copy of the License at</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">    http://www.apache.org/licenses/LICENSE-2.0</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  Unless required by applicable law or agreed to in writing, software</span></span><br><span class="line"><span class="comment">  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span></span><br><span class="line"><span class="comment">  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span></span><br><span class="line"><span class="comment">  See the License for the specific language governing permissions and</span></span><br><span class="line"><span class="comment">  limitations under the License. See accompanying LICENSE file.</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">       <span class="comment">&lt;!-- 启用HA高可用性 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.ha.enabled<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">      </span><br><span class="line">        <span class="comment">&lt;!-- 指定resourcemanager的名字 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.cluster-id<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>yrc<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">      </span><br><span class="line">        <span class="comment">&lt;!-- 使用了2个resourcemanager,分别指定Resourcemanager的地址 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.ha.rm-ids<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>rm1,rm2<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定rm1的地址 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.hostname.rm1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定rm2的地址  --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.hostname.rm2<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>datanode1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定当前机器master188作为rm1 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.ha.id<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>rm1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定zookeeper集群机器 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.zk-address<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode:2181,datanode1:2181,datanode2:2181<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- NodeManager上运行的附属服务，默认是mapreduce_shuffle --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.aux-services<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>mapreduce_shuffle<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">      </span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.hostname<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>kuiqwang<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.aux-services<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>mapreduce_shuffle<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.log.server.url<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>http://namenode:19888/tmp/logs/hadoop/logs/<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">                <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.local-dirs<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/logs/yarn<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.log-dirs<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/logs/userlogs<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--内存,核数大小配置 --&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.resource.memory-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>4096<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.minimum-allocation-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>1024<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.maximum-allocation-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>3072<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.app.mapreduce.am.resource.mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>3072<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.app.mapreduce.am.command-opts<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>-Xmx3276m<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.resource.cpu-vcores<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>2<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.maximum-allocation-vcores<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>3<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<h3 id="HA过程中主要用到的操作命令"><a href="#HA过程中主要用到的操作命令" class="headerlink" title="HA过程中主要用到的操作命令"></a>HA过程中主要用到的操作命令</h3><p>当配置文件完成后,先启动journalnode,以助namenode 和standby node 共享edits文件<br>hadoop-daemon.sh<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/urHEX6.png"></p>
+<h3 id="HA过程中主要用到的操作命令"><a href="#HA过程中主要用到的操作命令" class="headerlink" title="HA过程中主要用到的操作命令"></a>HA过程中主要用到的操作命令</h3><p>当配置文件完成后,先启动journalnode,以助namenode 和standby node 共享edits文件<br>hadoop-daemon.sh<br><img src="http://img.wqkenqing.ren/urHEX6.png"></p>
 <p>然后再进行namdnode格式化,hadoop namenode -format<br>进行namenode格式化<br>当namenode格式化完成后可以先启动该节点的namenode<br>hadoop-daemon.sh start namenode<br>然后再在另一namdnode节点执行<br>hdfs namenode -bootstrapStandby<br>到这可以将之前的journalnode停用,然后start-dfs.sh</p>
-<p>因为要用到zookeeper协助同步配置文件与操作日志,所以这里可以先对zookeeper进行hdfs内容的格式化<br>hdfs zkfc –formatZK<br>然后启动FailOver进程<br>hadoop-daemon.sh start zkfc<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/lvuo9N.png"><br>至此则是这些进程<br>然后启用yarn.<br>即<br>start-yarn.sh<br>到这里HA过程中用到的一些常用指令大致总结完成</p>
+<p>因为要用到zookeeper协助同步配置文件与操作日志,所以这里可以先对zookeeper进行hdfs内容的格式化<br>hdfs zkfc –formatZK<br>然后启动FailOver进程<br>hadoop-daemon.sh start zkfc<br><img src="http://img.wqkenqing.ren/lvuo9N.png"><br>至此则是这些进程<br>然后启用yarn.<br>即<br>start-yarn.sh<br>到这里HA过程中用到的一些常用指令大致总结完成</p>
 <hr>
 <p>至此 hadoop HA的常规总结完成.后续再补充一些细节,如standy 节点切的,与切换机制.HA背后的运作机制,与效果</p>
 ]]></content>
-  </entry>
-  <entry>
-    <title>5.7</title>
-    <url>/2020/05/07/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E6%9C%80%E8%BF%91/5.7/</url>
-    <content><![CDATA[<p>Q: git 本地与远程分支建立联系</p>
-]]></content>
-      <tags>
-        <tag>spark es kafka</tag>
-      </tags>
   </entry>
   <entry>
     <title>kafka学习</title>
@@ -2149,14 +2118,14 @@ System.out.println(ok==ok1)
 <p>结合对应版本的elasticsearch部署对应的kibana版本后,即可开箱使用,这里不过多介绍具体使用细节.主要是说明下功能内容</p>
 <h4 id="Dev-Tools模块"><a href="#Dev-Tools模块" class="headerlink" title="Dev Tools模块"></a>Dev Tools模块</h4><p>用来写DSL语句,管理elasticsearch</p>
 <h4 id="Management-模块"><a href="#Management-模块" class="headerlink" title="Management 模块"></a>Management 模块</h4><p>kibana集成的理管模块,能对index进行一些管理操作.</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/image-20200521134325351.png" alt="image-20200521134325351"></p>
+<p><img src="http://img.wqkenqing.ren/image-20200521134325351.png" alt="image-20200521134325351"></p>
 <h2 id="vscode"><a href="#vscode" class="headerlink" title="vscode"></a>vscode</h2><p>前两者都是主流的elasticsearch的管理和操作工具,但实集使用过程中,特别是大量的DSL语句操作的时候,前两者虽然功能较全, 但操作是不方便的.因为如果把DSL比作是sql的话,在网页中书写DSL,量一大,一是语句的备份不好管理,相关内容太多,不能分类存放,容易造成误操作.</p>
 <p>而vscode的插件库里有与elasticsearch结合的插件,这里elasticsearch for vscode </p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/image-20200521135215143.png" alt="image-20200521135215143"></p>
+<p><img src="http://img.wqkenqing.ren/image-20200521135215143.png" alt="image-20200521135215143"></p>
 <p>安装好后,即可开箱使用.只需要将文件创建为*.es的后缀.然后设置需要启用的elasticsearch的hostp:port</p>
 <p>设置好后,即可在vscode 下的es文件中开始写对应的dsl语句.</p>
 <p>极为方便,而且能在某文件内容过多后,轻易的再另起一个es文件.方便维护管理</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/image-20200521135527747.png" alt="image-20200521135527747"></p>
+<p><img src="http://img.wqkenqing.ren/image-20200521135527747.png" alt="image-20200521135527747"></p>
 ]]></content>
       <tags>
         <tag>elasticsearch kibana head vscode</tag>
@@ -2255,7 +2224,7 @@ System.out.println(ok==ok1)
 
 <h3 id="模糊查询"><a href="#模糊查询" class="headerlink" title="模糊查询"></a>模糊查询</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">POST /indexName/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;:&#123;</span><br><span class="line">    &quot;match&quot;:&#123;</span><br><span class="line">      &quot;field&quot;:&quot;message&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  ,</span><br><span class="line">  &quot;sort&quot;:[</span><br><span class="line">  &#123;</span><br><span class="line">    &quot;filed&quot;:&#123;&quot;order&quot;:&quot;desc&quot;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p><strong>注意</strong><br>message将会被拆分进行匹配,若message是中文,则会按切分后的每个字来匹配,若<br>message是英语,则会是按每个单词来匹配</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/51ccc5cad8b8fbbbb6ef55d3106bfe43.png"><br><img src="http://rgr3ifyzo.sabkt.gdipper.com/47a3ffe716f0026c004b155836a56641.png" alt="示列图"></p>
+<p><img src="http://img.wqkenqing.ren/51ccc5cad8b8fbbbb6ef55d3106bfe43.png"><br><img src="http://img.wqkenqing.ren/47a3ffe716f0026c004b155836a56641.png" alt="示列图"></p>
 <p>全文搜索(按准度)</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">GET indexName/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;:&#123;</span><br><span class="line">    &quot;match&quot;:&#123;</span><br><span class="line">      &quot;Field&quot;:&#123;</span><br><span class="line">        &quot;query&quot;:&quot;val1 val2&quot;,</span><br><span class="line">        &quot;operator&quot;:&quot;and&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
@@ -2411,8 +2380,8 @@ System.out.println(ok==ok1)
 
 <h2 id="python中的变量创建"><a href="#python中的变量创建" class="headerlink" title="python中的变量创建"></a>python中的变量创建</h2><h3 id="python-变量命名"><a href="#python-变量命名" class="headerlink" title="python 变量命名"></a>python 变量命名</h3><p>在 Python 程序中，变量是用一个变量名表示，可以是任意数据类型，变量名必须是大小写英文、数字和下划线（_）的组合，且不能用数字开头</p>
 <h3 id="多个变量赋值"><a href="#多个变量赋值" class="headerlink" title="多个变量赋值"></a>多个变量赋值</h3><p>eg:<br>a&#x3D;b&#x3D;c&#x3D;1</p>
-<p>eg:<br>a,b,c&#x3D;1,2,”the is varible”<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-14-48-23.png" alt="2020-05-25-14-48-23"></p>
-<h2 id="列表与元组"><a href="#列表与元组" class="headerlink" title="列表与元组"></a>列表与元组</h2><p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-14-54-41.png" alt="2020-05-25-14-54-41"></p>
+<p>eg:<br>a,b,c&#x3D;1,2,”the is varible”<br><img src="http://img.wqkenqing.ren/2020-05-25-14-48-23.png" alt="2020-05-25-14-48-23"></p>
+<h2 id="列表与元组"><a href="#列表与元组" class="headerlink" title="列表与元组"></a>列表与元组</h2><p><img src="http://img.wqkenqing.ren/2020-05-25-14-54-41.png" alt="2020-05-25-14-54-41"></p>
 <h3 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h3><p>eg:</p>
 <p>list1&#x3D;[“1”,2,”three”]</p>
 <p>即列表名,’[]’ 列表符组成</p>
@@ -2426,7 +2395,7 @@ System.out.println(ok==ok1)
 <p>这与java中的数组类似</p>
 <p>2.通过下标区间来访问</p>
 <p>如 list1[0:2]<br>可以取到list[0],list[1]<br>这里是因为[0:2]是左闭右开的</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-15-09-50.png" alt="2020-05-25-15-09-50"><br>&#96;</p>
+<p><img src="http://img.wqkenqing.ren/2020-05-25-15-09-50.png" alt="2020-05-25-15-09-50"><br>&#96;</p>
 <h4 id="列表运算符"><a href="#列表运算符" class="headerlink" title="列表运算符"></a>列表运算符</h4><table>
 <thead>
 <tr>
@@ -2461,11 +2430,11 @@ System.out.println(ok==ok1)
 <td>迭代</td>
 </tr>
 </tbody></table>
-<p>一些常见的方法<br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-15-26-54.png" alt="2020-05-25-15-26-54"></p>
+<p>一些常见的方法<br><img src="http://img.wqkenqing.ren/2020-05-25-15-26-54.png" alt="2020-05-25-15-26-54"></p>
 <h3 id="元组-tuple"><a href="#元组-tuple" class="headerlink" title="元组(tuple)"></a>元组(tuple)</h3><p>uple 一旦初始化就不能修改。 也就是说元组（tuple）是不可变的，那么不可变是指什么意思呢？<br>即声明元组后,只可获取相应的内容,但不能再通过insert ,append ,pop,remove等方法再操作其内容</p>
 <h4 id="创建元组"><a href="#创建元组" class="headerlink" title="创建元组"></a>创建元组</h4><p>tuple1&#x3D;(1,”2”,”three”)</p>
 <p><code>空元组</code><br>tuple2&#x3D;()</p>
-<h4 id="访问元组"><a href="#访问元组" class="headerlink" title="访问元组"></a>访问元组</h4><p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-15-45-07.png" alt="2020-05-25-15-45-07"><br><img src="http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-15-44-48.png" alt="2020-05-25-15-44-48"></p>
+<h4 id="访问元组"><a href="#访问元组" class="headerlink" title="访问元组"></a>访问元组</h4><p><img src="http://img.wqkenqing.ren/2020-05-25-15-45-07.png" alt="2020-05-25-15-45-07"><br><img src="http://img.wqkenqing.ren/2020-05-25-15-44-48.png" alt="2020-05-25-15-44-48"></p>
 <h2 id="dict-字典"><a href="#dict-字典" class="headerlink" title="dict(字典)"></a>dict(字典)</h2><h3 id="什么是字典"><a href="#什么是字典" class="headerlink" title="什么是字典"></a>什么是字典</h3><p>类似java中的map key-val形式</p>
 <h3 id="字典的创建"><a href="#字典的创建" class="headerlink" title="字典的创建"></a>字典的创建</h3><p>dict&#x3D;{“key1”:”val1”,”key2”:”val2”}</p>
 <h2 id="set"><a href="#set" class="headerlink" title="set()"></a>set()</h2><h3 id="什么是set"><a href="#什么是set" class="headerlink" title="什么是set"></a>什么是set</h3><p>set与java中的set异同,这里是一个无序不重复的元素集,基本功能包括数据存放与消除重复元素</p>
@@ -2639,7 +2608,7 @@ System.out.println(ok==ok1)
 <p>并install<br>即可安装draw.io</p>
 <p>然后创建drawio后缀的文件即可使用对应的导图功能</p>
 <p>这个好处是免费并与vscode集成.即实现all in one 的功能</p>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/2020-05-21-16-35-19.png" alt="2020-05-21-16-35-19"></p>
+<p><img src="http://img.wqkenqing.ren/2020-05-21-16-35-19.png" alt="2020-05-21-16-35-19"></p>
 ]]></content>
       <tags>
         <tag>elasticsearch drawio</tag>
@@ -2668,24 +2637,6 @@ System.out.println(ok==ok1)
 ]]></content>
       <tags>
         <tag>运维 cdn 加速</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>杂记(操作系统)</title>
-    <url>/2020/05/20/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/%E6%9D%82%E8%AE%B0(%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8%E4%BD%93%E9%AA%8C)/</url>
-    <content><![CDATA[<span id="more"></span>
-
-
-
-<p>从小学二年级接触windowsNT到大学毕业拥有自己第一台mac之前，一直是windows用户。windows版本基本也用NT-&gt;xp-&gt;win7-&gt;win8-&gt;w10等主要系统版本。使用场景也从文本编辑，软件应用，游戏，编程等多个场景。</p>
-<p>因为参加工作，需要接触linux等原因，了解到了macos ,也在参加工作不久后入手了一台mbp。当时考虑的主要应用场景还是工作，编码和一些视频需求。</p>
-<p>简单下来，对mac os 与windows有一些使用层面上的简单感受，所以开篇记录一番</p>
-<p>主要诱因是因为最近一番调研下来发现还是windows阵营中的电脑较为好配，简单来讲就是一笔相对容易接受的价格就能在windows阵营配置下一台更方面硬件都相当不错的电脑。在这种情况影响用户体验的主要就是系统了。而综上，windows系统主要的差异点于mac比较来看的话是于系统操作的便捷性，与linux和unix内核下文件系统的差异性，并且在这之下的编程体验的不同。</p>
-<p>而这里的编程体验，与系统的干净性，通过一些操作，如今已经能找到处理方案，所以现在我想尝试去再熟悉windows的操作。方便以后的换机时的选择。</p>
-<p>to be continue!</p>
-]]></content>
-      <tags>
-        <tag>mac os &amp; windows</tag>
       </tags>
   </entry>
   <entry>
@@ -2721,14 +2672,6 @@ System.out.println(ok==ok1)
       </tags>
   </entry>
   <entry>
-    <title>SparkSql</title>
-    <url>/2019/06/13/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/sql/SparkSql/</url>
-    <content><![CDATA[<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">spark sql 相关内容</span><br></pre></td></tr></table></figure>
-<span id="more"></span>
-
-<h1 id="sparksql"><a href="#sparksql" class="headerlink" title="sparksql"></a>sparksql</h1>]]></content>
-  </entry>
-  <entry>
     <title>hbaes操作</title>
     <url>/2019/05/17/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/hadoop/hbase/hbase%E6%93%8D%E4%BD%9C/</url>
     <content><![CDATA[<p>对hbase常规api进行封装</p>
@@ -2738,91 +2681,5 @@ System.out.println(ok==ok1)
       <tags>
         <tag>常规api封装</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>hdfs命令</title>
-    <url>/2019/07/17/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/hadoop/hdfs/hdfs%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<p>hdfs常用命令</p>
-<span id="more"></span>
-
-
-<p>count</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">该命令选项显示指定路径下的文件夹数量、文件数量、文件总大小信息，如图4-6所示。</span><br></pre></td></tr></table></figure>
-<p><img src="http://rgr3ifyzo.sabkt.gdipper.com/QFvpXA.png"></p>
-<p>du</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">统计目录下各文件大小</span><br></pre></td></tr></table></figure>
-<p>touchz</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">创建空白文件</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>-stat</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">“%b %n %o %r %Y”依次表示文件大小、文件名称、块大小、副本数、访问时间。</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <tags>
-        <tag>hdfs</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>hdfs操作细节</title>
-    <url>/2019/05/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/hadoop/hdfs/hdfs%E6%93%8D%E4%BD%9C/</url>
-    <content><![CDATA[<p>针对hdfs一些较细节的api封装</p>
-<span id="more"></span>
-
-<h1 id="hdfs操作"><a href="#hdfs操作" class="headerlink" title="hdfs操作"></a>hdfs操作</h1><h2 id="常规操作"><a href="#常规操作" class="headerlink" title="常规操作"></a>常规操作</h2><ol>
-<li>创建文件 </li>
-<li>写数据 </li>
-<li>删除文件 </li>
-<li>上传文件 </li>
-<li>下载文件 </li>
-<li>断点续写</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">错误：</span><br><span class="line"></span><br><span class="line">    java.io.IOException: Failed to replace a bad datanode on the existing pipeline due to no more good datanodes being available to try</span><br></pre></td></tr></table></figure>
-
-<p>原因：<br>    无法写入；我的环境中有3个datanode，备份数量设置的是3。在写操作时，它会在pipeline中写3个机器。默认replace-datanode-on-failure.policy是DEFAULT,如果系统中的datanode大于等于3，它会找另外一个datanode来拷贝。目前机器只有3台，因此只要一台datanode出问题，就一直无法写入成功。</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.client.block.write.replace-datanode-on-failure.enable<span class="tag">&lt;/<span class="name">name</span>&gt;</span>         <span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">   </span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.client.block.write.replace-datanode-on-failure.policy<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>NEVER<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>对于dfs.client.block.write.replace-datanode-on-failure.enable，客户端在写失败的时候，是否使用更换策略，默认是true没有问题<br>对于，dfs.client.block.write.replace-datanode-on-failure.policy，default在3个或以上备份的时候，是会尝试更换结点尝试写入datanode。而在两个备份的时候，不更换datanode，直接开始写。对于3个datanode的集群，只要一个节点没响应写入就会出问题，所以可以关掉。</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>Beats</title>
-    <url>/2020/02/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/ELK/Beats/</url>
-    <content><![CDATA[<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">本文拟用的beats版本是6.7</span><br></pre></td></tr></table></figure>
-
-
-
-<span id="more"></span>
-
-<h1 id="Beats"><a href="#Beats" class="headerlink" title="Beats"></a>Beats</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">beats 是一款开源的轻量级采集组件,用于采集流转的数据. </span><br></pre></td></tr></table></figure>
-
-<p>常见的beats类型有</p>
-<ul>
-<li><a href="https://www.elastic.co/products/beats/auditbeat"> Auditbeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/filebeat"> Filebeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/functionbeat">Functionbeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/heartbeat"> Heartbeat</a></li>
-<li><a href="https://www.elastic.co/downloads/beats/journalbeat"> Journalbeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/metricbeat">Metricbeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/packetbeat"> Packetbeat</a></li>
-<li><a href="https://www.elastic.co/products/beats/winlogbeat"> Winlogbeat</a></li>
-</ul>
-<hr>
-<p>beats 能直接将数据采集发送到Logstash 或elasticsearch</p>
-<h2 id="Auditbeat"><a href="#Auditbeat" class="headerlink" title="Auditbeat"></a>Auditbeat</h2><h2 id="Filebeat"><a href="#Filebeat" class="headerlink" title="Filebeat"></a>Filebeat</h2>]]></content>
-  </entry>
-  <entry>
-    <title>ELK使用</title>
-    <url>/2020/02/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/ELK/ELK/</url>
-    <content><![CDATA[<p>针对ELK使用</p>
-<span id="more"></span>
-
-<h1 id="ELK-使用"><a href="#ELK-使用" class="headerlink" title="ELK 使用"></a>ELK 使用</h1><h2 id="Elasticsearch"><a href="#Elasticsearch" class="headerlink" title="Elasticsearch"></a>Elasticsearch</h2><p>elasticsearch之前已经另开篇章记录,这里略过</p>
-<h2 id="Logstash"><a href="#Logstash" class="headerlink" title="Logstash"></a>Logstash</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">一款轻量级的日志搜索处理框架,可以把分散,多样化的日志搜集起来,并通过配置发送到指定的位置</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-]]></content>
   </entry>
 </search>
