@@ -283,7 +283,7 @@ hadoop2.X与hadoop1.X的高可能中的明显差异就是从这里开始的.
 
 当配置文件完成后,先启动journalnode,以助namenode 和standby node 共享edits文件
 hadoop-daemon.sh
-![](http://rgr3ifyzo.sabkt.gdipper.com/urHEX6.png)
+![](http://img.wqkenqing.ren/urHEX6.png)
 
 然后再进行namdnode格式化,hadoop namenode -format
 进行namenode格式化
@@ -297,7 +297,7 @@ hdfs namenode -bootstrapStandby
 hdfs zkfc –formatZK
 然后启动FailOver进程
 hadoop-daemon.sh start zkfc
-![](http://rgr3ifyzo.sabkt.gdipper.com/lvuo9N.png)
+![](http://img.wqkenqing.ren/lvuo9N.png)
 至此则是这些进程
 然后启用yarn.
 即

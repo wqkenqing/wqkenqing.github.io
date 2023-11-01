@@ -19,4 +19,4 @@ Draw.io Integration
 
 这个好处是免费并与vscode集成.即实现all in one 的功能
 
-![2020-05-21-16-35-19](http://rgr3ifyzo.sabkt.gdipper.com/2020-05-21-16-35-19.png)
+![2020-05-21-16-35-19](http://img.wqkenqing.ren/2020-05-21-16-35-19.png)

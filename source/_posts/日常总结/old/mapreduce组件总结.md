@@ -21,8 +21,8 @@ tags: bigdata
 
 # shuffle
 
-![2019-03-19-15-39-59](http://rgr3ifyzo.sabkt.gdipper.com/2019-03-19-15-39-59.png)
-![2019-03-19-16-46-06](http://rgr3ifyzo.sabkt.gdipper.com/2019-03-19-16-46-06.png)
+![2019-03-19-15-39-59](http://img.wqkenqing.ren/2019-03-19-15-39-59.png)
+![2019-03-19-16-46-06](http://img.wqkenqing.ren/2019-03-19-16-46-06.png)
 
 ```
 shuffle 被称为mapreduce的核心,一个真正让奇迹发生的地方.但它到底是什么呢?简练的讲,它就是 map out 到 reduce in 这段过程中对数据的处理过程.

@@ -22,7 +22,7 @@ Apache Spark是一用于实时处理的开源集群计算框架.持多种语言�
 + 容错
 + spark体系整合
 
-![spark&storm对比](http://rgr3ifyzo.sabkt.gdipper.com/2019-03-04-15-45-38.png)
+![spark&storm对比](http://img.wqkenqing.ren/2019-03-04-15-45-38.png)
 
 
 
@@ -78,10 +78,10 @@ Spark可以将任何Hadoop所支持的存储资源转化成RDD，只要文件系
 ### 什么是DStream
 
 Discretized Stream :代表持续性的数据流和经过各种Spark原语操作后的结果数据流,在内部实现上是一系列连续的RDD来表示.每个RDD含有一段时间间隔内的数据,如下图
-![DStream](http://rgr3ifyzo.sabkt.gdipper.com/2019-03-04-15-50-41.png)
+![DStream](http://img.wqkenqing.ren/2019-03-04-15-50-41.png)
 
 计算则由spark engine来完成
-![spark engine流程](http://rgr3ifyzo.sabkt.gdipper.com/2019-03-04-15-51-58.png)
+![spark engine流程](http://img.wqkenqing.ren/2019-03-04-15-51-58.png)
 
 
 

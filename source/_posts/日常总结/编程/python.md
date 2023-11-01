@@ -40,13 +40,13 @@ a=b=c=1
 
 eg:
 a,b,c=1,2,"the is varible"
-![2020-05-25-14-48-23](http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-14-48-23.png)
+![2020-05-25-14-48-23](http://img.wqkenqing.ren/2020-05-25-14-48-23.png)
 
 
 
 ## 列表与元组
 
-![2020-05-25-14-54-41](http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-14-54-41.png)
+![2020-05-25-14-54-41](http://img.wqkenqing.ren/2020-05-25-14-54-41.png)
 
 ### 列表
 
@@ -78,7 +78,7 @@ i为0~2之间的整数
 可以取到list[0],list[1]
 这里是因为[0:2]是左闭右开的
 
-![2020-05-25-15-09-50](http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-15-09-50.png)
+![2020-05-25-15-09-50](http://img.wqkenqing.ren/2020-05-25-15-09-50.png)
 `
 
 #### 列表运算符
@@ -93,7 +93,7 @@ i为0~2之间的整数
 
 
 一些常见的方法
-![2020-05-25-15-26-54](http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-15-26-54.png)
+![2020-05-25-15-26-54](http://img.wqkenqing.ren/2020-05-25-15-26-54.png)
 
 ### 元组(tuple)
 
@@ -109,8 +109,8 @@ tuple2=()
 
 #### 访问元组
 
-![2020-05-25-15-45-07](http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-15-45-07.png)
-![2020-05-25-15-44-48](http://rgr3ifyzo.sabkt.gdipper.com/2020-05-25-15-44-48.png)
+![2020-05-25-15-45-07](http://img.wqkenqing.ren/2020-05-25-15-45-07.png)
+![2020-05-25-15-44-48](http://img.wqkenqing.ren/2020-05-25-15-44-48.png)
 
 ## dict(字典)
 

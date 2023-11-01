@@ -38,7 +38,7 @@ kibana是elastic stack集成产中.一开始主要就是作为elasticsearch可�
 
 kibana集成的理管模块,能对index进行一些管理操作.
 
-![image-20200521134325351](http://rgr3ifyzo.sabkt.gdipper.com/image-20200521134325351.png)
+![image-20200521134325351](http://img.wqkenqing.ren/image-20200521134325351.png)
 
 ## vscode
 
@@ -46,7 +46,7 @@ kibana集成的理管模块,能对index进行一些管理操作.
 
 而vscode的插件库里有与elasticsearch结合的插件,这里elasticsearch for vscode 
 
-![image-20200521135215143](http://rgr3ifyzo.sabkt.gdipper.com/image-20200521135215143.png)
+![image-20200521135215143](http://img.wqkenqing.ren/image-20200521135215143.png)
 
 
 
@@ -56,5 +56,5 @@ kibana集成的理管模块,能对index进行一些管理操作.
 
 极为方便,而且能在某文件内容过多后,轻易的再另起一个es文件.方便维护管理
 
-![image-20200521135527747](http://rgr3ifyzo.sabkt.gdipper.com/image-20200521135527747.png)
+![image-20200521135527747](http://img.wqkenqing.ren/image-20200521135527747.png)
 
