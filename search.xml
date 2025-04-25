@@ -85,6 +85,31 @@
 ]]></content>
   </entry>
   <entry>
+    <title>JVM问题</title>
+    <url>/2019/07/16/oldblog/JVM%E9%97%AE%E9%A2%98/</url>
+    <content><![CDATA[<p>此处简介</p>
+<span id="more"></span>
+
+<p>JVM问题<br>1、堆内存溢出<br>2、持久代内存溢出<br>3、系统频繁FGC</p>
+<p>框架使用不当<br>4、错误使用框架提供API<br>5、日志框架使用不当<br>OS内存溢出<br>6、某系统物理内存溢出<br>数据库问题<br>7、慢SQL问题</p>
+<p>案例1、堆内存溢出<br>JVM基础知识<br>1、Jvm内存分为三个大区，young区，old区和perm区；其中young区又包含三个区：Edgn区、S0、S1区<br>2、young区和old区属于heap区，占据堆内存；perm区称为持久代，不占据堆内存。<br>堆内存溢出<br>性能问题发现过程</p>
+<p>查看服务器上报错日志，发现有如下报错信息［java.lang.OutOfMemoryError: Java heap space］；根据报错信息确定是jvm 堆内存空间不够导致，于是使用jvm命令（下图）查看，发现此时old区内存空间已经被占满了，同时使用jvisualvm监控工具也<br>发现old区空间被占满（右图），整个heap区空间已经无法再容纳新对象进入。<br>建议<br>考虑大量数据一次性写入内存场景</p>
+<p>持久代内存溢出<br>现象</p>
+<p>压测某系统接口，压测前1分钟左右tps 400多，之后<br>Tps直降为零，后台报错日志：java.lang.OutOfMemoryError:PermGen space，通过jvm监控工具查看持久代（perm区）空间被占满，Old区空闲；</p>
+<p>问题定位过程<br>通过注释代码块定位问题，考虑到perm区溢出大部分跟类对象大量创建有关，故锁定问题在序列化框架使用可能有问题；<br>对于比较棘手难解决的perm溢出问题，作者构建了一个perm区溢出的场景，可以采用如下定位方案<br>1、添加jvm dump配置<br>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath&#x3D;&#x2F;data&#x2F;dump.bin<br>2、安装eclipse mat分析工具<br>3、将dump文件导入eclipse，点击［Leak Suspects］，找到跟公司有关的代码进行分析<br>此处不过多讲解，大家可以去网上查阅资料学习<br>解决办法<br>跟开发沟通后选择去掉msgpack0.6版本框架，采用java原成序列化框架，修改后系统tps稳定在400多，gc情况正常<br>修改前后gc情况对比<br>修复前<br>类似问题如何避免</p>
+<p>1、去掉项目无用jar包<br>2、避免大量使用类对象、大量使用反射<br>案例3、频繁FGC<br>（1）系统某接口频繁FGC<br>问题排查：<br>先查JVM内存信息找可疑对象<br>从内存对象实例信息中发现跟mysql连接有关，然后检测mysql配置信息<br> <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"></bean></p>
+<p>发现系统采用的是 spring框架的数据源，没有用连接池；</p>
+<p>思考<br>使用连接池有什么好处？<br>连接复用、减少连接重复建立和销毁造成的大量资源消耗</p>
+<p>然后换做hikaricp连接池做对比测试<br> &lt;bean id&#x3D;”dataSource” class&#x3D;”com.zaxxer.hikari.HikariDataSource”<br>压测半小时未出现fgc，问题得到解决<br>类似问题如何避免</p>
+<p>1、研发规范统一DB连接池，避免研发误用<br>2、减少大对象、临时对象使用</p>
+<p>案例4、错误使用框架提供API<br>现象<br>某系统本身业务逻辑处理能力很快（研发本机自测tps可以到达2w多），但是接入到framework框架后，TPS最高只能到达300笔&#x2F;S左右，而且系统负载很低</p>
+<p>问题排查<br>根据这种现象说明系统可能是堵在了某块方法上，根据这种情况一般采用线程dump的方式来查看系统具体哪些线程出现异常情况，通过线程dump 发现 ［TIMED_WAITING］状态的业务线程占比很高<br>根据线程dump信息，找到公司包名开头的信息，然后从下往上查看<br>线程dump信息，从信息中我们可以看到</p>
+<p>framework.servlet.fServlet.doPost：框架api封装了servlet dopost方法做了某些操作<br>framework.servlet.fServlet.execute：框架api执行servelt<br>framework.process.fProcessor.process：框架api进行自身逻辑处理<br>framework.filter.impl.AuthFilter.before：框架使用过滤器进行用户权限过滤</p>
+<p> 。。。。。。然后就是进行http请求操作<br>由此我们断定，就是在框架进行权限校验这块堵住了。之后跟开发沟通这块的<br>问题即可</p>
+<p>分析思路<br>压测端 ：net  服务器  jvm<br>服务端：net  服务器 nginx tomcat jvm（应用程序）算法 db（mysql redis）</p>
+]]></content>
+  </entry>
+  <entry>
     <title>List学习</title>
     <url>/2019/07/16/oldblog/List%E5%AD%A6%E4%B9%A0/</url>
     <content><![CDATA[<p>此处简介</p>
@@ -328,7 +353,7 @@ System.out.println(ok==ok1)
 <h4 id="搜索和替换命令"><a href="#搜索和替换命令" class="headerlink" title="搜索和替换命令"></a>搜索和替换命令</h4><p>命令 作用<br>&#x2F;string 向前搜索指定字符串<br>搜索时忽略大小写 :set ic<br>n 搜索指定字符串的下一个出现位置<br>:%s&#x2F;old&#x2F;new&#x2F;g  全文替换指定字符串<br>:n1,n2s&#x2F;old&#x2F;new&#x2F;g  在一定范围内替换指定字符串 注：n是从前往后，N是从后往前找<br>set noic是设置大小写敏感<br>:n1,n2s&#x2F;old&#x2F;new&#x2F;c    替换时进行询问是否真的替换</p>
 <p>ZZ与:wq的作用一样，都是保存退出<br>对于readonly文件，如果是root或者改文件所有者，即使该文件没有写权限，使用:wq!也能保存该修改之后的文件。<br>仅仅保存但不退出 :w<br>另存为  :w &#x2F;root&#x2F;file.bak</p>
 <hr>
-<h4 id="其它命令"><a href="#其它命令" class="headerlink" title="其它命令"></a>其它命令</h4><p>导入文件 :r 文件名<br>在vi中执行命令 :! 命令<br>定义快捷键 :map 快捷键  触发命令<br>范例：  :map  ^P  I#<ESC>         注：^p是这样输入的 ctrl+v+v  –&gt; ^p<br>     :map  ^B  0x<br>连续行注释 :n1,n2s&#x2F;^&#x2F;#&#x2F;g              注：^表示行首<br>    :n1,n2s&#x2F;^#&#x2F;&#x2F;g<br>    :n1,n2s&#x2F;^&#x2F;//&#x2F;g<br>替换  :ab huhuimail    <a href="mailto:&#x68;&#117;&#x68;&#117;&#x69;&#99;&#115;&#64;&#103;&#109;&#97;&#105;&#x6c;&#46;&#x63;&#111;&#109;">&#x68;&#117;&#x68;&#117;&#x69;&#99;&#115;&#64;&#103;&#109;&#97;&#105;&#x6c;&#46;&#x63;&#111;&#109;</a>         取消ab命令    :unan huhuimail<br>:r !date   在vi中加入命令执行的结果<br>快捷键插入邮箱  :map ^e <a href="mailto:&#x69;&#x68;&#117;&#104;&#x75;&#x69;&#x63;&#x73;&#64;&#x67;&#109;&#x61;&#x69;&#108;&#46;&#99;&#x6f;&#x6d;">&#x69;&#x68;&#117;&#104;&#x75;&#x69;&#x63;&#x73;&#64;&#x67;&#109;&#x61;&#x69;&#108;&#46;&#99;&#x6f;&#x6d;</a></ESC></p>
+<h4 id="其它命令"><a href="#其它命令" class="headerlink" title="其它命令"></a>其它命令</h4><p>导入文件 :r 文件名<br>在vi中执行命令 :! 命令<br>定义快捷键 :map 快捷键  触发命令<br>范例：  :map  ^P  I#<ESC>         注：^p是这样输入的 ctrl+v+v  –&gt; ^p<br>     :map  ^B  0x<br>连续行注释 :n1,n2s&#x2F;^&#x2F;#&#x2F;g              注：^表示行首<br>    :n1,n2s&#x2F;^#&#x2F;&#x2F;g<br>    :n1,n2s&#x2F;^&#x2F;//&#x2F;g<br>替换  :ab huhuimail    <a href="mailto:&#x68;&#x75;&#104;&#x75;&#105;&#99;&#x73;&#x40;&#x67;&#109;&#x61;&#x69;&#108;&#46;&#x63;&#111;&#x6d;">&#x68;&#x75;&#104;&#x75;&#105;&#99;&#x73;&#x40;&#x67;&#109;&#x61;&#x69;&#108;&#46;&#x63;&#111;&#x6d;</a>         取消ab命令    :unan huhuimail<br>:r !date   在vi中加入命令执行的结果<br>快捷键插入邮箱  :map ^e <a href="mailto:&#105;&#x68;&#117;&#x68;&#x75;&#105;&#x63;&#x73;&#x40;&#x67;&#x6d;&#x61;&#x69;&#108;&#46;&#99;&#111;&#x6d;">&#105;&#x68;&#117;&#x68;&#x75;&#105;&#x63;&#x73;&#x40;&#x67;&#x6d;&#x61;&#x69;&#108;&#46;&#99;&#111;&#x6d;</a></ESC></p>
 <h4 id="修改用户vim设置"><a href="#修改用户vim设置" class="headerlink" title="修改用户vim设置"></a>修改用户vim设置</h4><p>修改用户vim设置，比如能永久保存快捷键<br>vi ~&#x2F;.vimrc<br>缺省这个文件是空的，然后可以写入一些快捷键</p>
 ]]></content>
   </entry>
@@ -366,9 +391,9 @@ System.out.println(ok==ok1)
 <li>git log –pretty&#x3D;oneline 简约查看log</li>
 <li>git diff 查看文件与版本库中的差异</li>
 <li>git checkout – file 文件在工作区的修改全部撤销</li>
-<li>git remote add origin <a href="mailto:&#x67;&#105;&#116;&#x40;&#103;&#x69;&#116;&#104;&#117;&#98;&#46;&#99;&#111;&#x6d;">&#x67;&#105;&#116;&#x40;&#103;&#x69;&#116;&#104;&#117;&#98;&#46;&#99;&#111;&#x6d;</a>:michaelliao&#x2F;learngit.git 添加远程库</li>
+<li>git remote add origin <a href="mailto:&#103;&#x69;&#116;&#64;&#x67;&#x69;&#x74;&#104;&#x75;&#98;&#x2e;&#x63;&#111;&#x6d;">&#103;&#x69;&#116;&#64;&#x67;&#x69;&#x74;&#104;&#x75;&#98;&#x2e;&#x63;&#111;&#x6d;</a>:michaelliao&#x2F;learngit.git 添加远程库</li>
 <li>git push -u origin master 推送分支</li>
-<li>git clone <a href="mailto:&#x67;&#x69;&#x74;&#x40;&#x67;&#x69;&#116;&#x68;&#117;&#x62;&#x2e;&#99;&#x6f;&#109;">&#x67;&#x69;&#x74;&#x40;&#x67;&#x69;&#116;&#x68;&#117;&#x62;&#x2e;&#99;&#x6f;&#109;</a>:michaelliao&#x2F;gitskills.git 克隆</li>
+<li>git clone <a href="mailto:&#103;&#x69;&#116;&#x40;&#103;&#105;&#x74;&#x68;&#x75;&#98;&#x2e;&#99;&#111;&#x6d;">&#103;&#x69;&#116;&#x40;&#103;&#105;&#x74;&#x68;&#x75;&#98;&#x2e;&#99;&#111;&#x6d;</a>:michaelliao&#x2F;gitskills.git 克隆</li>
 <li>git checkout -b dev 创建并切换分支</li>
 <li>git branch dev 创建分支</li>
 <li>git checkout dev  切换分支</li>
@@ -811,6 +836,97 @@ System.out.println(ok==ok1)
 ]]></content>
   </entry>
   <entry>
+    <title>python learn</title>
+    <url>/2019/07/16/oldblog/python%20learn/</url>
+    <content><![CDATA[<p>此处简介</p>
+<span id="more"></span>
+
+<p><code>the record for python</code></p>
+<h3 id="Python-知识点"><a href="#Python-知识点" class="headerlink" title="Python 知识点"></a>Python 知识点</h3><h4 id="标识符号"><a href="#标识符号" class="headerlink" title="标识符号"></a>标识符号</h4><p>在 Python 里，标识符有字母、数字、下划线组成。<br>在 Python 中，所有标识符可以包括英文、数字以及下划线(_)，但不能以数字开头。</p>
+<p>以下划线开头的标识符是有特殊意义的。以单下划线开头 _foo 的代表不能直接访问的类属性，需通过类提供的接口进行访问，不能用 from xxx import * 而导入；</p>
+<p>以双下划线开头的 __foo 代表类的私有成员；以双下划线开头和结尾的 <strong>foo</strong> 代表 Python 里特殊方法专用的标识，如 <strong>init</strong>() 代表类的构造函数。</p>
+<p>Python 可以同一行显示多条语句，方法是用分号 ; 分开，</p>
+<h4 id="行和缩进"><a href="#行和缩进" class="headerlink" title="行和缩进"></a>行和缩进</h4><p>python 最具特色的就是用缩进来写模块。<br>缩进的空白数量是可变的，但是所有代码块语句必须包含相同的缩进空白数量，这个必须严格执行<br>因此，在 Python 的代码块中必须使用相同数目的行首缩进空格数。<br>建议你在每个缩进层次使用 单个制表符 或 两个空格 或 四个空格 , 切记不能混用</p>
+<h4 id="多行语句"><a href="#多行语句" class="headerlink" title="多行语句"></a>多行语句</h4><p>Python语句中一般以新行作为为语句的结束符。<br>但是我们可以使用斜杠（ \）将一行的语句分为多行显示，</p>
+<h4 id="Python-引号"><a href="#Python-引号" class="headerlink" title="Python 引号"></a>Python 引号</h4><p>Python 可以使用引号( ‘ )、双引号( “ )、三引号( ‘’’ 或 “”” ) 来表示字符串，引号的开始与结束必须的相同类型的。<br>其中三引号可以由多行组成，编写多行文本的快捷语法，常用语文档字符串，在文件的特定地点，被当做注释。</p>
+<h4 id="Python注释"><a href="#Python注释" class="headerlink" title="Python注释"></a>Python注释</h4><p>python 中多行注释使用三个单引号(‘’’)或三个双引号(“””)。</p>
+<h4 id="Python空行"><a href="#Python空行" class="headerlink" title="Python空行"></a>Python空行</h4><p>函数之间或类的方法之间用空行分隔，表示一段新的代码的开始。类和函数入口之间也用一行空行分隔，以突出函数入口的开始。<br>空行与代码缩进不同，空行并不是Python语法的一部分。书写时不插入空行，Python解释器运行也不会出错。但是空行的作用在于分隔两段不同功能或含义的代码，便于日后代码的维护或重构。<br>记住：空行也是程序代码的一部分。</p>
+<h4 id="Python-变量类型"><a href="#Python-变量类型" class="headerlink" title="Python 变量类型"></a>Python 变量类型</h4><p>变量存储在内存中的值。这就意味着在创建变量时会在内存中开辟一个空间。<br>基于变量的数据类型，解释器会分配指定内存，并决定什么数据可以被存储在内存中。<br>因此，变量可以指定不同的数据类型，这些变量可以存储整数，小数或字符。</p>
+<p><strong>变量赋值</strong></p>
+<p>Python 中的变量赋值不需要类型声明。<br>每个变量在内存中创建，都包括变量的标识，名称和数据这些信息。<br>每个变量在使用前都必须赋值，变量赋值以后该变量才会被创建。<br>等号（&#x3D;）用来给变量赋值。</p>
+<h4 id="python-标准数据类型"><a href="#python-标准数据类型" class="headerlink" title="python 标准数据类型"></a>python 标准数据类型</h4><p>python 定义了一些标准类型，用于存储各种类型的数据。<br>Python有五个标准的数据类型：<br>Numbers（数字）<br>String（字符串）<br>List（列表）<br>Tuple（元组）<br>Dictionary（字典）</p>
+<h4 id="Python数字"><a href="#Python数字" class="headerlink" title="Python数字"></a>Python数字</h4><p>数字数据类型用于存储数值。<br>他们是不可改变的数据类型，这意味着改变数字数据类型会分配一个新的对象。<br>当你指定一个值时，Number对象就会被创建：<br>您也可以使用del语句删除一些对象的引用。<br>del语句的语法是：</p>
+<p>del var1[,var2[,var3[….,varN]]]]</p>
+<p>您可以通过使用del语句删除单个或多个对象的引用。例如：</p>
+<p>del var<br>del var_a, var_b</p>
+<p>Python支持四种不同的数字类型：</p>
+<p>int（有符号整型）</p>
+<p>long（长整型[也可以代表八进制和十六进制]）</p>
+<p>float（浮点型）</p>
+<p>complex（复数）</p>
+<h4 id="Python字符串"><a href="#Python字符串" class="headerlink" title="Python字符串"></a>Python字符串</h4><p>字符串或串(String)是由数字、字母、下划线组成的一串字符。</p>
+<p>一般记为 :<br>s&#x3D;”a1a2···an”(n&gt;&#x3D;0)<br>它是编程语言中表示文本的数据类型。</p>
+<p>python的字串列表有2种取值顺序:</p>
+<p>从左到右索引默认0开始的，最大范围是字符串长度少1</p>
+<p>从右到左索引默认-1开始的，最大范围是字符串开头</p>
+<p>当使用以冒号分隔的字符串，python返回一个新的对象，结果包含了以这对偏移标识的连续的内容，左边的开始是包含了下边界。<br>上面的结果包含了s[1]的值l，而取到的最大范围不包括上边界，就是s[5]的值p。</p>
+<p>加号（+）是字符串连接运算符，星号（*）是重复操作</p>
+<h4 id="Python列表"><a href="#Python列表" class="headerlink" title="Python列表"></a>Python列表</h4><p>List（列表） 是 Python 中使用最频繁的数据类型。</p>
+<h4 id="python元组"><a href="#python元组" class="headerlink" title="python元组"></a>python元组</h4><p>元组是另一个数据类型，类似于List（列表）。</p>
+<p>元组用”()”标识。内部元素用逗号隔开。但是元组不能二次赋值，相当于只读列表</p>
+<h4 id="Python-字典"><a href="#Python-字典" class="headerlink" title="Python 字典"></a>Python 字典</h4>]]></content>
+      <tags>
+        <tag>python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>sed &amp; awk小结</title>
+    <url>/2019/07/16/oldblog/sed%20&amp;%20awk%E5%B0%8F%E7%BB%93/</url>
+    <content><![CDATA[<p>此处简介</p>
+<span id="more"></span>
+
+<h1 id="sed-awk小结"><a href="#sed-awk小结" class="headerlink" title="sed &amp; awk小结"></a>sed &amp; awk小结</h1><p><code>一直想认真掌握sed与awk已经很久了，但一直未找个以特别详细的资料和时间来做这件事，正好这两天受到启发，转而翻墙搜索国外资源，有了很大的收获，趁次机会攻克下来</code></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>sed与awk总得来说是两样东西，本身无直接关联，做在日常使用时两者经常使用到，并且常常混合使用，所以此次小结放在一起，分总式结构进行小结</p>
+<h2 id="sed"><a href="#sed" class="headerlink" title="sed"></a>sed</h2><p>sed相较awk更偏于工具一点，全称应该是strem editor (即流式编辑器)。面向的是一行一行内容</p>
+<h3 id="使用形式"><a href="#使用形式" class="headerlink" title="使用形式"></a>使用形式</h3><p>sed [-nefr] [动作]<br>选项与参数：<br>-n ：使用安静(silent)模式。在一般 sed 的用法中，所有来自 STDIN 的数据一般都会被列出到终端上。但如果加上 -n 参数后，则只有经过sed 特殊处理的那一行(或者动作)才会被列出来。<br>-e ：直接在命令列模式上进行 sed 的动作编辑；<br>-f ：直接将 sed 的动作写在一个文件内， -f filename 则可以运行 filename 内的 sed 动作；<br>-r ：sed 的动作支持的是延伸型正规表示法的语法。(默认是基础正规表示法语法)<br>-i ：直接修改读取的文件内容，而不是输出到终端。</p>
+<p>动作说明： [n1[,n2]]function<br>n1, n2 ：不见得会存在，一般代表『选择进行动作的行数』，举例来说，如果我的动作是需要在 10 到 20 行之间进行的，则『 10,20[动作行为] 』</p>
+<p><strong>function：</strong><br>a ：新增， a 的后面可以接字串，而这些字串会在新的一行出现(目前的下一行)～<br>c ：取代， c 的后面可以接字串，这些字串可以取代 n1,n2 之间的行！<br>d ：删除，因为是删除啊，所以 d 后面通常不接任何咚咚；<br>i ：插入， i 的后面可以接字串，而这些字串会在新的一行出现(目前的上一行)；<br>p ：列印，亦即将某个选择的数据印出。通常 p 会与参数 sed -n 一起运行～<br>s ：取代，可以直接进行取代的工作哩！通常这个 s 的动作可以搭配正规表示法！例如 1,20s&#x2F;old&#x2F;new&#x2F;g 就是啦！</p>
+<hr>
+<h2 id="awk"><a href="#awk" class="headerlink" title="awk"></a>awk</h2><p><code>尝试看awk已有些时日，整体效率不太好，但大体也有思路，现对awk进行一些简单总结，后面则进行实例操作</code><br>awk的细节小点比较多，一次或无法完全总结全，但总体感觉下来发现熟悉大体模式，具体细节可以再通过即时检索解决</p>
+<h3 id="awk命令的基本格式是"><a href="#awk命令的基本格式是" class="headerlink" title="awk命令的基本格式是:"></a>awk命令的基本格式是:</h3><blockquote>
+<p><code>awk &#39;/search_pattern/ &#123; action_to_t[](http://)ake_on_matches; another_action; &#125;&#39; file_to_parse</code></p>
+</blockquote>
+<p>其中searach 与action都可省略其中之一，若action省略，那么action默认为print操作<br>如何search省略，那么默认action针对的是每一行如<br><img src="//img.wqkenqing.ren/file/2017/7/b193032f8daa40faaffc84b673b46885-image.png" alt="b193032f8daa40faaffc84b673b46885-image.png"><br><img src="//img.wqkenqing.ren/file/2017/7/06ddb1ad717c434e939c3d0461b2d937-image.png" alt="06ddb1ad717c434e939c3d0461b2d937-image.png"></p>
+<hr>
+<p>附几个操作实例如<br><img src="//img.wqkenqing.ren/file/2017/7/1b777aa53595428e9d56e0b66052f48c-image.png" alt="1b777aa53595428e9d56e0b66052f48c-image.png"></p>
+<p><img src="//img.wqkenqing.ren/file/2017/7/a1e8b526c4a042b48e0e161e6eae35fe-image.png" alt="a1e8b526c4a042b48e0e161e6eae35fe-image.png"></p>
+<p><img src="//img.wqkenqing.ren/file/2017/7/de2e1925530d410ba52f25ff0781f0b5-image.png" alt="de2e1925530d410ba52f25ff0781f0b5-image.png"></p>
+<p><strong>这里是以空白区分了列，通过$后加不同的数字，表示不同的列，$0表示这一行，$1表示第一列</strong>，类推。</p>
+<h3 id="awk的内置变量"><a href="#awk的内置变量" class="headerlink" title="awk的内置变量"></a>awk的内置变量</h3><ul>
+<li><strong>FILENAME</strong>:当前输入文件的名称</li>
+<li><strong>FNR</strong>:当前输入文件数</li>
+<li><strong>FS</strong>:当前环境中的分隔符，默认是空白</li>
+<li><strong>NF</strong>:输入文件的每行对应的列数</li>
+<li><strong>NR</strong>:当前是第几个记录</li>
+<li><strong>OFS</strong>:列输出时的分隔符，默认是空白</li>
+<li><strong>ORS</strong>:记录输出时的分隔符，默认是新起一行</li>
+<li><strong>RS</strong>输入记录中的分隔符，默认是newline character</li>
+</ul>
+<p> 正如以上内置变量的存在，所以，awk在正式使用进可能面临更多复杂情况，而之前那种简单模式可以无法应对。于是，常用的awk的使用形态扩充为</p>
+<blockquote>
+<p>awk ‘BEGIN { action; }<br>&#x2F;search&#x2F; { action; }<br>END { action; }’ input_file</p>
+</blockquote>
+<p>这里引入了BEGIN与END两个部份，用于做一些初始化或善后处理。<br><img src="//img.wqkenqing.ren/file/2017/7/8a8d39f410944dcc9584c7052e2e46a4-image.png" alt="8a8d39f410944dcc9584c7052e2e46a4-image.png"></p>
+<p><img src="//img.wqkenqing.ren/file/2017/7/3fb8e3723fbd439990cd8e000c673c9b-image.png" alt="3fb8e3723fbd439990cd8e000c673c9b-image.png"></p>
+<h3 id="awk的一些常见的匹配操作"><a href="#awk的一些常见的匹配操作" class="headerlink" title="awk的一些常见的匹配操作"></a>awk的一些常见的匹配操作</h3><ul>
+<li>awk ‘&#x2F;sa&#x2F;‘ file</li>
+<li>awk ‘$2 ~ &#x2F;^sa&#x2F;‘ file<br>$number表示只匹配该列<br>~ 表示“是”<br>!~表示“不是”</li>
+</ul>
+<hr>
+<p>至此一这就总结了一些较为基础的awk使用，就一般工作而言，已经能应对很多场景了。<br>后续我会再进行更为详细的总结<br>待续~~~</p>
+]]></content>
+  </entry>
+  <entry>
     <title>反射小结</title>
     <url>/2019/07/16/oldblog/%E5%8F%8D%E5%B0%84%E5%B0%8F%E7%BB%93/</url>
     <content><![CDATA[<p>此处简介</p>
@@ -912,53 +1028,6 @@ System.out.println(ok==ok1)
 ]]></content>
   </entry>
   <entry>
-    <title>sed &amp; awk小结</title>
-    <url>/2019/07/16/oldblog/sed%20&amp;%20awk%E5%B0%8F%E7%BB%93/</url>
-    <content><![CDATA[<p>此处简介</p>
-<span id="more"></span>
-
-<h1 id="sed-awk小结"><a href="#sed-awk小结" class="headerlink" title="sed &amp; awk小结"></a>sed &amp; awk小结</h1><p><code>一直想认真掌握sed与awk已经很久了，但一直未找个以特别详细的资料和时间来做这件事，正好这两天受到启发，转而翻墙搜索国外资源，有了很大的收获，趁次机会攻克下来</code></p>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>sed与awk总得来说是两样东西，本身无直接关联，做在日常使用时两者经常使用到，并且常常混合使用，所以此次小结放在一起，分总式结构进行小结</p>
-<h2 id="sed"><a href="#sed" class="headerlink" title="sed"></a>sed</h2><p>sed相较awk更偏于工具一点，全称应该是strem editor (即流式编辑器)。面向的是一行一行内容</p>
-<h3 id="使用形式"><a href="#使用形式" class="headerlink" title="使用形式"></a>使用形式</h3><p>sed [-nefr] [动作]<br>选项与参数：<br>-n ：使用安静(silent)模式。在一般 sed 的用法中，所有来自 STDIN 的数据一般都会被列出到终端上。但如果加上 -n 参数后，则只有经过sed 特殊处理的那一行(或者动作)才会被列出来。<br>-e ：直接在命令列模式上进行 sed 的动作编辑；<br>-f ：直接将 sed 的动作写在一个文件内， -f filename 则可以运行 filename 内的 sed 动作；<br>-r ：sed 的动作支持的是延伸型正规表示法的语法。(默认是基础正规表示法语法)<br>-i ：直接修改读取的文件内容，而不是输出到终端。</p>
-<p>动作说明： [n1[,n2]]function<br>n1, n2 ：不见得会存在，一般代表『选择进行动作的行数』，举例来说，如果我的动作是需要在 10 到 20 行之间进行的，则『 10,20[动作行为] 』</p>
-<p><strong>function：</strong><br>a ：新增， a 的后面可以接字串，而这些字串会在新的一行出现(目前的下一行)～<br>c ：取代， c 的后面可以接字串，这些字串可以取代 n1,n2 之间的行！<br>d ：删除，因为是删除啊，所以 d 后面通常不接任何咚咚；<br>i ：插入， i 的后面可以接字串，而这些字串会在新的一行出现(目前的上一行)；<br>p ：列印，亦即将某个选择的数据印出。通常 p 会与参数 sed -n 一起运行～<br>s ：取代，可以直接进行取代的工作哩！通常这个 s 的动作可以搭配正规表示法！例如 1,20s&#x2F;old&#x2F;new&#x2F;g 就是啦！</p>
-<hr>
-<h2 id="awk"><a href="#awk" class="headerlink" title="awk"></a>awk</h2><p><code>尝试看awk已有些时日，整体效率不太好，但大体也有思路，现对awk进行一些简单总结，后面则进行实例操作</code><br>awk的细节小点比较多，一次或无法完全总结全，但总体感觉下来发现熟悉大体模式，具体细节可以再通过即时检索解决</p>
-<h3 id="awk命令的基本格式是"><a href="#awk命令的基本格式是" class="headerlink" title="awk命令的基本格式是:"></a>awk命令的基本格式是:</h3><blockquote>
-<p><code>awk &#39;/search_pattern/ &#123; action_to_t[](http://)ake_on_matches; another_action; &#125;&#39; file_to_parse</code></p>
-</blockquote>
-<p>其中searach 与action都可省略其中之一，若action省略，那么action默认为print操作<br>如何search省略，那么默认action针对的是每一行如<br><img src="//img.wqkenqing.ren/file/2017/7/b193032f8daa40faaffc84b673b46885-image.png" alt="b193032f8daa40faaffc84b673b46885-image.png"><br><img src="//img.wqkenqing.ren/file/2017/7/06ddb1ad717c434e939c3d0461b2d937-image.png" alt="06ddb1ad717c434e939c3d0461b2d937-image.png"></p>
-<hr>
-<p>附几个操作实例如<br><img src="//img.wqkenqing.ren/file/2017/7/1b777aa53595428e9d56e0b66052f48c-image.png" alt="1b777aa53595428e9d56e0b66052f48c-image.png"></p>
-<p><img src="//img.wqkenqing.ren/file/2017/7/a1e8b526c4a042b48e0e161e6eae35fe-image.png" alt="a1e8b526c4a042b48e0e161e6eae35fe-image.png"></p>
-<p><img src="//img.wqkenqing.ren/file/2017/7/de2e1925530d410ba52f25ff0781f0b5-image.png" alt="de2e1925530d410ba52f25ff0781f0b5-image.png"></p>
-<p><strong>这里是以空白区分了列，通过$后加不同的数字，表示不同的列，$0表示这一行，$1表示第一列</strong>，类推。</p>
-<h3 id="awk的内置变量"><a href="#awk的内置变量" class="headerlink" title="awk的内置变量"></a>awk的内置变量</h3><ul>
-<li><strong>FILENAME</strong>:当前输入文件的名称</li>
-<li><strong>FNR</strong>:当前输入文件数</li>
-<li><strong>FS</strong>:当前环境中的分隔符，默认是空白</li>
-<li><strong>NF</strong>:输入文件的每行对应的列数</li>
-<li><strong>NR</strong>:当前是第几个记录</li>
-<li><strong>OFS</strong>:列输出时的分隔符，默认是空白</li>
-<li><strong>ORS</strong>:记录输出时的分隔符，默认是新起一行</li>
-<li><strong>RS</strong>输入记录中的分隔符，默认是newline character</li>
-</ul>
-<p> 正如以上内置变量的存在，所以，awk在正式使用进可能面临更多复杂情况，而之前那种简单模式可以无法应对。于是，常用的awk的使用形态扩充为</p>
-<blockquote>
-<p>awk ‘BEGIN { action; }<br>&#x2F;search&#x2F; { action; }<br>END { action; }’ input_file</p>
-</blockquote>
-<p>这里引入了BEGIN与END两个部份，用于做一些初始化或善后处理。<br><img src="//img.wqkenqing.ren/file/2017/7/8a8d39f410944dcc9584c7052e2e46a4-image.png" alt="8a8d39f410944dcc9584c7052e2e46a4-image.png"></p>
-<p><img src="//img.wqkenqing.ren/file/2017/7/3fb8e3723fbd439990cd8e000c673c9b-image.png" alt="3fb8e3723fbd439990cd8e000c673c9b-image.png"></p>
-<h3 id="awk的一些常见的匹配操作"><a href="#awk的一些常见的匹配操作" class="headerlink" title="awk的一些常见的匹配操作"></a>awk的一些常见的匹配操作</h3><ul>
-<li>awk ‘&#x2F;sa&#x2F;‘ file</li>
-<li>awk ‘$2 ~ &#x2F;^sa&#x2F;‘ file<br>$number表示只匹配该列<br>~ 表示“是”<br>!~表示“不是”</li>
-</ul>
-<hr>
-<p>至此一这就总结了一些较为基础的awk使用，就一般工作而言，已经能应对很多场景了。<br>后续我会再进行更为详细的总结<br>待续~~~</p>
-]]></content>
-  </entry>
-  <entry>
     <title>测试心得</title>
     <url>/2019/07/16/oldblog/%E6%B5%8B%E8%AF%95%E5%BF%83%E5%BE%97/</url>
     <content><![CDATA[<p>此处简介</p>
@@ -1021,50 +1090,6 @@ System.out.println(ok==ok1)
 ]]></content>
   </entry>
   <entry>
-    <title>python learn</title>
-    <url>/2019/07/16/oldblog/python%20learn/</url>
-    <content><![CDATA[<p>此处简介</p>
-<span id="more"></span>
-
-<p><code>the record for python</code></p>
-<h3 id="Python-知识点"><a href="#Python-知识点" class="headerlink" title="Python 知识点"></a>Python 知识点</h3><h4 id="标识符号"><a href="#标识符号" class="headerlink" title="标识符号"></a>标识符号</h4><p>在 Python 里，标识符有字母、数字、下划线组成。<br>在 Python 中，所有标识符可以包括英文、数字以及下划线(_)，但不能以数字开头。</p>
-<p>以下划线开头的标识符是有特殊意义的。以单下划线开头 _foo 的代表不能直接访问的类属性，需通过类提供的接口进行访问，不能用 from xxx import * 而导入；</p>
-<p>以双下划线开头的 __foo 代表类的私有成员；以双下划线开头和结尾的 <strong>foo</strong> 代表 Python 里特殊方法专用的标识，如 <strong>init</strong>() 代表类的构造函数。</p>
-<p>Python 可以同一行显示多条语句，方法是用分号 ; 分开，</p>
-<h4 id="行和缩进"><a href="#行和缩进" class="headerlink" title="行和缩进"></a>行和缩进</h4><p>python 最具特色的就是用缩进来写模块。<br>缩进的空白数量是可变的，但是所有代码块语句必须包含相同的缩进空白数量，这个必须严格执行<br>因此，在 Python 的代码块中必须使用相同数目的行首缩进空格数。<br>建议你在每个缩进层次使用 单个制表符 或 两个空格 或 四个空格 , 切记不能混用</p>
-<h4 id="多行语句"><a href="#多行语句" class="headerlink" title="多行语句"></a>多行语句</h4><p>Python语句中一般以新行作为为语句的结束符。<br>但是我们可以使用斜杠（ \）将一行的语句分为多行显示，</p>
-<h4 id="Python-引号"><a href="#Python-引号" class="headerlink" title="Python 引号"></a>Python 引号</h4><p>Python 可以使用引号( ‘ )、双引号( “ )、三引号( ‘’’ 或 “”” ) 来表示字符串，引号的开始与结束必须的相同类型的。<br>其中三引号可以由多行组成，编写多行文本的快捷语法，常用语文档字符串，在文件的特定地点，被当做注释。</p>
-<h4 id="Python注释"><a href="#Python注释" class="headerlink" title="Python注释"></a>Python注释</h4><p>python 中多行注释使用三个单引号(‘’’)或三个双引号(“””)。</p>
-<h4 id="Python空行"><a href="#Python空行" class="headerlink" title="Python空行"></a>Python空行</h4><p>函数之间或类的方法之间用空行分隔，表示一段新的代码的开始。类和函数入口之间也用一行空行分隔，以突出函数入口的开始。<br>空行与代码缩进不同，空行并不是Python语法的一部分。书写时不插入空行，Python解释器运行也不会出错。但是空行的作用在于分隔两段不同功能或含义的代码，便于日后代码的维护或重构。<br>记住：空行也是程序代码的一部分。</p>
-<h4 id="Python-变量类型"><a href="#Python-变量类型" class="headerlink" title="Python 变量类型"></a>Python 变量类型</h4><p>变量存储在内存中的值。这就意味着在创建变量时会在内存中开辟一个空间。<br>基于变量的数据类型，解释器会分配指定内存，并决定什么数据可以被存储在内存中。<br>因此，变量可以指定不同的数据类型，这些变量可以存储整数，小数或字符。</p>
-<p><strong>变量赋值</strong></p>
-<p>Python 中的变量赋值不需要类型声明。<br>每个变量在内存中创建，都包括变量的标识，名称和数据这些信息。<br>每个变量在使用前都必须赋值，变量赋值以后该变量才会被创建。<br>等号（&#x3D;）用来给变量赋值。</p>
-<h4 id="python-标准数据类型"><a href="#python-标准数据类型" class="headerlink" title="python 标准数据类型"></a>python 标准数据类型</h4><p>python 定义了一些标准类型，用于存储各种类型的数据。<br>Python有五个标准的数据类型：<br>Numbers（数字）<br>String（字符串）<br>List（列表）<br>Tuple（元组）<br>Dictionary（字典）</p>
-<h4 id="Python数字"><a href="#Python数字" class="headerlink" title="Python数字"></a>Python数字</h4><p>数字数据类型用于存储数值。<br>他们是不可改变的数据类型，这意味着改变数字数据类型会分配一个新的对象。<br>当你指定一个值时，Number对象就会被创建：<br>您也可以使用del语句删除一些对象的引用。<br>del语句的语法是：</p>
-<p>del var1[,var2[,var3[….,varN]]]]</p>
-<p>您可以通过使用del语句删除单个或多个对象的引用。例如：</p>
-<p>del var<br>del var_a, var_b</p>
-<p>Python支持四种不同的数字类型：</p>
-<p>int（有符号整型）</p>
-<p>long（长整型[也可以代表八进制和十六进制]）</p>
-<p>float（浮点型）</p>
-<p>complex（复数）</p>
-<h4 id="Python字符串"><a href="#Python字符串" class="headerlink" title="Python字符串"></a>Python字符串</h4><p>字符串或串(String)是由数字、字母、下划线组成的一串字符。</p>
-<p>一般记为 :<br>s&#x3D;”a1a2···an”(n&gt;&#x3D;0)<br>它是编程语言中表示文本的数据类型。</p>
-<p>python的字串列表有2种取值顺序:</p>
-<p>从左到右索引默认0开始的，最大范围是字符串长度少1</p>
-<p>从右到左索引默认-1开始的，最大范围是字符串开头</p>
-<p>当使用以冒号分隔的字符串，python返回一个新的对象，结果包含了以这对偏移标识的连续的内容，左边的开始是包含了下边界。<br>上面的结果包含了s[1]的值l，而取到的最大范围不包括上边界，就是s[5]的值p。</p>
-<p>加号（+）是字符串连接运算符，星号（*）是重复操作</p>
-<h4 id="Python列表"><a href="#Python列表" class="headerlink" title="Python列表"></a>Python列表</h4><p>List（列表） 是 Python 中使用最频繁的数据类型。</p>
-<h4 id="python元组"><a href="#python元组" class="headerlink" title="python元组"></a>python元组</h4><p>元组是另一个数据类型，类似于List（列表）。</p>
-<p>元组用”()”标识。内部元素用逗号隔开。但是元组不能二次赋值，相当于只读列表</p>
-<h4 id="Python-字典"><a href="#Python-字典" class="headerlink" title="Python 字典"></a>Python 字典</h4>]]></content>
-      <tags>
-        <tag>python</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>es常用操作工具</title>
     <url>/2020/05/21/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/es%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E5%B7%A5%E5%85%B7/</url>
     <content><![CDATA[<p>es操作工具</p>
@@ -1090,22 +1115,6 @@ System.out.println(ok==ok1)
 ]]></content>
       <tags>
         <tag>elasticsearch kibana head vscode</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>kafka学习</title>
-    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/kafka/kafka%E5%AE%9E%E7%8E%B0/</url>
-    <content><![CDATA[<p>[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。</p>
-<span id="more"></span>
-<h2 id="kafka-发送模式"><a href="#kafka-发送模式" class="headerlink" title="kafka 发送模式"></a>kafka 发送模式</h2><p>通过producer.type设置,可以设置producer的发送模式,具体参数据有<br>producer.type&#x3D;false即同步(默认就是同步),设置为true为异步,即以batch形式像broker发送信息.(这里的batch可以设置)<br>还有一种oneway.即通过对ack的设置即可实现,ack&#x3D;0时,即为oneway,只管发,不管是否接收成功.-1则是全部副本接收成功才算成功.</p>
-<h2 id="kakfa消费模式"><a href="#kakfa消费模式" class="headerlink" title="kakfa消费模式"></a>kakfa消费模式</h2><ol>
-<li>at last one</li>
-<li>at most one</li>
-<li>exactly one</li>
-</ol>
-]]></content>
-      <tags>
-        <tag>kafka</tag>
       </tags>
   </entry>
   <entry>
@@ -1409,30 +1418,20 @@ System.out.println(ok==ok1)
       </tags>
   </entry>
   <entry>
-    <title>kafka小结</title>
-    <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/oldblog/blog17/</url>
-    <content><![CDATA[<p>此处简介</p>
+    <title>kafka学习</title>
+    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/kafka/kafka%E5%AE%9E%E7%8E%B0/</url>
+    <content><![CDATA[<p>[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。</p>
 <span id="more"></span>
-
-<h2 id="kafka小结"><a href="#kafka小结" class="headerlink" title="kafka小结"></a>kafka小结</h2><p>消息系统术语<br>kafka特性</p>
-<ul>
-<li>分布式的</li>
-<li>可分区的</li>
-<li>可复制的</li>
-</ul>
-<p>在普通的消息系统的功上，还有自己独特的设计</p>
-<p>Kafka将消息以topic为单位进行归纳。<br>将向Kafka topic发布消息的程序成为producers.<br>将预订topics并消费消息的程序成为consumer.<br>Kafka以集群的方式运行，可以由一个或多个服务组成，每个服务叫做一个broker.<br>producers通过网络将消息发送到Kafka集群，集群向消费者提供消息，</p>
-<p><img src="//img.wqkenqing.ren/file/2017/7/827fdc820cae4619859042761c3b40a9-image.png" alt="827fdc820cae4619859042761c3b40a9-image.png"></p>
-<p>客户端和服务端通过TCP协议通信。Kafka提供了Java客户端，并且对多种语言都提供了支持。</p>
-<hr>
-<p>Topics 和Logs</p>
-<p>先来看一下Kafka提供的一个抽象概念:topic.<br>一个topic是对一组消息的归纳。对每个topic，Kafka 对它的日志进行了分区<br><img src="//img.wqkenqing.ren/file/2017/7/bf0d2ddee1d14cb29fd54483a622d67c-image.png" alt="bf0d2ddee1d14cb29fd54483a622d67c-image.png"></p>
-<p>一个topic是对一组消息的归纳。<br>对每个topic，Kafka 对它的日志进行了分区，</p>
-<p>每个分区都由一系列有序的、不可变的消息组成，这些消息被连续的追加到分区中。分区中的每个消息都有一个连续的序列号叫做offset,用来在分区中唯一的标识这个消息。</p>
-<hr>
-<h3 id="kafka常用指令收集"><a href="#kafka常用指令收集" class="headerlink" title="kafka常用指令收集"></a>kafka常用指令收集</h3><p><strong>查看topic的详细信息</strong><br>kafka-topics.sh -zookeeper 127.0.0.1:2181 -describe -topic topic name</p>
-<p><strong>为topic增加副本</strong><br>kafka-reassign-partitions.sh -zookeeper 127.0.0.1:2181 -reassignment-json-file json&#x2F;partitions-to-move.json -execute<br><strong>创建topic</strong><br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic name<br><strong>为topic增加partition</strong><br>kafka-topics.sh –zookeeper 127.0.0.1:2181 –alter –partitions 20 –topic name<br><strong>kafka生产者客户端命令</strong><br>kafka-console-producer.sh –broker-list localhost:9092 –topic name<br><strong>kafka消费者客户端命令</strong><br>kafka-console-consumer.sh -zookeeper localhost:2181 –from-beginning –topic name<br><strong>kafka服务启动</strong><br>kafka-server-start.sh -daemon ..&#x2F;config&#x2F;server.properties<br><strong>删除topic</strong><br>kafka-run-class.sh kafka.admin.DeleteTopicCommand –topic testKJ1 –zookeeper 127.0.0.1:2181<br>kafka-topics.sh –zookeeper localhost:2181 –delete –topic testKJ1<br><strong>查看consumer组内消费的offset</strong><br>kafka-run-class.sh kafka.tools.ConsumerOffsetChecker –zookeeper localhost:2181 –group test –topic name</p>
+<h2 id="kafka-发送模式"><a href="#kafka-发送模式" class="headerlink" title="kafka 发送模式"></a>kafka 发送模式</h2><p>通过producer.type设置,可以设置producer的发送模式,具体参数据有<br>producer.type&#x3D;false即同步(默认就是同步),设置为true为异步,即以batch形式像broker发送信息.(这里的batch可以设置)<br>还有一种oneway.即通过对ack的设置即可实现,ack&#x3D;0时,即为oneway,只管发,不管是否接收成功.-1则是全部副本接收成功才算成功.</p>
+<h2 id="kakfa消费模式"><a href="#kakfa消费模式" class="headerlink" title="kakfa消费模式"></a>kakfa消费模式</h2><ol>
+<li>at last one</li>
+<li>at most one</li>
+<li>exactly one</li>
+</ol>
 ]]></content>
+      <tags>
+        <tag>kafka</tag>
+      </tags>
   </entry>
   <entry>
     <title>Yarn配置细节</title>
@@ -1444,18 +1443,6 @@ System.out.println(ok==ok1)
 
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">      &lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.nodemanager.resource.memory-mb&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;4096&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.scheduler.minimum-allocation-mb&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;1024&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.scheduler.maximum-allocation-mb&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;3072&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br><span class="line">&lt;!--该配置用于配置任务请求时的资源. --&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.app.mapreduce.am.resource.mb&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;2048&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.app.mapreduce.am.command-opts&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;-Xmx3276m&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br><span class="line">  &lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.nodemanager.resource.cpu-vcores&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;2&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.scheduler.maximum-allocation-vcores&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;3&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 ]]></content>
-  </entry>
-  <entry>
-    <title>flume记录</title>
-    <url>/2019/06/13/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/flume%E8%AE%B0%E5%BD%95/</url>
-    <content><![CDATA[<p>此处简介</p>
-<span id="more"></span>
-<h1 id="flume记录"><a href="#flume记录" class="headerlink" title="flume记录"></a>flume记录</h1><h2 id="from-kafka"><a href="#from-kafka" class="headerlink" title="from kafka"></a>from kafka</h2><!-- more -->
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">a1.sources = source1</span><br><span class="line"></span><br><span class="line">a1.sources.source1.type = org.apache.flume.source.kafka.KafkaSource</span><br><span class="line"></span><br><span class="line">a1.sources.source1.channels = c1</span><br><span class="line"></span><br><span class="line">a1.sources.source1.batchSize = 5000</span><br><span class="line"></span><br><span class="line">a1.sources.source1.batchDurationMillis = 2000</span><br><span class="line">a1.sources.source1.zookeeperConnect = localhost:2181</span><br><span class="line"></span><br><span class="line">#a1.sources.source1.kafka.brokerList = localhost:9092</span><br><span class="line">a1.sources.source1.kafka.bootstrap.servers = localhost:9092</span><br><span class="line">a1.sources.source1.topic = flumetest</span><br><span class="line">a1.sources.source1.kafka.consumer.group.id = custom.g.id</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a1.channels = c1</span><br><span class="line"></span><br><span class="line">a1.channels.c1.type = memory</span><br><span class="line"></span><br><span class="line">a1.channels.c1.capacity = 10000</span><br><span class="line"></span><br><span class="line">a1.channels.c1.transactionCapacity = 10000</span><br><span class="line"></span><br><span class="line">a1.channels.c1.byteCapacityBufferPercentage = 20</span><br><span class="line"></span><br><span class="line">a1.channels.c1.byteCapacity = 800000</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a1.sinks = k1</span><br><span class="line"></span><br><span class="line">a1.sinks.k1.type = file_roll</span><br><span class="line"></span><br><span class="line">a1.sinks.k1.channel = c1</span><br><span class="line"></span><br><span class="line">a1.sinks.k1.sink.directory = /home/hadoop/testfile/flume</span><br></pre></td></tr></table></figure>
-
-<p>这里也有版本匹配的问题.经过多番尝试,这里的组合版本是flume1.6+kafka_2.11-2.2.0.tgz<br>其它版本可能会有request header 问题.<br>另外还遇到了指定topic 和 zookeeper的问题.</p>
-<p>执行语句:flume-ng agent -n a1 -c conf -f kafka.properties -Dflume.root.logger&#x3D;INFO,console</p>
-<h2 id="flume-采集到kafka"><a href="#flume-采集到kafka" class="headerlink" title="flume 采集到kafka"></a>flume 采集到kafka</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">agent.sources=r1</span><br><span class="line">agent.sinks=k1</span><br><span class="line">agent.channels=c1</span><br><span class="line"></span><br><span class="line">agent.sources.r1.type=exec</span><br><span class="line">agent.sources.r1.command=tail /root/tomcat/logs/catalina.out</span><br><span class="line">agent.sources.r1.restart=true</span><br><span class="line">agent.sources.r1.batchSize=1000</span><br><span class="line">agent.sources.r1.batchTimeout=3000</span><br><span class="line">agent.sources.r1.channels=c1</span><br><span class="line"></span><br><span class="line">agent.channels.c1.type=memory</span><br><span class="line">agent.channels.c1.capacity=102400</span><br><span class="line">agent.channels.c1.transactionCapacity=1000</span><br><span class="line"></span><br><span class="line">agent.channels.c1.byteCapacity=134217728</span><br><span class="line">agent.channels.c1.byteCapacityBufferPercentage=80</span><br><span class="line"></span><br><span class="line">agent.sinks.k1.channel=c1</span><br><span class="line">agent.sinks.k1.type=org.apache.flume.sink.kafka.KafkaSink</span><br><span class="line">agent.sinks.k1.kafka.topic=sparkstreaming</span><br><span class="line">agent.sinks.k1.kafka.zookeeperConnect=47.102.199.215:2181</span><br><span class="line">#agent.sinks.k1.kafka.bootstrap.servers=47.102.199.215:9092</span><br><span class="line">agent.sinks.k1.kafka.brokerList =47.102.199.215:9092</span><br><span class="line">agent.sinks.k1.serializer.class=kafka.serializer.StringEncoder</span><br><span class="line">agent.sinks.k1.flumeBatchSize=1000</span><br><span class="line">agent.sinks.k1.useFlumeEventFormat=true</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
   </entry>
   <entry>
     <title>hbase积累.md</title>
@@ -1542,78 +1529,16 @@ System.out.println(ok==ok1)
       </tags>
   </entry>
   <entry>
-    <title>hive总结</title>
-    <url>/2018/12/24/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/hive%E6%80%BB%E7%BB%93/</url>
-    <content><![CDATA[<h1 id="Hive相关点小结"><a href="#Hive相关点小结" class="headerlink" title="Hive相关点小结"></a>Hive相关点小结</h1><span id="more"></span>
-
-<h2 id="启动指令"><a href="#启动指令" class="headerlink" title="启动指令"></a>启动指令</h2><ol>
-<li>hive &#x3D;&#x3D;  hive –service cli<br>不需要启动server，使用本地的metastore，可以直接做一些简单的数据操作和测试。</li>
-<li>启动hiveserver2<br>hive –service hiveserver2</li>
-<li>beeline工具测试使用jdbc方式连接<br>beeline -u jdbc:hive2:&#x2F;&#x2F;localhost:10000</li>
-</ol>
-<p>1.managed table<br>管理表。<br>删除表时，数据也删除了</p>
-<p>2.external table<br>外部表。<br>删除表时，数据不删</p>
-<h2 id="建表"><a href="#建表" class="headerlink" title="建表:"></a>建表:</h2><p>CREATE TABLE IF NOT EXISTS t2(id int,name string,age int)<br>COMMENT ‘xx’                                     &#x2F;&#x2F;注释<br>ROW FORMAT DELIMITED                             &#x2F;&#x2F;行分隔符<br>FIELDS TERMINATED BY ‘,’                         &#x2F;&#x2F;字段分隔符，这里使用的是逗号可以根据自己的需要自行进行修改<br>STORED AS TEXTFILE ;</p>
-<h3 id="外部表"><a href="#外部表" class="headerlink" title="外部表:"></a>外部表:</h3><p> CREATE  TABLE IF NOT EXISTS t2(id int,name string,age int)<br> COMMENT ‘xx’ <br> ROW FORMAT DELIMITED <br> FIELDS TERMINATED BY ‘,’ <br> STORED AS TEXTFILE ; </p>
-<h3 id="分区表，桶表"><a href="#分区表，桶表" class="headerlink" title="分区表，桶表"></a>分区表，桶表</h3><h4 id="分区表"><a href="#分区表" class="headerlink" title="分区表"></a>分区表</h4><p>Hive中有分区表的概念。我们可以看到分区表具有重要的性能，而且分区表还可以将数据以一种符合逻辑的方式进行组织，比如分层存储。Hive的分区表，是把数据放在满足条件的分区目录下<br>CREATE TABLE t3(id int,name string,age int) </p>
-<p>PARTITIONED BY (Year INT, Month INT)   &#x2F;&#x2F;按照年月进行分区</p>
-<p> ROW FORMAT DELIMITED                      &#x2F;&#x2F;行分隔符</p>
-<p>FIELDS TERMINATED BY ‘,’ ;                    &#x2F;&#x2F;字段分隔符，这里使用的是逗号可以根据自己的需要自行进行修改<br>load data local inpath ‘&#x2F;home&#x2F;zpx&#x2F;customers.txt’ into table t3 partition</p>
-<h4 id="分桶表"><a href="#分桶表" class="headerlink" title="分桶表"></a>分桶表</h4><p>这样做，在查找数据的时候就可以跨越多个桶，直接查找复合条件的数据了。速度快，时间成本低。Hive中的桶表默认使用的机制也是hash。<br>CREATE TABLE t4(id int,name string,age int) </p>
-<p>                   CLUSTERED BY (id) INTO 3 BUCKETS      &#x2F;&#x2F;创建3个通桶表，按照字段id进行分桶</p>
-<p>                   ROW FORMAT DELIMITED                     &#x2F;&#x2F;行分隔符</p>
-<p>                   FIELDS TERMINATED BY ‘,’ ; </p>
-<p>load data local inpath ‘&#x2F;home&#x2F;centos&#x2F;customers.txt’ into table t4 ;</p>
-<h2 id="导入数据"><a href="#导入数据" class="headerlink" title="导入数据"></a>导入数据</h2><p>load data local inpath ‘&#x2F;home&#x2F;zpx&#x2F;customers.txt’ into table t2 ; &#x2F;&#x2F;local上传文件<br>load data inpath ‘&#x2F;user&#x2F;zpx&#x2F;customers.txt’ [overwrite] into table t2 &#x2F;&#x2F;分布式文件系统上移动文件</p>
-<h2 id="建视图"><a href="#建视图" class="headerlink" title="建视图"></a>建视图</h2><p>Hive也可以建立视图，是一张虚表，方便我们进行操作.</p>
-<p>create view v1 as select a.id aid,a.name ,b.id bid , b.order from customers a left outer join default.tt b on a.id &#x3D; b.cid ;</p>
-<h2 id="Hive的严格模式"><a href="#Hive的严格模式" class="headerlink" title="Hive的严格模式"></a>Hive的严格模式</h2><p>Hive提供了一个严格模式，可以防止用户执行那些产生意想不到的不好的影响的查询。<br>使用了严格模式之后主要对以下3种不良操作进行控制：</p>
-<p>1.分区表必须指定分区进行查询。<br>2.order by时必须使用limit子句。<br>3.不允许笛卡尔积。<br><img src="http://img.wqkenqing.ren/2019-03-18-17-13-36.png" alt="2019-03-18-17-13-36"></p>
-<h2 id="Hive的动态分区"><a href="#Hive的动态分区" class="headerlink" title="Hive的动态分区"></a>Hive的动态分区</h2><p>像分区表里面存储了数据。我们在进行存储数据的时候，都是明确的指定了分区。在这个过程中Hive也提供了一种比较任性化的操作，就是动态分区，不需要我们指定分区目录，Hive能够把数据进行动态的分发,<strong>我们需要将当前的严格模式设置成非严格模式，否则不允许使用动态分区</strong><br>set hive.exec.dynamic.partition.mode&#x3D;nonstrict&#x2F;&#x2F;设置非严格模式</p>
-<h2 id="Hive的排序"><a href="#Hive的排序" class="headerlink" title="Hive的排序"></a>Hive的排序</h2><p>Hive也提供了一些排序的语法，包括order by,sort by。</p>
-<p>order by&#x3D;MapReduce的全排序<br>sort by&#x3D;MapReduce的部分排序<br>distribute by&#x3D;MapReduce的分区</p>
-<p>selece …….from …… order by 字段；&#x2F;&#x2F;按照这个字段全排序</p>
-<p>selece …….from …… sort by 字段； &#x2F;&#x2F;按照这个字段局部有序</p>
-<p>selece 字段…..from …… distribute by 字段；&#x2F;&#x2F;按照这个字段分区<br>特别注意的是：</p>
-<ol>
-<li>在上面的最后一个distribute by使用过程中，按照排序的字段要出现在最左侧也就是select中有这个字段，因为我们要告诉MapReduce你要按照哪一个字段分区，当然获取的数据中要出现这个字段了。类似于我们使用group by的用法，字段也必须出现在最左侧，因为数据要包含这个字段，才能按照这个字段分组，至于Hive什么时候会自行的开启MapReduce，那就是在使用聚合的情况下开启，使用select …from ….以及使用分区表的selece ….from……where …..不会开启</li>
-<li>distribute by与sort by可以组合使用，但是distribute by要放在前边，因为MapReduce要先分区，后排序，再归并</li>
-</ol>
-<p>select 字段a,……..from …….distribute by字段a，sort by字段<br>如果distribute by与sort by使用的字段一样，则可以使用cluster by 字段替代：<br>select 字段a,……..from …….cluster by 字段</p>
-<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><ol>
-<li>show functions; 展示相关函数</li>
-<li>desc function split;</li>
-<li>desc function  extended split;  &#x2F;&#x2F;查看函数的扩展信息</li>
-</ol>
-<h3 id="用户自定义函数（UDF）"><a href="#用户自定义函数（UDF）" class="headerlink" title="用户自定义函数（UDF）"></a>用户自定义函数（UDF）</h3><p>具体步骤如下：</p>
-<p>（1）.自定义类（继承UDF，或是GenericUDF。GenericUDF是更为复杂的抽象概念，但是其支持更好的null值处理同时还可以处理一些标准的UDF无法支持的编程操作）。<br>（2）.导出jar包，通过命令添加到hive的类路径。<br>$hive&gt;add jar xxx.jar<br>（3）.注册函数<br>$hive&gt;CREATE TEMPORARY FUNCTION 函数名 AS ‘具体类路径：包.类’;<br>（4）.使用<br> $hive&gt;select 函数名(参数);<br>自定义实现类如下(继承UDF)：</p>
-]]></content>
-      <tags>
-        <tag>bigdata</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>kafka</title>
-    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/kafka/</url>
-    <content><![CDATA[<p>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic sparkstreaming<br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic flumetest</p>
+    <title>flume记录</title>
+    <url>/2019/06/13/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/flume%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[<p>此处简介</p>
 <span id="more"></span>
+<h1 id="flume记录"><a href="#flume记录" class="headerlink" title="flume记录"></a>flume记录</h1><h2 id="from-kafka"><a href="#from-kafka" class="headerlink" title="from kafka"></a>from kafka</h2><!-- more -->
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">a1.sources = source1</span><br><span class="line"></span><br><span class="line">a1.sources.source1.type = org.apache.flume.source.kafka.KafkaSource</span><br><span class="line"></span><br><span class="line">a1.sources.source1.channels = c1</span><br><span class="line"></span><br><span class="line">a1.sources.source1.batchSize = 5000</span><br><span class="line"></span><br><span class="line">a1.sources.source1.batchDurationMillis = 2000</span><br><span class="line">a1.sources.source1.zookeeperConnect = localhost:2181</span><br><span class="line"></span><br><span class="line">#a1.sources.source1.kafka.brokerList = localhost:9092</span><br><span class="line">a1.sources.source1.kafka.bootstrap.servers = localhost:9092</span><br><span class="line">a1.sources.source1.topic = flumetest</span><br><span class="line">a1.sources.source1.kafka.consumer.group.id = custom.g.id</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a1.channels = c1</span><br><span class="line"></span><br><span class="line">a1.channels.c1.type = memory</span><br><span class="line"></span><br><span class="line">a1.channels.c1.capacity = 10000</span><br><span class="line"></span><br><span class="line">a1.channels.c1.transactionCapacity = 10000</span><br><span class="line"></span><br><span class="line">a1.channels.c1.byteCapacityBufferPercentage = 20</span><br><span class="line"></span><br><span class="line">a1.channels.c1.byteCapacity = 800000</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a1.sinks = k1</span><br><span class="line"></span><br><span class="line">a1.sinks.k1.type = file_roll</span><br><span class="line"></span><br><span class="line">a1.sinks.k1.channel = c1</span><br><span class="line"></span><br><span class="line">a1.sinks.k1.sink.directory = /home/hadoop/testfile/flume</span><br></pre></td></tr></table></figure>
 
-<p>kafka-console-producer.sh –broker-list localhost:9092 –topic flumetest :创建生产者</p>
-<p>kafka-console-consumer.sh –bootstrap-server namenode:9092  –topic  flume-ng</p>
-<h1 id="Kafka相关小结"><a href="#Kafka相关小结" class="headerlink" title="Kafka相关小结"></a>Kafka相关小结</h1><h2 id="kafka-相关指令"><a href="#kafka-相关指令" class="headerlink" title="kafka 相关指令"></a>kafka 相关指令</h2><p>kafka-server-start.sh config&#x2F;server.properties &amp; 启动<br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic topic_name  :创建topic<br>kafka-console-producer.sh –broker-list localhost:9092 –topic topic_name :创建生产者</p>
-<p>kafka-console-consumer.sh –bootstrap-server localhost:9092 –topic topic_name :创建消费者</p>
-<p>kafka-console-producer.sh –broker-list namenode:9092 –topic sparkstreaming</p>
-<p>删除group</p>
-<p>kafka-consumer-groups –bootstrap-server 192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092  —group traffic_history —delete</p>
-<h2 id="kafka-java-api"><a href="#kafka-java-api" class="headerlink" title="kafka java api"></a>kafka java api</h2><p>kafka 虽然搭建较为简单,但想要对针它编程体验还是有些问题.初步使用下来明显感觉对版本的强约束性.以我线上版本</p>
-<p><img src="http://img.wqkenqing.ren/2019-03-12-11-02-43.png" alt="2019-03-12-11-02-43">为例,我java项目对应的版本则是</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka_2<span class="number">.10</span>&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;<span class="number">0.8</span><span class="number">.1</span>&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;<span class="number">0.8</span><span class="number">.2</span><span class="number">.1</span>&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
-
-<p>以上版本搭配经由我亲测通过</p>
-]]></content>
-      <tags>
-        <tag>kafka</tag>
-      </tags>
+<p>这里也有版本匹配的问题.经过多番尝试,这里的组合版本是flume1.6+kafka_2.11-2.2.0.tgz<br>其它版本可能会有request header 问题.<br>另外还遇到了指定topic 和 zookeeper的问题.</p>
+<p>执行语句:flume-ng agent -n a1 -c conf -f kafka.properties -Dflume.root.logger&#x3D;INFO,console</p>
+<h2 id="flume-采集到kafka"><a href="#flume-采集到kafka" class="headerlink" title="flume 采集到kafka"></a>flume 采集到kafka</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">agent.sources=r1</span><br><span class="line">agent.sinks=k1</span><br><span class="line">agent.channels=c1</span><br><span class="line"></span><br><span class="line">agent.sources.r1.type=exec</span><br><span class="line">agent.sources.r1.command=tail /root/tomcat/logs/catalina.out</span><br><span class="line">agent.sources.r1.restart=true</span><br><span class="line">agent.sources.r1.batchSize=1000</span><br><span class="line">agent.sources.r1.batchTimeout=3000</span><br><span class="line">agent.sources.r1.channels=c1</span><br><span class="line"></span><br><span class="line">agent.channels.c1.type=memory</span><br><span class="line">agent.channels.c1.capacity=102400</span><br><span class="line">agent.channels.c1.transactionCapacity=1000</span><br><span class="line"></span><br><span class="line">agent.channels.c1.byteCapacity=134217728</span><br><span class="line">agent.channels.c1.byteCapacityBufferPercentage=80</span><br><span class="line"></span><br><span class="line">agent.sinks.k1.channel=c1</span><br><span class="line">agent.sinks.k1.type=org.apache.flume.sink.kafka.KafkaSink</span><br><span class="line">agent.sinks.k1.kafka.topic=sparkstreaming</span><br><span class="line">agent.sinks.k1.kafka.zookeeperConnect=47.102.199.215:2181</span><br><span class="line">#agent.sinks.k1.kafka.bootstrap.servers=47.102.199.215:9092</span><br><span class="line">agent.sinks.k1.kafka.brokerList =47.102.199.215:9092</span><br><span class="line">agent.sinks.k1.serializer.class=kafka.serializer.StringEncoder</span><br><span class="line">agent.sinks.k1.flumeBatchSize=1000</span><br><span class="line">agent.sinks.k1.useFlumeEventFormat=true</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
   </entry>
   <entry>
     <title>mapreduce组件总结</title>
@@ -1708,6 +1633,96 @@ System.out.println(ok==ok1)
       </tags>
   </entry>
   <entry>
+    <title>kafka</title>
+    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/kafka/</url>
+    <content><![CDATA[<p>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic sparkstreaming<br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic flumetest</p>
+<span id="more"></span>
+
+<p>kafka-console-producer.sh –broker-list localhost:9092 –topic flumetest :创建生产者</p>
+<p>kafka-console-consumer.sh –bootstrap-server namenode:9092  –topic  flume-ng</p>
+<h1 id="Kafka相关小结"><a href="#Kafka相关小结" class="headerlink" title="Kafka相关小结"></a>Kafka相关小结</h1><h2 id="kafka-相关指令"><a href="#kafka-相关指令" class="headerlink" title="kafka 相关指令"></a>kafka 相关指令</h2><p>kafka-server-start.sh config&#x2F;server.properties &amp; 启动<br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic topic_name  :创建topic<br>kafka-console-producer.sh –broker-list localhost:9092 –topic topic_name :创建生产者</p>
+<p>kafka-console-consumer.sh –bootstrap-server localhost:9092 –topic topic_name :创建消费者</p>
+<p>kafka-console-producer.sh –broker-list namenode:9092 –topic sparkstreaming</p>
+<p>删除group</p>
+<p>kafka-consumer-groups –bootstrap-server 192.168.10.100:9092,192.168.10.101:9092,192.168.10.102:9092  —group traffic_history —delete</p>
+<h2 id="kafka-java-api"><a href="#kafka-java-api" class="headerlink" title="kafka java api"></a>kafka java api</h2><p>kafka 虽然搭建较为简单,但想要对针它编程体验还是有些问题.初步使用下来明显感觉对版本的强约束性.以我线上版本</p>
+<p><img src="http://img.wqkenqing.ren/2019-03-12-11-02-43.png" alt="2019-03-12-11-02-43">为例,我java项目对应的版本则是</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka_2<span class="number">.10</span>&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;<span class="number">0.8</span><span class="number">.1</span>&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;<span class="number">0.8</span><span class="number">.2</span><span class="number">.1</span>&lt;/version&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<p>以上版本搭配经由我亲测通过</p>
+]]></content>
+      <tags>
+        <tag>kafka</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>hive总结</title>
+    <url>/2018/12/24/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/hive%E6%80%BB%E7%BB%93/</url>
+    <content><![CDATA[<h1 id="Hive相关点小结"><a href="#Hive相关点小结" class="headerlink" title="Hive相关点小结"></a>Hive相关点小结</h1><span id="more"></span>
+
+<h2 id="启动指令"><a href="#启动指令" class="headerlink" title="启动指令"></a>启动指令</h2><ol>
+<li>hive &#x3D;&#x3D;  hive –service cli<br>不需要启动server，使用本地的metastore，可以直接做一些简单的数据操作和测试。</li>
+<li>启动hiveserver2<br>hive –service hiveserver2</li>
+<li>beeline工具测试使用jdbc方式连接<br>beeline -u jdbc:hive2:&#x2F;&#x2F;localhost:10000</li>
+</ol>
+<p>1.managed table<br>管理表。<br>删除表时，数据也删除了</p>
+<p>2.external table<br>外部表。<br>删除表时，数据不删</p>
+<h2 id="建表"><a href="#建表" class="headerlink" title="建表:"></a>建表:</h2><p>CREATE TABLE IF NOT EXISTS t2(id int,name string,age int)<br>COMMENT ‘xx’                                     &#x2F;&#x2F;注释<br>ROW FORMAT DELIMITED                             &#x2F;&#x2F;行分隔符<br>FIELDS TERMINATED BY ‘,’                         &#x2F;&#x2F;字段分隔符，这里使用的是逗号可以根据自己的需要自行进行修改<br>STORED AS TEXTFILE ;</p>
+<h3 id="外部表"><a href="#外部表" class="headerlink" title="外部表:"></a>外部表:</h3><p> CREATE  TABLE IF NOT EXISTS t2(id int,name string,age int)<br> COMMENT ‘xx’ <br> ROW FORMAT DELIMITED <br> FIELDS TERMINATED BY ‘,’ <br> STORED AS TEXTFILE ; </p>
+<h3 id="分区表，桶表"><a href="#分区表，桶表" class="headerlink" title="分区表，桶表"></a>分区表，桶表</h3><h4 id="分区表"><a href="#分区表" class="headerlink" title="分区表"></a>分区表</h4><p>Hive中有分区表的概念。我们可以看到分区表具有重要的性能，而且分区表还可以将数据以一种符合逻辑的方式进行组织，比如分层存储。Hive的分区表，是把数据放在满足条件的分区目录下<br>CREATE TABLE t3(id int,name string,age int) </p>
+<p>PARTITIONED BY (Year INT, Month INT)   &#x2F;&#x2F;按照年月进行分区</p>
+<p> ROW FORMAT DELIMITED                      &#x2F;&#x2F;行分隔符</p>
+<p>FIELDS TERMINATED BY ‘,’ ;                    &#x2F;&#x2F;字段分隔符，这里使用的是逗号可以根据自己的需要自行进行修改<br>load data local inpath ‘&#x2F;home&#x2F;zpx&#x2F;customers.txt’ into table t3 partition</p>
+<h4 id="分桶表"><a href="#分桶表" class="headerlink" title="分桶表"></a>分桶表</h4><p>这样做，在查找数据的时候就可以跨越多个桶，直接查找复合条件的数据了。速度快，时间成本低。Hive中的桶表默认使用的机制也是hash。<br>CREATE TABLE t4(id int,name string,age int) </p>
+<p>                   CLUSTERED BY (id) INTO 3 BUCKETS      &#x2F;&#x2F;创建3个通桶表，按照字段id进行分桶</p>
+<p>                   ROW FORMAT DELIMITED                     &#x2F;&#x2F;行分隔符</p>
+<p>                   FIELDS TERMINATED BY ‘,’ ; </p>
+<p>load data local inpath ‘&#x2F;home&#x2F;centos&#x2F;customers.txt’ into table t4 ;</p>
+<h2 id="导入数据"><a href="#导入数据" class="headerlink" title="导入数据"></a>导入数据</h2><p>load data local inpath ‘&#x2F;home&#x2F;zpx&#x2F;customers.txt’ into table t2 ; &#x2F;&#x2F;local上传文件<br>load data inpath ‘&#x2F;user&#x2F;zpx&#x2F;customers.txt’ [overwrite] into table t2 &#x2F;&#x2F;分布式文件系统上移动文件</p>
+<h2 id="建视图"><a href="#建视图" class="headerlink" title="建视图"></a>建视图</h2><p>Hive也可以建立视图，是一张虚表，方便我们进行操作.</p>
+<p>create view v1 as select a.id aid,a.name ,b.id bid , b.order from customers a left outer join default.tt b on a.id &#x3D; b.cid ;</p>
+<h2 id="Hive的严格模式"><a href="#Hive的严格模式" class="headerlink" title="Hive的严格模式"></a>Hive的严格模式</h2><p>Hive提供了一个严格模式，可以防止用户执行那些产生意想不到的不好的影响的查询。<br>使用了严格模式之后主要对以下3种不良操作进行控制：</p>
+<p>1.分区表必须指定分区进行查询。<br>2.order by时必须使用limit子句。<br>3.不允许笛卡尔积。<br><img src="http://img.wqkenqing.ren/2019-03-18-17-13-36.png" alt="2019-03-18-17-13-36"></p>
+<h2 id="Hive的动态分区"><a href="#Hive的动态分区" class="headerlink" title="Hive的动态分区"></a>Hive的动态分区</h2><p>像分区表里面存储了数据。我们在进行存储数据的时候，都是明确的指定了分区。在这个过程中Hive也提供了一种比较任性化的操作，就是动态分区，不需要我们指定分区目录，Hive能够把数据进行动态的分发,<strong>我们需要将当前的严格模式设置成非严格模式，否则不允许使用动态分区</strong><br>set hive.exec.dynamic.partition.mode&#x3D;nonstrict&#x2F;&#x2F;设置非严格模式</p>
+<h2 id="Hive的排序"><a href="#Hive的排序" class="headerlink" title="Hive的排序"></a>Hive的排序</h2><p>Hive也提供了一些排序的语法，包括order by,sort by。</p>
+<p>order by&#x3D;MapReduce的全排序<br>sort by&#x3D;MapReduce的部分排序<br>distribute by&#x3D;MapReduce的分区</p>
+<p>selece …….from …… order by 字段；&#x2F;&#x2F;按照这个字段全排序</p>
+<p>selece …….from …… sort by 字段； &#x2F;&#x2F;按照这个字段局部有序</p>
+<p>selece 字段…..from …… distribute by 字段；&#x2F;&#x2F;按照这个字段分区<br>特别注意的是：</p>
+<ol>
+<li>在上面的最后一个distribute by使用过程中，按照排序的字段要出现在最左侧也就是select中有这个字段，因为我们要告诉MapReduce你要按照哪一个字段分区，当然获取的数据中要出现这个字段了。类似于我们使用group by的用法，字段也必须出现在最左侧，因为数据要包含这个字段，才能按照这个字段分组，至于Hive什么时候会自行的开启MapReduce，那就是在使用聚合的情况下开启，使用select …from ….以及使用分区表的selece ….from……where …..不会开启</li>
+<li>distribute by与sort by可以组合使用，但是distribute by要放在前边，因为MapReduce要先分区，后排序，再归并</li>
+</ol>
+<p>select 字段a,……..from …….distribute by字段a，sort by字段<br>如果distribute by与sort by使用的字段一样，则可以使用cluster by 字段替代：<br>select 字段a,……..from …….cluster by 字段</p>
+<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><ol>
+<li>show functions; 展示相关函数</li>
+<li>desc function split;</li>
+<li>desc function  extended split;  &#x2F;&#x2F;查看函数的扩展信息</li>
+</ol>
+<h3 id="用户自定义函数（UDF）"><a href="#用户自定义函数（UDF）" class="headerlink" title="用户自定义函数（UDF）"></a>用户自定义函数（UDF）</h3><p>具体步骤如下：</p>
+<p>（1）.自定义类（继承UDF，或是GenericUDF。GenericUDF是更为复杂的抽象概念，但是其支持更好的null值处理同时还可以处理一些标准的UDF无法支持的编程操作）。<br>（2）.导出jar包，通过命令添加到hive的类路径。<br>$hive&gt;add jar xxx.jar<br>（3）.注册函数<br>$hive&gt;CREATE TEMPORARY FUNCTION 函数名 AS ‘具体类路径：包.类’;<br>（4）.使用<br> $hive&gt;select 函数名(参数);<br>自定义实现类如下(继承UDF)：</p>
+]]></content>
+      <tags>
+        <tag>bigdata</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>sqoop记录</title>
+    <url>/2018/03/04/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/sqoop%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[<h2 id="将Mysql数据导入Hive中"><a href="#将Mysql数据导入Hive中" class="headerlink" title="将Mysql数据导入Hive中"></a>将Mysql数据导入Hive中</h2><span id="more"></span>
+<p>命令:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sqoop import  </span><br><span class="line">-Dorg.apache.sqoop.splitter.allow_text_splitter=true       </span><br><span class="line">--connect jdbc:mysql://211.159.172.76:3306/solo</span><br><span class="line">--username root </span><br><span class="line">--password 125323Wkq </span><br><span class="line">--table  tablename </span><br><span class="line">--hive-import </span><br><span class="line">--hive-table tablename </span><br></pre></td></tr></table></figure>
+
+<h3 id="整库导入"><a href="#整库导入" class="headerlink" title="整库导入"></a>整库导入</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sqoop import-all-tables --connect jdbc:mysql://211.159.172.76:3306/ --username root --password 125323Wkq --hive-database solo  -m 10  </span><br><span class="line">--create-hive-table  </span><br><span class="line">--fields-terminated-by &quot;\t&quot;</span><br><span class="line">--hive-import --hive-database qianyang --hive-overwrite</span><br></pre></td></tr></table></figure>
+<p>sqoop  import-all-tables -Dorg.apache.sqoop.splitter.allow_text_splitter&#x3D;true –connect jdbc:mysql:&#x2F;&#x2F;211.159.172.76:3306&#x2F;solo –username root –password 125323Wkq –hive-database blog  –create-hive-table  –hive-import –hive-overwrite -m 10 </p>
+<h3 id="单表导入"><a href="#单表导入" class="headerlink" title="单表导入"></a>单表导入</h3><p>sqoop import  –connect   jdbc:mysql:&#x2F;&#x2F;211.159.172.76:3306&#x2F;solo –username root     –password 125323Wkq    –table b3_solo_article –target-dir &#x2F;blog&#x2F;article   –hive-import  –hive-database blog<br>–fields-terminated-by “\t” –hive-table article  –hive-overwrite<br>–m 10  </p>
+<p>sqoop  import  –connect jdbc:mysql:&#x2F;&#x2F;211.159.172.76:3306&#x2F;solo –username root –password 125323Wkq –table b3_solo_article –target-dir &#x2F;blog&#x2F;article –hive-import –hive-database blog  –create-hive-table  –hive-table article –hive-overwrite -m 1 </p>
+]]></content>
+      <tags>
+        <tag>日常总结</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>spark学习2</title>
     <url>/2018/03/04/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/spark%E5%AD%A6%E4%B9%A02/</url>
     <content><![CDATA[<h1 id="spark学习2"><a href="#spark学习2" class="headerlink" title="spark学习2"></a>spark学习2</h1><h2 id="spark-运行的四种模式"><a href="#spark-运行的四种模式" class="headerlink" title="spark 运行的四种模式"></a>spark 运行的四种模式</h2><span id="more"></span>
@@ -1782,22 +1797,6 @@ System.out.println(ok==ok1)
       </tags>
   </entry>
   <entry>
-    <title>sqoop记录</title>
-    <url>/2018/03/04/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/sqoop%E8%AE%B0%E5%BD%95/</url>
-    <content><![CDATA[<h2 id="将Mysql数据导入Hive中"><a href="#将Mysql数据导入Hive中" class="headerlink" title="将Mysql数据导入Hive中"></a>将Mysql数据导入Hive中</h2><span id="more"></span>
-<p>命令:</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sqoop import  </span><br><span class="line">-Dorg.apache.sqoop.splitter.allow_text_splitter=true       </span><br><span class="line">--connect jdbc:mysql://211.159.172.76:3306/solo</span><br><span class="line">--username root </span><br><span class="line">--password 125323Wkq </span><br><span class="line">--table  tablename </span><br><span class="line">--hive-import </span><br><span class="line">--hive-table tablename </span><br></pre></td></tr></table></figure>
-
-<h3 id="整库导入"><a href="#整库导入" class="headerlink" title="整库导入"></a>整库导入</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sqoop import-all-tables --connect jdbc:mysql://211.159.172.76:3306/ --username root --password 125323Wkq --hive-database solo  -m 10  </span><br><span class="line">--create-hive-table  </span><br><span class="line">--fields-terminated-by &quot;\t&quot;</span><br><span class="line">--hive-import --hive-database qianyang --hive-overwrite</span><br></pre></td></tr></table></figure>
-<p>sqoop  import-all-tables -Dorg.apache.sqoop.splitter.allow_text_splitter&#x3D;true –connect jdbc:mysql:&#x2F;&#x2F;211.159.172.76:3306&#x2F;solo –username root –password 125323Wkq –hive-database blog  –create-hive-table  –hive-import –hive-overwrite -m 10 </p>
-<h3 id="单表导入"><a href="#单表导入" class="headerlink" title="单表导入"></a>单表导入</h3><p>sqoop import  –connect   jdbc:mysql:&#x2F;&#x2F;211.159.172.76:3306&#x2F;solo –username root     –password 125323Wkq    –table b3_solo_article –target-dir &#x2F;blog&#x2F;article   –hive-import  –hive-database blog<br>–fields-terminated-by “\t” –hive-table article  –hive-overwrite<br>–m 10  </p>
-<p>sqoop  import  –connect jdbc:mysql:&#x2F;&#x2F;211.159.172.76:3306&#x2F;solo –username root –password 125323Wkq –table b3_solo_article –target-dir &#x2F;blog&#x2F;article –hive-import –hive-database blog  –create-hive-table  –hive-table article –hive-overwrite -m 1 </p>
-]]></content>
-      <tags>
-        <tag>日常总结</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>准备小结</title>
     <url>/2020/05/10/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/%E5%87%86%E5%A4%87%E5%B0%8F%E7%BB%93/</url>
     <content><![CDATA[<h1 id="准备小结"><a href="#准备小结" class="headerlink" title="准备小结"></a>准备小结</h1><span id="more"></span>
@@ -1856,6 +1855,199 @@ System.out.println(ok==ok1)
       <tags>
         <tag>小结</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>数仓分享</title>
+    <url>/2020/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E5%88%86%E4%BA%AB/%E6%95%B0%E4%BB%93%E5%88%86%E4%BA%AB/</url>
+    <content><![CDATA[ <span id="more"></span>
+
+
+
+<h1 id="数据仓库分享"><a href="#数据仓库分享" class="headerlink" title="数据仓库分享"></a>数据仓库分享</h1><h2 id="1-数仓基础理论"><a href="#1-数仓基础理论" class="headerlink" title="1. 数仓基础理论"></a>1. 数仓基础理论</h2><h3 id="Q1-什么叫数据仓库？"><a href="#Q1-什么叫数据仓库？" class="headerlink" title="Q1: 什么叫数据仓库？"></a>Q1: 什么叫数据仓库？</h3><p>这本书里对数据仓库的定义是为了构建新的分析处理环境而出现的一种<strong>数据存储和组织技术</strong></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/20210716151756.png" alt="img"></p>
+<h3 id="Q2-数仓与数据库的区别是什么？"><a href="#Q2-数仓与数据库的区别是什么？" class="headerlink" title="Q2: 数仓与数据库的区别是什么？"></a>Q2: 数仓与数据库的区别是什么？</h3><ol>
+<li>业务场景不同，数据库主要用于支撑基本的、日常的事务处理。如银行交易流水，电商交易订单等，承担存储功能，支持修改，而数据仓库主要是用于OLAP等复杂的分析操作，侧重决策支持，并辅以可视化技术，将查询结果直观的，易化展示</li>
+<li>前者数据的写入，修改等操作随时发生，而后者一般是一次写入，写入后很少修改。</li>
+</ol>
+<h3 id="Q3-数仓有什么特点？"><a href="#Q3-数仓有什么特点？" class="headerlink" title="Q3:数仓有什么特点？"></a>Q3:数仓有什么特点？</h3><ol>
+<li>面向主题</li>
+<li>集成的</li>
+<li>相对稳定的</li>
+<li>反映历史变化</li>
+</ol>
+<h3 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h3><p>数据仓库中的数据是按照一定的主题域进行组织。主题是一个抽象的概念，是指用户使用数据仓库进行决策时所关心的重点方面，一个主题通常与多个操作型信息系统相关。</p>
+<p>数据仓库中的数据是在对原有分散的数据库数据抽取、清理的基础上经过系统加工、汇总和整理得到的，必须消除源数据中的不一致性，以保证数据仓库内的信息是关于整个企业的一致的全局信息。</p>
+<p>数据仓库的数据主要供企业决策分析之用，所涉及的数据操作主要是数据查询，一旦某个数据进入数据仓库以后，一般情况下将被长期保留，也就是数据仓库中一般有大量的查询操作，但修改和删除操作很少，通常只需要定期的加载、刷新。</p>
+<p>操作型数据库主要关心当前某一个时间段内的数据，而数据仓库中的数据通常包含历史信息，系统记录了企业从过去某一时点(如开始应用数据仓库的时点)到目前的各个阶段的信息，通过这些信息，可以对企业的发展历程和未来趋势做出定量分析和预测。</p>
+<h2 id="2、如何构建一个数仓"><a href="#2、如何构建一个数仓" class="headerlink" title="2、如何构建一个数仓"></a>2、如何构建一个数仓</h2><h3 id="2-1-先介绍下数仓的分层"><a href="#2-1-先介绍下数仓的分层" class="headerlink" title="2.1 先介绍下数仓的分层"></a>2.1 <strong>先介绍下数仓的分层</strong></h3><p>数据仓库一般采用三层分层法</p>
+<ol>
+<li>ODS层（数据操作层）直接接入的原始数据，简单清洗，从业务库直接同步而来</li>
+<li>DW层（数据仓库层）DW内部又可以分层，但DW层主要就是ODS ETL后的数据</li>
+<li>APP层 (数据应用层）应用DW层的数据</li>
+</ol>
+<p>此外还有一个比较重的层DIM （维表层）</p>
+<ol>
+<li>高基数维度数据：一般是用户资料表、商品资料表类似的资料表。数据量可能是千万级或者上亿级别。</li>
+<li>低基数维度数据：一般是配置表，比如枚举值对应的中文含义，或者日期维表。数据量可能是个位数或者几千几万。</li>
+</ol>
+<p>DW层的分层</p>
+<ol>
+<li>DWS层 （数据服务层）</li>
+<li>DWM层 （中间数据层）</li>
+<li>DWD层 （数据明细层）</li>
+</ol>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112822786.png" alt="image-20210716112822786"></p>
+<h3 id="2-2-数据仓库的构建"><a href="#2-2-数据仓库的构建" class="headerlink" title="2.2 数据仓库的构建"></a>2.2 <strong>数据仓库的构建</strong></h3><h4 id="2-2-1-确定一个引擎"><a href="#2-2-1-确定一个引擎" class="headerlink" title="2.2.1 确定一个引擎"></a><strong>2.2.1 确定一个引擎</strong></h4><p>建立数仓，必定是基于某个引擎载体来实现的，不同的引擎载体，对应的特点也会有一些区别，所以建立数仓，根据自己的需求选取对应的数仓引擎</p>
+<p><strong>现在来讲一般确定使用那些存储后计算引擎，基本也就确定了数仓的架构设计，这里后面再说明。</strong></p>
+<p>根据实时性，可以分为两个方向</p>
+<ol>
+<li>离线数仓</li>
+<li>实时数仓</li>
+</ol>
+<p>离线数仓组成组件</p>
+<ul>
+<li>hive on hivesql</li>
+<li>hive on sparksql</li>
+<li>hbase</li>
+<li>mapreduce</li>
+<li>azkaban</li>
+<li>oozie</li>
+<li>hdfs</li>
+<li>….</li>
+</ul>
+<p>实时数仓</p>
+<ul>
+<li>spark-streaming</li>
+<li>flink-streaming</li>
+<li>spark-core </li>
+<li>hbase</li>
+<li>elasticsearch</li>
+<li>redis</li>
+<li>clickhouse</li>
+<li>….</li>
+</ul>
+<h4 id="2-2-1-确定一个主题"><a href="#2-2-1-确定一个主题" class="headerlink" title="2.2.1 确定一个主题"></a><strong>2.2.1 确定一个主题</strong></h4><p>确定主题的思路一般自下向上自顶向下。</p>
+<p><strong>自顶向下是先有需求</strong></p>
+<p>比如产品经理结合现在的市场，或产品定位，需要一个金融方向在数据来支撑决策，或与产品功能相结合。也就是说不管公司数据如何的ETL，而产出的数据仓库的主题已经确定，后面的工作主要是想尽办法从数据中挖掘出相关数据集，支撑生成数据仓库。 一般来讲拥有大量、丰富数据的企业来实现，对量级有较高要求。</p>
+<p><strong>自下向上是先挖掘数据</strong></p>
+<p>自下向上则是，先从已有的数据集本身出发，通过对已有业务系统数据的分析，或聚类归纳等方向，先确定出现有数据集主要有哪些类型的数据，可以怎么结合从而输出哪些维度，从而构建出哪种类型的数仓。</p>
+<h4 id="2-2-3-确定建表模型"><a href="#2-2-3-确定建表模型" class="headerlink" title="2.2.3 确定建表模型"></a><strong>2.2.3 确定建表模型</strong></h4><p>数据仓库的数据建模大致分为四个阶段</p>
+<ol>
+<li>业务建模</li>
+<li>领域概念（主题域）建模</li>
+<li>逻辑建模</li>
+<li>物理建模</li>
+</ol>
+<p>数据仓库建模的方法</p>
+<ol>
+<li>实体建模法</li>
+<li>范式建模法</li>
+<li>纬度建模法</li>
+</ol>
+<p>这里重点介绍下纬度建模</p>
+<p>纬度建模中的一些概念说明</p>
+<h5 id="事实表"><a href="#事实表" class="headerlink" title="事实表"></a>事实表</h5><p>事实表是维度模型的基本表，存放有大量的业务性能度量值。</p>
+<p>事实表的设计中要解决几个重要问题：</p>
+<ol>
+<li>确定粒度（记录事实的细节级）</li>
+<li>相加性：事实的可加性是至关重要的，因为数据仓库应用几乎从不仅仅只检索事实表的单行数据。</li>
+<li>键选择</li>
+<li>一致性事实</li>
+</ol>
+<p>事实表的分类：</p>
+<ol>
+<li>事务事实表</li>
+<li>周期快照事实表、 </li>
+<li>积累快照事实表。</li>
+</ol>
+<h5 id="维度表"><a href="#维度表" class="headerlink" title="维度表"></a><strong>维度表</strong></h5><p>维度属性是<strong>查询约束条件</strong>、成组与<strong>报表标签生成</strong>的基本来源。</p>
+<p>度表包含有业务的文字描述。在一个设计合理的维度模型中，维度表有许多列或者属性，这些属性给出对维度表的行所进行的描述。</p>
+<h5 id="事实与维度的融合"><a href="#事实与维度的融合" class="headerlink" title="事实与维度的融合"></a><strong>事实与维度的融合</strong></h5><p>由数字型度量值组成的事实表连接到一组填满描述属性的维度表上。这个星型特征结构通常被叫做星型连接方案。</p>
+<p><strong>纬度建模过程</strong></p>
+<p>维度建模具有一定顺序，分别是：①<strong>业务处理</strong>②<strong>粒度</strong>③<strong>维度</strong>④<strong>事实</strong>。</p>
+<p>维度建模的三种模式</p>
+<h5 id="星形模式"><a href="#星形模式" class="headerlink" title="星形模式"></a><strong>星形模式</strong></h5><p>星形模式(Star Schema)是最常用的维度建模方式</p>
+<p>具有以下的特点</p>
+<ol>
+<li>维表只和事实表关联，维表之间没有关联；</li>
+<li>每个维表的主码为单列，且该主码放置在事实表中，作为两边连接的外码；</li>
+<li>以事实表为核心，维表围绕核心呈星形分布；</li>
+</ol>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112804525.png" alt="image-20210716112804525"></p>
+<h5 id="雪花模式"><a href="#雪花模式" class="headerlink" title="雪花模式"></a><strong>雪花模式</strong></h5><p>对星形模式的扩展，每个维表可继续向外连接多个子维表。</p>
+<p>下图为使用雪花模式进行维度建模的关系结构：</p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112812742.png" alt="image-20210716112812742"></p>
+<h5 id="星座模式"><a href="#星座模式" class="headerlink" title="星座模式"></a><strong>星座模式</strong></h5><p>星座模式(Fact Constellations Schema)也是星型模式的扩展。基于这种思想就有了星座模式：</p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112726249.png" alt="image-20210716112726249"></p>
+<p>星形模式&#x2F;雪花模式&#x2F;星座模式的关系</p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112733244.png" alt="image-20210716112733244"></p>
+<h3 id="2-3-构建数仓"><a href="#2-3-构建数仓" class="headerlink" title="2.3 构建数仓"></a>2.3 构建数仓</h3><h4 id="2-3-1-按层级划分存储组件"><a href="#2-3-1-按层级划分存储组件" class="headerlink" title="2.3.1 按层级划分存储组件"></a>2.3.1 按层级划分存储组件</h4><ol>
+<li>数据源：通过消息组件kafka来实时传输消息</li>
+<li>数据明细层: 根据量级而动，涉及和组件有kafka、druid、hbase等</li>
+<li>应用层：clickhouse、kylin、mysql、elasticsearch等</li>
+</ol>
+<h4 id="2-3-2-计算引擎组件"><a href="#2-3-2-计算引擎组件" class="headerlink" title="2.3.2 计算引擎组件"></a>2.3.2 计算引擎组件</h4><p>按不同架构区分：</p>
+<ol>
+<li>离线大数据架构 hdfs、hive on mr 、hive on spark</li>
+<li>lambda架构： 在离线大数据架构的基础上增加新的实时链路，需要维护离线与实时两套代码 spark(主要指spark-streaming)</li>
+<li>kappa架构： 批流合一，离线处理和实时处理整合成一套代码，运维成本小，目前发展旺盛，大有直接成为数仓架构的趋势 采用的是flink</li>
+</ol>
+<h4 id="2-3-3-架构设计示意图"><a href="#2-3-3-架构设计示意图" class="headerlink" title="2.3.3 架构设计示意图"></a>2.3.3 <strong>架构设计示意图</strong></h4><p>1、离线式数仓</p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112742727.png" alt="image-20210716112742727"></p>
+<ol start="2">
+<li><p>实时数仓架构设计</p>
+</li>
+<li><p>lambda</p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112748310.png" alt="image-20210716112748310"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716142722673.png" alt="image-20210716142722673"></p>
+</li>
+<li><p>kappa</p>
+</li>
+</ol>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112753527.png" alt="image-20210716112753527"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716142744656.png" alt="image-20210716142744656"></p>
+<h2 id="3、数仓的使用场景"><a href="#3、数仓的使用场景" class="headerlink" title="3、数仓的使用场景"></a>3、数仓的使用场景</h2><ol>
+<li>ETL</li>
+<li>OLAP</li>
+<li>BI</li>
+<li>DMP</li>
+<li>建模</li>
+</ol>
+<p><img src="http://img.wqkenqing.ren/typora_img/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF3.jpg" alt="数据仓库服务的应用场景3"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF4.jpg" alt="数据仓库服务的应用场景4"></p>
+<h2 id="4、我们数仓的建设思路"><a href="#4、我们数仓的建设思路" class="headerlink" title="4、我们数仓的建设思路"></a>4、我们数仓的建设思路</h2><ol>
+<li><p>自顶向下的方式</p>
+</li>
+<li><p>偏向于技术性</p>
+</li>
+<li><p>实时数仓</p>
+</li>
+<li><p>要有几个比较突出的应用场景，如可视化，OLAP</p>
+<p><strong>细节后续讨论</strong></p>
+</li>
+</ol>
+]]></content>
+      <tags>
+        <tag>数据仓库</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>spark操作.md</title>
+    <url>/2019/05/17/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/spark%E6%93%8D%E4%BD%9C/</url>
+    <content><![CDATA[<p>spark编程积累</p>
+<span id="more"></span>
+
+<h1 id="spark编程"><a href="#spark编程" class="headerlink" title="spark编程"></a>spark编程</h1><h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><h3 id="hdfs"><a href="#hdfs" class="headerlink" title="hdfs"></a>hdfs</h3><p>操作hdfs比较常规,直接通过<br>context.textfile(path) &#x2F;&#x2F;即可实现</p>
+<h3 id="hbase"><a href="#hbase" class="headerlink" title="hbase"></a>hbase</h3><p>hbase 则要通过newAPIHadoopRDD来实现</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="type">Configuration</span> <span class="variable">hconf</span> <span class="operator">=</span> HbaseOperate.getConf();</span><br><span class="line">    <span class="type">Scan</span> <span class="variable">scan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scan</span>();</span><br><span class="line">    hconf.set(TableInputFormat.INPUT_TABLE, <span class="string">&quot;company&quot;</span>);</span><br><span class="line">    hconf.set(TableInputFormat.SCAN, convertScanToString(scan));</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>参考以上这段代码</p>
+<p>另</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> String <span class="title function_">convertScanToString</span><span class="params">(Scan scan)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">     ClientProtos.<span class="type">Scan</span> <span class="variable">proto</span> <span class="operator">=</span> ProtobufUtil.toScan(scan);</span><br><span class="line">     <span class="keyword">return</span> Base64.encodeBytes(proto.toByteArray());</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>以上是为实现scan指令传输字符的封装.</p>
+<p>两者底层都是通过persist实现</p>
+]]></content>
   </entry>
   <entry>
     <title>大数据分享</title>
@@ -2049,6 +2241,28 @@ System.out.println(ok==ok1)
       </tags>
   </entry>
   <entry>
+    <title>宽窄依赖</title>
+    <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/%E5%AE%BD%E7%AA%84%E4%BE%9D%E8%B5%96/</url>
+    <content><![CDATA[<p>spark依赖说明</p>
+<span id="more"></span>
+
+<h2 id="种类"><a href="#种类" class="headerlink" title="种类"></a>种类</h2><p>spark的依赖关系大致有两类</p>
+<ul>
+<li>narrow dependency</li>
+<li>wide dependency</li>
+</ul>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><h3 id="narrow-dependency"><a href="#narrow-dependency" class="headerlink" title="narrow dependency"></a>narrow dependency</h3><p>父Partition &#x3D;&#x3D;&#x3D;&gt; 子partition 多对一或一对一   flatMap ,mapToPair ,map ,filter等算子<br>父partition &#x3D;&#x3D;&#x3D;&gt; 子partition 一对多          reduce ,group by 等.</p>
+<h3 id="stage"><a href="#stage" class="headerlink" title="stage"></a>stage</h3><p>当一个dag串联遇到宽依赖时形成stage.一个stage对应一个task.这个task的并行度由最后一个依赖决定.应该就是说由wide dependency 的具体并行度决度.如<br>reduce ,partition&#x3D;3.就3的并行度.这里的参数可以设置.</p>
+<p>wide dependency 必定对应的有shuffle.但shuffle不一定是wide dependency  如sort orderby</p>
+<p>join 即可能发生shuffle也可能不,具体看情况.</p>
+<h3 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h3><p>一个stage划分好后.一条数据的具体运算逻辑是会一直走完所有计算逻辑后才会落地.这是与mapreduce的区别<br>mapreduce是计算逻辑走完落地,再启动,计算又落地.</p>
+<p>所以说spark的效率比mapreduce高也是有这个原因.dag串联后,运算优先.</p>
+]]></content>
+      <tags>
+        <tag>spark dependency</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>sparkstreaming 窗口操作</title>
     <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/stream2/</url>
     <content><![CDATA[<p>sparkstreaming时间窗口设置</p>
@@ -2097,60 +2311,6 @@ System.out.println(ok==ok1)
 ]]></content>
       <tags>
         <tag>sparkstreaming</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>宽窄依赖</title>
-    <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/%E5%AE%BD%E7%AA%84%E4%BE%9D%E8%B5%96/</url>
-    <content><![CDATA[<p>spark依赖说明</p>
-<span id="more"></span>
-
-<h2 id="种类"><a href="#种类" class="headerlink" title="种类"></a>种类</h2><p>spark的依赖关系大致有两类</p>
-<ul>
-<li>narrow dependency</li>
-<li>wide dependency</li>
-</ul>
-<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><h3 id="narrow-dependency"><a href="#narrow-dependency" class="headerlink" title="narrow dependency"></a>narrow dependency</h3><p>父Partition &#x3D;&#x3D;&#x3D;&gt; 子partition 多对一或一对一   flatMap ,mapToPair ,map ,filter等算子<br>父partition &#x3D;&#x3D;&#x3D;&gt; 子partition 一对多          reduce ,group by 等.</p>
-<h3 id="stage"><a href="#stage" class="headerlink" title="stage"></a>stage</h3><p>当一个dag串联遇到宽依赖时形成stage.一个stage对应一个task.这个task的并行度由最后一个依赖决定.应该就是说由wide dependency 的具体并行度决度.如<br>reduce ,partition&#x3D;3.就3的并行度.这里的参数可以设置.</p>
-<p>wide dependency 必定对应的有shuffle.但shuffle不一定是wide dependency  如sort orderby</p>
-<p>join 即可能发生shuffle也可能不,具体看情况.</p>
-<h3 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h3><p>一个stage划分好后.一条数据的具体运算逻辑是会一直走完所有计算逻辑后才会落地.这是与mapreduce的区别<br>mapreduce是计算逻辑走完落地,再启动,计算又落地.</p>
-<p>所以说spark的效率比mapreduce高也是有这个原因.dag串联后,运算优先.</p>
-]]></content>
-      <tags>
-        <tag>spark dependency</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>spark操作.md</title>
-    <url>/2019/05/17/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/spark%E6%93%8D%E4%BD%9C/</url>
-    <content><![CDATA[<p>spark编程积累</p>
-<span id="more"></span>
-
-<h1 id="spark编程"><a href="#spark编程" class="headerlink" title="spark编程"></a>spark编程</h1><h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><h3 id="hdfs"><a href="#hdfs" class="headerlink" title="hdfs"></a>hdfs</h3><p>操作hdfs比较常规,直接通过<br>context.textfile(path) &#x2F;&#x2F;即可实现</p>
-<h3 id="hbase"><a href="#hbase" class="headerlink" title="hbase"></a>hbase</h3><p>hbase 则要通过newAPIHadoopRDD来实现</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="type">Configuration</span> <span class="variable">hconf</span> <span class="operator">=</span> HbaseOperate.getConf();</span><br><span class="line">    <span class="type">Scan</span> <span class="variable">scan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scan</span>();</span><br><span class="line">    hconf.set(TableInputFormat.INPUT_TABLE, <span class="string">&quot;company&quot;</span>);</span><br><span class="line">    hconf.set(TableInputFormat.SCAN, convertScanToString(scan));</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>参考以上这段代码</p>
-<p>另</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> String <span class="title function_">convertScanToString</span><span class="params">(Scan scan)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">     ClientProtos.<span class="type">Scan</span> <span class="variable">proto</span> <span class="operator">=</span> ProtobufUtil.toScan(scan);</span><br><span class="line">     <span class="keyword">return</span> Base64.encodeBytes(proto.toByteArray());</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<p>以上是为实现scan指令传输字符的封装.</p>
-<p>两者底层都是通过persist实现</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>pythonQA</title>
-    <url>/2020/05/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/pythonQA/</url>
-    <content><![CDATA[<span id="more"></span>
-
-<h1 id="pythonQA"><a href="#pythonQA" class="headerlink" title="pythonQA"></a>pythonQA</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">关于python的一些QA</span><br></pre></td></tr></table></figure>
-
-<h2 id="Q-python中自增为什么不能用"><a href="#Q-python中自增为什么不能用" class="headerlink" title="Q:python中自增为什么不能用++"></a>Q:python中自增为什么不能用++</h2><p>A:因为python中,不同的变量名,但若值为一样的话,他的变量id是一样的.即两个变量名指向地址是一样的,若通过++,来实现自增,那么意味着,其它变量名所指引的地址也应该发生改变.这与我们实际想用的情况不一定一致.所以python中的++自增是通过,a&#x3D;a+a的形式来实现的</p>
-]]></content>
-      <tags>
-        <tag>python</tag>
-        <tag>qa</tag>
       </tags>
   </entry>
   <entry>
@@ -2256,6 +2416,20 @@ System.out.println(ok==ok1)
 ]]></content>
       <tags>
         <tag>python learn</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pythonQA</title>
+    <url>/2020/05/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/pythonQA/</url>
+    <content><![CDATA[<span id="more"></span>
+
+<h1 id="pythonQA"><a href="#pythonQA" class="headerlink" title="pythonQA"></a>pythonQA</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">关于python的一些QA</span><br></pre></td></tr></table></figure>
+
+<h2 id="Q-python中自增为什么不能用"><a href="#Q-python中自增为什么不能用" class="headerlink" title="Q:python中自增为什么不能用++"></a>Q:python中自增为什么不能用++</h2><p>A:因为python中,不同的变量名,但若值为一样的话,他的变量id是一样的.即两个变量名指向地址是一样的,若通过++,来实现自增,那么意味着,其它变量名所指引的地址也应该发生改变.这与我们实际想用的情况不一定一致.所以python中的++自增是通过,a&#x3D;a+a的形式来实现的</p>
+]]></content>
+      <tags>
+        <tag>python</tag>
+        <tag>qa</tag>
       </tags>
   </entry>
   <entry>
@@ -2472,181 +2646,6 @@ System.out.println(ok==ok1)
       </tags>
   </entry>
   <entry>
-    <title>数仓分享</title>
-    <url>/2020/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E5%88%86%E4%BA%AB/%E6%95%B0%E4%BB%93%E5%88%86%E4%BA%AB/</url>
-    <content><![CDATA[ <span id="more"></span>
-
-
-
-<h1 id="数据仓库分享"><a href="#数据仓库分享" class="headerlink" title="数据仓库分享"></a>数据仓库分享</h1><h2 id="1-数仓基础理论"><a href="#1-数仓基础理论" class="headerlink" title="1. 数仓基础理论"></a>1. 数仓基础理论</h2><h3 id="Q1-什么叫数据仓库？"><a href="#Q1-什么叫数据仓库？" class="headerlink" title="Q1: 什么叫数据仓库？"></a>Q1: 什么叫数据仓库？</h3><p>这本书里对数据仓库的定义是为了构建新的分析处理环境而出现的一种<strong>数据存储和组织技术</strong></p>
-<p><img src="http://img.wqkenqing.ren/typora_img/20210716151756.png" alt="img"></p>
-<h3 id="Q2-数仓与数据库的区别是什么？"><a href="#Q2-数仓与数据库的区别是什么？" class="headerlink" title="Q2: 数仓与数据库的区别是什么？"></a>Q2: 数仓与数据库的区别是什么？</h3><ol>
-<li>业务场景不同，数据库主要用于支撑基本的、日常的事务处理。如银行交易流水，电商交易订单等，承担存储功能，支持修改，而数据仓库主要是用于OLAP等复杂的分析操作，侧重决策支持，并辅以可视化技术，将查询结果直观的，易化展示</li>
-<li>前者数据的写入，修改等操作随时发生，而后者一般是一次写入，写入后很少修改。</li>
-</ol>
-<h3 id="Q3-数仓有什么特点？"><a href="#Q3-数仓有什么特点？" class="headerlink" title="Q3:数仓有什么特点？"></a>Q3:数仓有什么特点？</h3><ol>
-<li>面向主题</li>
-<li>集成的</li>
-<li>相对稳定的</li>
-<li>反映历史变化</li>
-</ol>
-<h3 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h3><p>数据仓库中的数据是按照一定的主题域进行组织。主题是一个抽象的概念，是指用户使用数据仓库进行决策时所关心的重点方面，一个主题通常与多个操作型信息系统相关。</p>
-<p>数据仓库中的数据是在对原有分散的数据库数据抽取、清理的基础上经过系统加工、汇总和整理得到的，必须消除源数据中的不一致性，以保证数据仓库内的信息是关于整个企业的一致的全局信息。</p>
-<p>数据仓库的数据主要供企业决策分析之用，所涉及的数据操作主要是数据查询，一旦某个数据进入数据仓库以后，一般情况下将被长期保留，也就是数据仓库中一般有大量的查询操作，但修改和删除操作很少，通常只需要定期的加载、刷新。</p>
-<p>操作型数据库主要关心当前某一个时间段内的数据，而数据仓库中的数据通常包含历史信息，系统记录了企业从过去某一时点(如开始应用数据仓库的时点)到目前的各个阶段的信息，通过这些信息，可以对企业的发展历程和未来趋势做出定量分析和预测。</p>
-<h2 id="2、如何构建一个数仓"><a href="#2、如何构建一个数仓" class="headerlink" title="2、如何构建一个数仓"></a>2、如何构建一个数仓</h2><h3 id="2-1-先介绍下数仓的分层"><a href="#2-1-先介绍下数仓的分层" class="headerlink" title="2.1 先介绍下数仓的分层"></a>2.1 <strong>先介绍下数仓的分层</strong></h3><p>数据仓库一般采用三层分层法</p>
-<ol>
-<li>ODS层（数据操作层）直接接入的原始数据，简单清洗，从业务库直接同步而来</li>
-<li>DW层（数据仓库层）DW内部又可以分层，但DW层主要就是ODS ETL后的数据</li>
-<li>APP层 (数据应用层）应用DW层的数据</li>
-</ol>
-<p>此外还有一个比较重的层DIM （维表层）</p>
-<ol>
-<li>高基数维度数据：一般是用户资料表、商品资料表类似的资料表。数据量可能是千万级或者上亿级别。</li>
-<li>低基数维度数据：一般是配置表，比如枚举值对应的中文含义，或者日期维表。数据量可能是个位数或者几千几万。</li>
-</ol>
-<p>DW层的分层</p>
-<ol>
-<li>DWS层 （数据服务层）</li>
-<li>DWM层 （中间数据层）</li>
-<li>DWD层 （数据明细层）</li>
-</ol>
-<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112822786.png" alt="image-20210716112822786"></p>
-<h3 id="2-2-数据仓库的构建"><a href="#2-2-数据仓库的构建" class="headerlink" title="2.2 数据仓库的构建"></a>2.2 <strong>数据仓库的构建</strong></h3><h4 id="2-2-1-确定一个引擎"><a href="#2-2-1-确定一个引擎" class="headerlink" title="2.2.1 确定一个引擎"></a><strong>2.2.1 确定一个引擎</strong></h4><p>建立数仓，必定是基于某个引擎载体来实现的，不同的引擎载体，对应的特点也会有一些区别，所以建立数仓，根据自己的需求选取对应的数仓引擎</p>
-<p><strong>现在来讲一般确定使用那些存储后计算引擎，基本也就确定了数仓的架构设计，这里后面再说明。</strong></p>
-<p>根据实时性，可以分为两个方向</p>
-<ol>
-<li>离线数仓</li>
-<li>实时数仓</li>
-</ol>
-<p>离线数仓组成组件</p>
-<ul>
-<li>hive on hivesql</li>
-<li>hive on sparksql</li>
-<li>hbase</li>
-<li>mapreduce</li>
-<li>azkaban</li>
-<li>oozie</li>
-<li>hdfs</li>
-<li>….</li>
-</ul>
-<p>实时数仓</p>
-<ul>
-<li>spark-streaming</li>
-<li>flink-streaming</li>
-<li>spark-core </li>
-<li>hbase</li>
-<li>elasticsearch</li>
-<li>redis</li>
-<li>clickhouse</li>
-<li>….</li>
-</ul>
-<h4 id="2-2-1-确定一个主题"><a href="#2-2-1-确定一个主题" class="headerlink" title="2.2.1 确定一个主题"></a><strong>2.2.1 确定一个主题</strong></h4><p>确定主题的思路一般自下向上自顶向下。</p>
-<p><strong>自顶向下是先有需求</strong></p>
-<p>比如产品经理结合现在的市场，或产品定位，需要一个金融方向在数据来支撑决策，或与产品功能相结合。也就是说不管公司数据如何的ETL，而产出的数据仓库的主题已经确定，后面的工作主要是想尽办法从数据中挖掘出相关数据集，支撑生成数据仓库。 一般来讲拥有大量、丰富数据的企业来实现，对量级有较高要求。</p>
-<p><strong>自下向上是先挖掘数据</strong></p>
-<p>自下向上则是，先从已有的数据集本身出发，通过对已有业务系统数据的分析，或聚类归纳等方向，先确定出现有数据集主要有哪些类型的数据，可以怎么结合从而输出哪些维度，从而构建出哪种类型的数仓。</p>
-<h4 id="2-2-3-确定建表模型"><a href="#2-2-3-确定建表模型" class="headerlink" title="2.2.3 确定建表模型"></a><strong>2.2.3 确定建表模型</strong></h4><p>数据仓库的数据建模大致分为四个阶段</p>
-<ol>
-<li>业务建模</li>
-<li>领域概念（主题域）建模</li>
-<li>逻辑建模</li>
-<li>物理建模</li>
-</ol>
-<p>数据仓库建模的方法</p>
-<ol>
-<li>实体建模法</li>
-<li>范式建模法</li>
-<li>纬度建模法</li>
-</ol>
-<p>这里重点介绍下纬度建模</p>
-<p>纬度建模中的一些概念说明</p>
-<h5 id="事实表"><a href="#事实表" class="headerlink" title="事实表"></a>事实表</h5><p>事实表是维度模型的基本表，存放有大量的业务性能度量值。</p>
-<p>事实表的设计中要解决几个重要问题：</p>
-<ol>
-<li>确定粒度（记录事实的细节级）</li>
-<li>相加性：事实的可加性是至关重要的，因为数据仓库应用几乎从不仅仅只检索事实表的单行数据。</li>
-<li>键选择</li>
-<li>一致性事实</li>
-</ol>
-<p>事实表的分类：</p>
-<ol>
-<li>事务事实表</li>
-<li>周期快照事实表、 </li>
-<li>积累快照事实表。</li>
-</ol>
-<h5 id="维度表"><a href="#维度表" class="headerlink" title="维度表"></a><strong>维度表</strong></h5><p>维度属性是<strong>查询约束条件</strong>、成组与<strong>报表标签生成</strong>的基本来源。</p>
-<p>度表包含有业务的文字描述。在一个设计合理的维度模型中，维度表有许多列或者属性，这些属性给出对维度表的行所进行的描述。</p>
-<h5 id="事实与维度的融合"><a href="#事实与维度的融合" class="headerlink" title="事实与维度的融合"></a><strong>事实与维度的融合</strong></h5><p>由数字型度量值组成的事实表连接到一组填满描述属性的维度表上。这个星型特征结构通常被叫做星型连接方案。</p>
-<p><strong>纬度建模过程</strong></p>
-<p>维度建模具有一定顺序，分别是：①<strong>业务处理</strong>②<strong>粒度</strong>③<strong>维度</strong>④<strong>事实</strong>。</p>
-<p>维度建模的三种模式</p>
-<h5 id="星形模式"><a href="#星形模式" class="headerlink" title="星形模式"></a><strong>星形模式</strong></h5><p>星形模式(Star Schema)是最常用的维度建模方式</p>
-<p>具有以下的特点</p>
-<ol>
-<li>维表只和事实表关联，维表之间没有关联；</li>
-<li>每个维表的主码为单列，且该主码放置在事实表中，作为两边连接的外码；</li>
-<li>以事实表为核心，维表围绕核心呈星形分布；</li>
-</ol>
-<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112804525.png" alt="image-20210716112804525"></p>
-<h5 id="雪花模式"><a href="#雪花模式" class="headerlink" title="雪花模式"></a><strong>雪花模式</strong></h5><p>对星形模式的扩展，每个维表可继续向外连接多个子维表。</p>
-<p>下图为使用雪花模式进行维度建模的关系结构：</p>
-<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112812742.png" alt="image-20210716112812742"></p>
-<h5 id="星座模式"><a href="#星座模式" class="headerlink" title="星座模式"></a><strong>星座模式</strong></h5><p>星座模式(Fact Constellations Schema)也是星型模式的扩展。基于这种思想就有了星座模式：</p>
-<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112726249.png" alt="image-20210716112726249"></p>
-<p>星形模式&#x2F;雪花模式&#x2F;星座模式的关系</p>
-<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112733244.png" alt="image-20210716112733244"></p>
-<h3 id="2-3-构建数仓"><a href="#2-3-构建数仓" class="headerlink" title="2.3 构建数仓"></a>2.3 构建数仓</h3><h4 id="2-3-1-按层级划分存储组件"><a href="#2-3-1-按层级划分存储组件" class="headerlink" title="2.3.1 按层级划分存储组件"></a>2.3.1 按层级划分存储组件</h4><ol>
-<li>数据源：通过消息组件kafka来实时传输消息</li>
-<li>数据明细层: 根据量级而动，涉及和组件有kafka、druid、hbase等</li>
-<li>应用层：clickhouse、kylin、mysql、elasticsearch等</li>
-</ol>
-<h4 id="2-3-2-计算引擎组件"><a href="#2-3-2-计算引擎组件" class="headerlink" title="2.3.2 计算引擎组件"></a>2.3.2 计算引擎组件</h4><p>按不同架构区分：</p>
-<ol>
-<li>离线大数据架构 hdfs、hive on mr 、hive on spark</li>
-<li>lambda架构： 在离线大数据架构的基础上增加新的实时链路，需要维护离线与实时两套代码 spark(主要指spark-streaming)</li>
-<li>kappa架构： 批流合一，离线处理和实时处理整合成一套代码，运维成本小，目前发展旺盛，大有直接成为数仓架构的趋势 采用的是flink</li>
-</ol>
-<h4 id="2-3-3-架构设计示意图"><a href="#2-3-3-架构设计示意图" class="headerlink" title="2.3.3 架构设计示意图"></a>2.3.3 <strong>架构设计示意图</strong></h4><p>1、离线式数仓</p>
-<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112742727.png" alt="image-20210716112742727"></p>
-<ol start="2">
-<li><p>实时数仓架构设计</p>
-</li>
-<li><p>lambda</p>
-<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112748310.png" alt="image-20210716112748310"></p>
-<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716142722673.png" alt="image-20210716142722673"></p>
-</li>
-<li><p>kappa</p>
-</li>
-</ol>
-<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112753527.png" alt="image-20210716112753527"></p>
-<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716142744656.png" alt="image-20210716142744656"></p>
-<h2 id="3、数仓的使用场景"><a href="#3、数仓的使用场景" class="headerlink" title="3、数仓的使用场景"></a>3、数仓的使用场景</h2><ol>
-<li>ETL</li>
-<li>OLAP</li>
-<li>BI</li>
-<li>DMP</li>
-<li>建模</li>
-</ol>
-<p><img src="http://img.wqkenqing.ren/typora_img/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF3.jpg" alt="数据仓库服务的应用场景3"></p>
-<p><img src="http://img.wqkenqing.ren/typora_img/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF4.jpg" alt="数据仓库服务的应用场景4"></p>
-<h2 id="4、我们数仓的建设思路"><a href="#4、我们数仓的建设思路" class="headerlink" title="4、我们数仓的建设思路"></a>4、我们数仓的建设思路</h2><ol>
-<li><p>自顶向下的方式</p>
-</li>
-<li><p>偏向于技术性</p>
-</li>
-<li><p>实时数仓</p>
-</li>
-<li><p>要有几个比较突出的应用场景，如可视化，OLAP</p>
-<p><strong>细节后续讨论</strong></p>
-</li>
-</ol>
-]]></content>
-      <tags>
-        <tag>数据仓库</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>hbaes操作</title>
     <url>/2019/05/17/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/hadoop/hbase/hbase%E6%93%8D%E4%BD%9C/</url>
     <content><![CDATA[<p>对hbase常规api进行封装</p>
@@ -2658,28 +2657,29 @@ System.out.println(ok==ok1)
       </tags>
   </entry>
   <entry>
-    <title>JVM问题</title>
-    <url>/2019/07/16/oldblog/JVM%E9%97%AE%E9%A2%98/</url>
+    <title>kafka小结</title>
+    <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/oldblog/blog17/</url>
     <content><![CDATA[<p>此处简介</p>
 <span id="more"></span>
 
-<p>JVM问题<br>1、堆内存溢出<br>2、持久代内存溢出<br>3、系统频繁FGC</p>
-<p>框架使用不当<br>4、错误使用框架提供API<br>5、日志框架使用不当<br>OS内存溢出<br>6、某系统物理内存溢出<br>数据库问题<br>7、慢SQL问题</p>
-<p>案例1、堆内存溢出<br>JVM基础知识<br>1、Jvm内存分为三个大区，young区，old区和perm区；其中young区又包含三个区：Edgn区、S0、S1区<br>2、young区和old区属于heap区，占据堆内存；perm区称为持久代，不占据堆内存。<br>堆内存溢出<br>性能问题发现过程</p>
-<p>查看服务器上报错日志，发现有如下报错信息［java.lang.OutOfMemoryError: Java heap space］；根据报错信息确定是jvm 堆内存空间不够导致，于是使用jvm命令（下图）查看，发现此时old区内存空间已经被占满了，同时使用jvisualvm监控工具也<br>发现old区空间被占满（右图），整个heap区空间已经无法再容纳新对象进入。<br>建议<br>考虑大量数据一次性写入内存场景</p>
-<p>持久代内存溢出<br>现象</p>
-<p>压测某系统接口，压测前1分钟左右tps 400多，之后<br>Tps直降为零，后台报错日志：java.lang.OutOfMemoryError:PermGen space，通过jvm监控工具查看持久代（perm区）空间被占满，Old区空闲；</p>
-<p>问题定位过程<br>通过注释代码块定位问题，考虑到perm区溢出大部分跟类对象大量创建有关，故锁定问题在序列化框架使用可能有问题；<br>对于比较棘手难解决的perm溢出问题，作者构建了一个perm区溢出的场景，可以采用如下定位方案<br>1、添加jvm dump配置<br>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath&#x3D;&#x2F;data&#x2F;dump.bin<br>2、安装eclipse mat分析工具<br>3、将dump文件导入eclipse，点击［Leak Suspects］，找到跟公司有关的代码进行分析<br>此处不过多讲解，大家可以去网上查阅资料学习<br>解决办法<br>跟开发沟通后选择去掉msgpack0.6版本框架，采用java原成序列化框架，修改后系统tps稳定在400多，gc情况正常<br>修改前后gc情况对比<br>修复前<br>类似问题如何避免</p>
-<p>1、去掉项目无用jar包<br>2、避免大量使用类对象、大量使用反射<br>案例3、频繁FGC<br>（1）系统某接口频繁FGC<br>问题排查：<br>先查JVM内存信息找可疑对象<br>从内存对象实例信息中发现跟mysql连接有关，然后检测mysql配置信息<br> <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"></bean></p>
-<p>发现系统采用的是 spring框架的数据源，没有用连接池；</p>
-<p>思考<br>使用连接池有什么好处？<br>连接复用、减少连接重复建立和销毁造成的大量资源消耗</p>
-<p>然后换做hikaricp连接池做对比测试<br> &lt;bean id&#x3D;”dataSource” class&#x3D;”com.zaxxer.hikari.HikariDataSource”<br>压测半小时未出现fgc，问题得到解决<br>类似问题如何避免</p>
-<p>1、研发规范统一DB连接池，避免研发误用<br>2、减少大对象、临时对象使用</p>
-<p>案例4、错误使用框架提供API<br>现象<br>某系统本身业务逻辑处理能力很快（研发本机自测tps可以到达2w多），但是接入到framework框架后，TPS最高只能到达300笔&#x2F;S左右，而且系统负载很低</p>
-<p>问题排查<br>根据这种现象说明系统可能是堵在了某块方法上，根据这种情况一般采用线程dump的方式来查看系统具体哪些线程出现异常情况，通过线程dump 发现 ［TIMED_WAITING］状态的业务线程占比很高<br>根据线程dump信息，找到公司包名开头的信息，然后从下往上查看<br>线程dump信息，从信息中我们可以看到</p>
-<p>framework.servlet.fServlet.doPost：框架api封装了servlet dopost方法做了某些操作<br>framework.servlet.fServlet.execute：框架api执行servelt<br>framework.process.fProcessor.process：框架api进行自身逻辑处理<br>framework.filter.impl.AuthFilter.before：框架使用过滤器进行用户权限过滤</p>
-<p> 。。。。。。然后就是进行http请求操作<br>由此我们断定，就是在框架进行权限校验这块堵住了。之后跟开发沟通这块的<br>问题即可</p>
-<p>分析思路<br>压测端 ：net  服务器  jvm<br>服务端：net  服务器 nginx tomcat jvm（应用程序）算法 db（mysql redis）</p>
+<h2 id="kafka小结"><a href="#kafka小结" class="headerlink" title="kafka小结"></a>kafka小结</h2><p>消息系统术语<br>kafka特性</p>
+<ul>
+<li>分布式的</li>
+<li>可分区的</li>
+<li>可复制的</li>
+</ul>
+<p>在普通的消息系统的功上，还有自己独特的设计</p>
+<p>Kafka将消息以topic为单位进行归纳。<br>将向Kafka topic发布消息的程序成为producers.<br>将预订topics并消费消息的程序成为consumer.<br>Kafka以集群的方式运行，可以由一个或多个服务组成，每个服务叫做一个broker.<br>producers通过网络将消息发送到Kafka集群，集群向消费者提供消息，</p>
+<p><img src="//img.wqkenqing.ren/file/2017/7/827fdc820cae4619859042761c3b40a9-image.png" alt="827fdc820cae4619859042761c3b40a9-image.png"></p>
+<p>客户端和服务端通过TCP协议通信。Kafka提供了Java客户端，并且对多种语言都提供了支持。</p>
+<hr>
+<p>Topics 和Logs</p>
+<p>先来看一下Kafka提供的一个抽象概念:topic.<br>一个topic是对一组消息的归纳。对每个topic，Kafka 对它的日志进行了分区<br><img src="//img.wqkenqing.ren/file/2017/7/bf0d2ddee1d14cb29fd54483a622d67c-image.png" alt="bf0d2ddee1d14cb29fd54483a622d67c-image.png"></p>
+<p>一个topic是对一组消息的归纳。<br>对每个topic，Kafka 对它的日志进行了分区，</p>
+<p>每个分区都由一系列有序的、不可变的消息组成，这些消息被连续的追加到分区中。分区中的每个消息都有一个连续的序列号叫做offset,用来在分区中唯一的标识这个消息。</p>
+<hr>
+<h3 id="kafka常用指令收集"><a href="#kafka常用指令收集" class="headerlink" title="kafka常用指令收集"></a>kafka常用指令收集</h3><p><strong>查看topic的详细信息</strong><br>kafka-topics.sh -zookeeper 127.0.0.1:2181 -describe -topic topic name</p>
+<p><strong>为topic增加副本</strong><br>kafka-reassign-partitions.sh -zookeeper 127.0.0.1:2181 -reassignment-json-file json&#x2F;partitions-to-move.json -execute<br><strong>创建topic</strong><br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic name<br><strong>为topic增加partition</strong><br>kafka-topics.sh –zookeeper 127.0.0.1:2181 –alter –partitions 20 –topic name<br><strong>kafka生产者客户端命令</strong><br>kafka-console-producer.sh –broker-list localhost:9092 –topic name<br><strong>kafka消费者客户端命令</strong><br>kafka-console-consumer.sh -zookeeper localhost:2181 –from-beginning –topic name<br><strong>kafka服务启动</strong><br>kafka-server-start.sh -daemon ..&#x2F;config&#x2F;server.properties<br><strong>删除topic</strong><br>kafka-run-class.sh kafka.admin.DeleteTopicCommand –topic testKJ1 –zookeeper 127.0.0.1:2181<br>kafka-topics.sh –zookeeper localhost:2181 –delete –topic testKJ1<br><strong>查看consumer组内消费的offset</strong><br>kafka-run-class.sh kafka.tools.ConsumerOffsetChecker –zookeeper localhost:2181 –group test –topic name</p>
 ]]></content>
   </entry>
 </search>
