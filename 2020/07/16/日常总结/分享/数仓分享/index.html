@@ -1,40 +1,363 @@
-extends includes/layout.pug
+<!DOCTYPE html><html lang="zh-Hans" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>数仓分享 | wang's bolg</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.png"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=3.0.19"><!-- inject head--><link rel="canonical" href="http://www.wqkenqing.ren/2020/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E5%88%86%E4%BA%AB/%E6%95%B0%E4%BB%93%E5%88%86%E4%BA%AB/index.html"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><!-- aplayer--><!-- swiper--><!-- fancybox ui--><!-- katex--><!-- Open Graph--><meta name="description" content="数据仓库分享1. 数仓基础理论Q1: 什么叫数据仓库？这本书里对数据仓库的定义是为了构建新的分析处理环境而出现的一种数据存储和组织技术 Q2: 数仓与数据库的区别是什么？ 业务场景不同，数据库主要用于支撑基本的、日常的事务处理。如银行交易流水，电商交易订单等，承担存储功能，支持修改，而数"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="wang's bolg"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="/img/pwa/favicon.png"><link rel="apple-touch-icon" href="/img/pwa/favicon.png" sizes="180x180"><script>console.log(' %c Solitude %c ' + '3.0.19' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script>(()=>{
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
 
-block content
-    main.layout#content-inner
-        #post
-            if page.not_cover
-                include includes/widgets/post/postInfo
-            article.post-content.article-container
-                if page.ai_text && theme.post.ai.enable
-                    include includes/widgets/post/ai
-                != page.content
-            include includes/widgets/post/copyright
-            .post-tools-right
-                .tag_share
-                    .post-meta__tag-list
-                        each data in page.tags.data || []
-                            a(href=url_for(data.path)).post-meta__tags
-                                span.tags-punctuation
-                                    i.solitude.fas.fa-hashtag
-                                    =data.name
-                                    span.tagsPageCount=data.length
-            if theme.google_adsense.enable && !theme.google_adsense.auto_ads && theme.google_adsense.post_content
-                div.google-ads-warp
-                    ins.adsbygoogle(style="display:block; text-align:center; height:284px", data-ad-layout="in-article", data-ad-format="fluid", hide-unfilled="true", data-ad-client=theme.google_adsense.client, data-ad-slot=theme.google_adsense.slot)
-                    script.
-                        (adsbygoogle = window.adsbygoogle || []).push({});
-            if site.posts.length > 1
-                include includes/widgets/post/postNav
-            if theme.related_post.enable
-                != related_posts(page, site.posts)
-            if page.comment
-                - var comment_js = true
-                include includes/widgets/third-party/comments/comment
-        if page.aside
-            include includes/widgets/aside/aside
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+            },
+            diffDateFormat: (selector) => {
+                selector.forEach(item => {
+                    const date = new Date(item.getAttribute('datetime') || item.textContent);
+                    item.textContent = (date.getMonth() + 1).toString()+'/'+date.getDate().toString();
+                });
+            },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2023-04-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可"},
+    aside: {
+        state: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        witty_words: [],
+        witty_comment: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    right_menu: false,
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: false,
+};</script><!-- page-config head--><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: false,
+    ai_text: false,
+    color: false,
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body id="body"><!-- universe--><!-- background img--><!-- loading--><!-- console--><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">60</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">24</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span>显示模式</span></span></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="card-tag-cloud"><a href="/tags/linux/">linux<sup>1</sup></a><a href="/tags/flink/">flink<sup>1</sup></a><a href="/tags/kafka/">kafka<sup>2</sup></a><a href="/tags/python/">python<sup>2</sup></a><a href="/tags/elasticsearch-kibana-head-vscode/">elasticsearch kibana head vscode<sup>1</sup></a><a href="/tags/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/">日常总结<sup>4</sup></a><a href="/tags/bigdata/">bigdata<sup>3</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0spark/">学习spark<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0spark2/">学习spark2<sup>1</sup></a><a href="/tags/spark%E5%AD%A6%E4%B9%A0/">spark学习<sup>1</sup></a><a href="/tags/%E5%B0%8F%E7%BB%93/">小结<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/">数据仓库<sup>1</sup></a><a href="/tags/sparkstream/">sparkstream<sup>1</sup></a><a href="/tags/qa/">qa<sup>1</sup></a><a href="/tags/spark-dependency/">spark dependency<sup>1</sup></a><a href="/tags/cvim/">cvim<sup>1</sup></a><a href="/tags/sparkstreaming/">sparkstreaming<sup>1</sup></a><a href="/tags/es-feild-script/">es feild script<sup>1</sup></a><a href="/tags/tmux/">tmux<sup>1</sup></a><a href="/tags/%E8%BF%90%E7%BB%B4-cdn-%E5%8A%A0%E9%80%9F/">运维 cdn 加速<sup>1</sup></a><a href="/tags/elasticsearch-drawio/">elasticsearch drawio<sup>1</sup></a><a href="/tags/python-learn/">python learn<sup>1</sup></a><a href="/tags/%E5%B8%B8%E8%A7%84api%E5%B0%81%E8%A3%85/">常规api封装<sup>1</sup></a><a href="/tags/DDNS/">DDNS<sup>1</sup></a></div></div></div></div><!-- keyboard--><!-- righhtside--><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><a id="site-name" href="/" title="返回博客主页"><span class="title">Solitude</span><i class="solitude fas fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">数仓分享</a></div></div><div id="menus"></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude fas fa-arrow-up"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fas fa-bars"></i></a></div></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>数据仓库</span></a></div></div></div></div><h1 class="post-title">数仓分享</h1><div id="post-meta"><div class="meta-secondline"></div></div></div><article class="post-content article-container"> <span id="more"></span>
+
+
+
+<h1 id="数据仓库分享"><a href="#数据仓库分享" class="headerlink" title="数据仓库分享"></a>数据仓库分享</h1><h2 id="1-数仓基础理论"><a href="#1-数仓基础理论" class="headerlink" title="1. 数仓基础理论"></a>1. 数仓基础理论</h2><h3 id="Q1-什么叫数据仓库？"><a href="#Q1-什么叫数据仓库？" class="headerlink" title="Q1: 什么叫数据仓库？"></a>Q1: 什么叫数据仓库？</h3><p>这本书里对数据仓库的定义是为了构建新的分析处理环境而出现的一种<strong>数据存储和组织技术</strong></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/20210716151756.png" alt="img"></p>
+<h3 id="Q2-数仓与数据库的区别是什么？"><a href="#Q2-数仓与数据库的区别是什么？" class="headerlink" title="Q2: 数仓与数据库的区别是什么？"></a>Q2: 数仓与数据库的区别是什么？</h3><ol>
+<li>业务场景不同，数据库主要用于支撑基本的、日常的事务处理。如银行交易流水，电商交易订单等，承担存储功能，支持修改，而数据仓库主要是用于OLAP等复杂的分析操作，侧重决策支持，并辅以可视化技术，将查询结果直观的，易化展示</li>
+<li>前者数据的写入，修改等操作随时发生，而后者一般是一次写入，写入后很少修改。</li>
+</ol>
+<h3 id="Q3-数仓有什么特点？"><a href="#Q3-数仓有什么特点？" class="headerlink" title="Q3:数仓有什么特点？"></a>Q3:数仓有什么特点？</h3><ol>
+<li>面向主题</li>
+<li>集成的</li>
+<li>相对稳定的</li>
+<li>反映历史变化</li>
+</ol>
+<h3 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h3><p>数据仓库中的数据是按照一定的主题域进行组织。主题是一个抽象的概念，是指用户使用数据仓库进行决策时所关心的重点方面，一个主题通常与多个操作型信息系统相关。</p>
+<p>数据仓库中的数据是在对原有分散的数据库数据抽取、清理的基础上经过系统加工、汇总和整理得到的，必须消除源数据中的不一致性，以保证数据仓库内的信息是关于整个企业的一致的全局信息。</p>
+<p>数据仓库的数据主要供企业决策分析之用，所涉及的数据操作主要是数据查询，一旦某个数据进入数据仓库以后，一般情况下将被长期保留，也就是数据仓库中一般有大量的查询操作，但修改和删除操作很少，通常只需要定期的加载、刷新。</p>
+<p>操作型数据库主要关心当前某一个时间段内的数据，而数据仓库中的数据通常包含历史信息，系统记录了企业从过去某一时点(如开始应用数据仓库的时点)到目前的各个阶段的信息，通过这些信息，可以对企业的发展历程和未来趋势做出定量分析和预测。</p>
+<h2 id="2、如何构建一个数仓"><a href="#2、如何构建一个数仓" class="headerlink" title="2、如何构建一个数仓"></a>2、如何构建一个数仓</h2><h3 id="2-1-先介绍下数仓的分层"><a href="#2-1-先介绍下数仓的分层" class="headerlink" title="2.1 先介绍下数仓的分层"></a>2.1 <strong>先介绍下数仓的分层</strong></h3><p>数据仓库一般采用三层分层法</p>
+<ol>
+<li>ODS层（数据操作层）直接接入的原始数据，简单清洗，从业务库直接同步而来</li>
+<li>DW层（数据仓库层）DW内部又可以分层，但DW层主要就是ODS ETL后的数据</li>
+<li>APP层 (数据应用层）应用DW层的数据</li>
+</ol>
+<p>此外还有一个比较重的层DIM （维表层）</p>
+<ol>
+<li>高基数维度数据：一般是用户资料表、商品资料表类似的资料表。数据量可能是千万级或者上亿级别。</li>
+<li>低基数维度数据：一般是配置表，比如枚举值对应的中文含义，或者日期维表。数据量可能是个位数或者几千几万。</li>
+</ol>
+<p>DW层的分层</p>
+<ol>
+<li>DWS层 （数据服务层）</li>
+<li>DWM层 （中间数据层）</li>
+<li>DWD层 （数据明细层）</li>
+</ol>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112822786.png" alt="image-20210716112822786"></p>
+<h3 id="2-2-数据仓库的构建"><a href="#2-2-数据仓库的构建" class="headerlink" title="2.2 数据仓库的构建"></a>2.2 <strong>数据仓库的构建</strong></h3><h4 id="2-2-1-确定一个引擎"><a href="#2-2-1-确定一个引擎" class="headerlink" title="2.2.1 确定一个引擎"></a><strong>2.2.1 确定一个引擎</strong></h4><p>建立数仓，必定是基于某个引擎载体来实现的，不同的引擎载体，对应的特点也会有一些区别，所以建立数仓，根据自己的需求选取对应的数仓引擎</p>
+<p><strong>现在来讲一般确定使用那些存储后计算引擎，基本也就确定了数仓的架构设计，这里后面再说明。</strong></p>
+<p>根据实时性，可以分为两个方向</p>
+<ol>
+<li>离线数仓</li>
+<li>实时数仓</li>
+</ol>
+<p>离线数仓组成组件</p>
+<ul>
+<li>hive on hivesql</li>
+<li>hive on sparksql</li>
+<li>hbase</li>
+<li>mapreduce</li>
+<li>azkaban</li>
+<li>oozie</li>
+<li>hdfs</li>
+<li>….</li>
+</ul>
+<p>实时数仓</p>
+<ul>
+<li>spark-streaming</li>
+<li>flink-streaming</li>
+<li>spark-core </li>
+<li>hbase</li>
+<li>elasticsearch</li>
+<li>redis</li>
+<li>clickhouse</li>
+<li>….</li>
+</ul>
+<h4 id="2-2-1-确定一个主题"><a href="#2-2-1-确定一个主题" class="headerlink" title="2.2.1 确定一个主题"></a><strong>2.2.1 确定一个主题</strong></h4><p>确定主题的思路一般自下向上自顶向下。</p>
+<p><strong>自顶向下是先有需求</strong></p>
+<p>比如产品经理结合现在的市场，或产品定位，需要一个金融方向在数据来支撑决策，或与产品功能相结合。也就是说不管公司数据如何的ETL，而产出的数据仓库的主题已经确定，后面的工作主要是想尽办法从数据中挖掘出相关数据集，支撑生成数据仓库。 一般来讲拥有大量、丰富数据的企业来实现，对量级有较高要求。</p>
+<p><strong>自下向上是先挖掘数据</strong></p>
+<p>自下向上则是，先从已有的数据集本身出发，通过对已有业务系统数据的分析，或聚类归纳等方向，先确定出现有数据集主要有哪些类型的数据，可以怎么结合从而输出哪些维度，从而构建出哪种类型的数仓。</p>
+<h4 id="2-2-3-确定建表模型"><a href="#2-2-3-确定建表模型" class="headerlink" title="2.2.3 确定建表模型"></a><strong>2.2.3 确定建表模型</strong></h4><p>数据仓库的数据建模大致分为四个阶段</p>
+<ol>
+<li>业务建模</li>
+<li>领域概念（主题域）建模</li>
+<li>逻辑建模</li>
+<li>物理建模</li>
+</ol>
+<p>数据仓库建模的方法</p>
+<ol>
+<li>实体建模法</li>
+<li>范式建模法</li>
+<li>纬度建模法</li>
+</ol>
+<p>这里重点介绍下纬度建模</p>
+<p>纬度建模中的一些概念说明</p>
+<h5 id="事实表"><a href="#事实表" class="headerlink" title="事实表"></a>事实表</h5><p>事实表是维度模型的基本表，存放有大量的业务性能度量值。</p>
+<p>事实表的设计中要解决几个重要问题：</p>
+<ol>
+<li>确定粒度（记录事实的细节级）</li>
+<li>相加性：事实的可加性是至关重要的，因为数据仓库应用几乎从不仅仅只检索事实表的单行数据。</li>
+<li>键选择</li>
+<li>一致性事实</li>
+</ol>
+<p>事实表的分类：</p>
+<ol>
+<li>事务事实表</li>
+<li>周期快照事实表、 </li>
+<li>积累快照事实表。</li>
+</ol>
+<h5 id="维度表"><a href="#维度表" class="headerlink" title="维度表"></a><strong>维度表</strong></h5><p>维度属性是<strong>查询约束条件</strong>、成组与<strong>报表标签生成</strong>的基本来源。</p>
+<p>度表包含有业务的文字描述。在一个设计合理的维度模型中，维度表有许多列或者属性，这些属性给出对维度表的行所进行的描述。</p>
+<h5 id="事实与维度的融合"><a href="#事实与维度的融合" class="headerlink" title="事实与维度的融合"></a><strong>事实与维度的融合</strong></h5><p>由数字型度量值组成的事实表连接到一组填满描述属性的维度表上。这个星型特征结构通常被叫做星型连接方案。</p>
+<p><strong>纬度建模过程</strong></p>
+<p>维度建模具有一定顺序，分别是：①<strong>业务处理</strong>②<strong>粒度</strong>③<strong>维度</strong>④<strong>事实</strong>。</p>
+<p>维度建模的三种模式</p>
+<h5 id="星形模式"><a href="#星形模式" class="headerlink" title="星形模式"></a><strong>星形模式</strong></h5><p>星形模式(Star Schema)是最常用的维度建模方式</p>
+<p>具有以下的特点</p>
+<ol>
+<li>维表只和事实表关联，维表之间没有关联；</li>
+<li>每个维表的主码为单列，且该主码放置在事实表中，作为两边连接的外码；</li>
+<li>以事实表为核心，维表围绕核心呈星形分布；</li>
+</ol>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112804525.png" alt="image-20210716112804525"></p>
+<h5 id="雪花模式"><a href="#雪花模式" class="headerlink" title="雪花模式"></a><strong>雪花模式</strong></h5><p>对星形模式的扩展，每个维表可继续向外连接多个子维表。</p>
+<p>下图为使用雪花模式进行维度建模的关系结构：</p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112812742.png" alt="image-20210716112812742"></p>
+<h5 id="星座模式"><a href="#星座模式" class="headerlink" title="星座模式"></a><strong>星座模式</strong></h5><p>星座模式(Fact Constellations Schema)也是星型模式的扩展。基于这种思想就有了星座模式：</p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112726249.png" alt="image-20210716112726249"></p>
+<p>星形模式&#x2F;雪花模式&#x2F;星座模式的关系</p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112733244.png" alt="image-20210716112733244"></p>
+<h3 id="2-3-构建数仓"><a href="#2-3-构建数仓" class="headerlink" title="2.3 构建数仓"></a>2.3 构建数仓</h3><h4 id="2-3-1-按层级划分存储组件"><a href="#2-3-1-按层级划分存储组件" class="headerlink" title="2.3.1 按层级划分存储组件"></a>2.3.1 按层级划分存储组件</h4><ol>
+<li>数据源：通过消息组件kafka来实时传输消息</li>
+<li>数据明细层: 根据量级而动，涉及和组件有kafka、druid、hbase等</li>
+<li>应用层：clickhouse、kylin、mysql、elasticsearch等</li>
+</ol>
+<h4 id="2-3-2-计算引擎组件"><a href="#2-3-2-计算引擎组件" class="headerlink" title="2.3.2 计算引擎组件"></a>2.3.2 计算引擎组件</h4><p>按不同架构区分：</p>
+<ol>
+<li>离线大数据架构 hdfs、hive on mr 、hive on spark</li>
+<li>lambda架构： 在离线大数据架构的基础上增加新的实时链路，需要维护离线与实时两套代码 spark(主要指spark-streaming)</li>
+<li>kappa架构： 批流合一，离线处理和实时处理整合成一套代码，运维成本小，目前发展旺盛，大有直接成为数仓架构的趋势 采用的是flink</li>
+</ol>
+<h4 id="2-3-3-架构设计示意图"><a href="#2-3-3-架构设计示意图" class="headerlink" title="2.3.3 架构设计示意图"></a>2.3.3 <strong>架构设计示意图</strong></h4><p>1、离线式数仓</p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112742727.png" alt="image-20210716112742727"></p>
+<ol start="2">
+<li><p>实时数仓架构设计</p>
+</li>
+<li><p>lambda</p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112748310.png" alt="image-20210716112748310"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716142722673.png" alt="image-20210716142722673"></p>
+</li>
+<li><p>kappa</p>
+</li>
+</ol>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716112753527.png" alt="image-20210716112753527"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/image-20210716142744656.png" alt="image-20210716142744656"></p>
+<h2 id="3、数仓的使用场景"><a href="#3、数仓的使用场景" class="headerlink" title="3、数仓的使用场景"></a>3、数仓的使用场景</h2><ol>
+<li>ETL</li>
+<li>OLAP</li>
+<li>BI</li>
+<li>DMP</li>
+<li>建模</li>
+</ol>
+<p><img src="http://img.wqkenqing.ren/typora_img/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF3.jpg" alt="数据仓库服务的应用场景3"></p>
+<p><img src="http://img.wqkenqing.ren/typora_img/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF4.jpg" alt="数据仓库服务的应用场景4"></p>
+<h2 id="4、我们数仓的建设思路"><a href="#4、我们数仓的建设思路" class="headerlink" title="4、我们数仓的建设思路"></a>4、我们数仓的建设思路</h2><ol>
+<li><p>自顶向下的方式</p>
+</li>
+<li><p>偏向于技术性</p>
+</li>
+<li><p>实时数仓</p>
+</li>
+<li><p>要有几个比较突出的应用场景，如可视化，OLAP</p>
+<p><strong>细节后续讨论</strong></p>
+</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><div class="post-copyright__author_img"><img class="post-copyright__author_img_front" src="/img/logo.png"></div><div class="post-copyright__author_name">Kuiq  Wang</div><div class="post-copyright__author_desc"></div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">wang's bolg</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>数据仓库<span class="tagsPageCount">1</span></span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2020/05/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/pythonQA/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">pythonQA</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="top-group"><div class="sayhi" id="sayhi" onclick="sco.changeWittyWord()"></div></div></div><div class="avatar"><img alt="头像" src="/img/logo.png"></div><div class="description"></div><div class="bottom-group"><span class="left"><div class="name">Kuiq  Wang</div><div class="desc">只有迎风，风筝才能飞得更高。</div></span><div class="social-icons is-center"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fas fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E5%88%86%E4%BA%AB"><span class="toc-text">数据仓库分享</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%95%B0%E4%BB%93%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA"><span class="toc-text">1. 数仓基础理论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q1-%E4%BB%80%E4%B9%88%E5%8F%AB%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%EF%BC%9F"><span class="toc-text">Q1: 什么叫数据仓库？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q2-%E6%95%B0%E4%BB%93%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">Q2: 数仓与数据库的区别是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q3-%E6%95%B0%E4%BB%93%E6%9C%89%E4%BB%80%E4%B9%88%E7%89%B9%E7%82%B9%EF%BC%9F"><span class="toc-text">Q3:数仓有什么特点？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A5%E5%85%85%E8%AF%B4%E6%98%8E"><span class="toc-text">补充说明</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%95%B0%E4%BB%93"><span class="toc-text">2、如何构建一个数仓</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%85%88%E4%BB%8B%E7%BB%8D%E4%B8%8B%E6%95%B0%E4%BB%93%E7%9A%84%E5%88%86%E5%B1%82"><span class="toc-text">2.1 先介绍下数仓的分层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc-text">2.2 数据仓库的构建</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E7%A1%AE%E5%AE%9A%E4%B8%80%E4%B8%AA%E5%BC%95%E6%93%8E"><span class="toc-text">2.2.1 确定一个引擎</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E7%A1%AE%E5%AE%9A%E4%B8%80%E4%B8%AA%E4%B8%BB%E9%A2%98"><span class="toc-text">2.2.1 确定一个主题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-%E7%A1%AE%E5%AE%9A%E5%BB%BA%E8%A1%A8%E6%A8%A1%E5%9E%8B"><span class="toc-text">2.2.3 确定建表模型</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BA%8B%E5%AE%9E%E8%A1%A8"><span class="toc-text">事实表</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%BB%B4%E5%BA%A6%E8%A1%A8"><span class="toc-text">维度表</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BA%8B%E5%AE%9E%E4%B8%8E%E7%BB%B4%E5%BA%A6%E7%9A%84%E8%9E%8D%E5%90%88"><span class="toc-text">事实与维度的融合</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%98%9F%E5%BD%A2%E6%A8%A1%E5%BC%8F"><span class="toc-text">星形模式</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%9B%AA%E8%8A%B1%E6%A8%A1%E5%BC%8F"><span class="toc-text">雪花模式</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%98%9F%E5%BA%A7%E6%A8%A1%E5%BC%8F"><span class="toc-text">星座模式</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%9E%84%E5%BB%BA%E6%95%B0%E4%BB%93"><span class="toc-text">2.3 构建数仓</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E6%8C%89%E5%B1%82%E7%BA%A7%E5%88%92%E5%88%86%E5%AD%98%E5%82%A8%E7%BB%84%E4%BB%B6"><span class="toc-text">2.3.1 按层级划分存储组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-2-%E8%AE%A1%E7%AE%97%E5%BC%95%E6%93%8E%E7%BB%84%E4%BB%B6"><span class="toc-text">2.3.2 计算引擎组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-3-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc-text">2.3.3 架构设计示意图</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81%E6%95%B0%E4%BB%93%E7%9A%84%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">3、数仓的使用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4%E3%80%81%E6%88%91%E4%BB%AC%E6%95%B0%E4%BB%93%E7%9A%84%E5%BB%BA%E8%AE%BE%E6%80%9D%E8%B7%AF"><span class="toc-text">4、我们数仓的建设思路</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fas fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/2020/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E5%88%86%E4%BA%AB/%E6%95%B0%E4%BB%93%E5%88%86%E4%BA%AB/" title="数仓分享"><div class="content"><span class="title" href="/2020/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E5%88%86%E4%BA%AB/%E6%95%B0%E4%BB%93%E5%88%86%E4%BA%AB/" title="数仓分享">数仓分享</span></div></a><a class="aside-list-item" href="/2020/05/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/pythonQA/" title="pythonQA"><div class="content"><span class="title" href="/2020/05/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/pythonQA/" title="pythonQA">pythonQA</span></div></a><a class="aside-list-item" href="/2020/05/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/python/" title="python 小结2"><div class="content"><span class="title" href="/2020/05/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/python/" title="python 小结2">python 小结2</span></div></a><a class="aside-list-item" href="/2020/05/22/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/es%E6%B7%BB%E5%8A%A0%E5%AD%97%E6%AE%B5%E5%92%8C%E9%BB%98%E8%AE%A4%E5%80%BC/" title="es添加字段并赋值"><div class="content"><span class="title" href="/2020/05/22/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/es%E6%B7%BB%E5%8A%A0%E5%AD%97%E6%AE%B5%E5%92%8C%E9%BB%98%E8%AE%A4%E5%80%BC/" title="es添加字段并赋值">es添加字段并赋值</span></div></a><a class="aside-list-item" href="/2020/05/21/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/es%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E5%B7%A5%E5%85%B7/" title="es常用操作工具"><div class="content"><span class="title" href="/2020/05/21/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/es%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E5%B7%A5%E5%85%B7/" title="es常用操作工具">es常用操作工具</span></div></a></div></div></div></div></main><footer id="footer"><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2023 - 2025 By&nbsp;<a class="footer-bar-link" href="/"><img class="author-avatar" src="/img/pwa/favicon.png">Kuiq  Wang</a></div><div class="beian-group"><a class="footer-bar-link" href="https://hexo.io/">框架：Hexo</a><a class="footer-bar-link" href="https://github.com/everfu/hexo-theme-solitude">主题：Solitude</a></div></div></div></div></footer></div><!-- right_menu--><!-- inject body--><div><script src="/js/utils.js?v=3.0.19"></script><script src="/js/main.js?v=3.0.19"></script><script src="/js/third_party/waterfall.min.js?v=3.0.19"></script><script src="https://fastly.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script src="/js/tw_cn.js?v=3.0.19"></script><script src="https://fastly.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://fastly.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div class="js-pjax"></div></div><!-- pjax--><script>const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- google adsense--><!-- search--><!-- music--></body></html>
         <script>
-            const posts = ["2019/07/16/oldblog/JVM问题/","2019/07/16/oldblog/Hadoop总结/","2019/07/16/oldblog/List学习/","2019/07/16/oldblog/MapReduce的核心思想/","2019/07/16/oldblog/Restful架构/","2019/07/16/oldblog/Vim笔记/","2019/07/16/oldblog/flume小结/","2019/07/16/oldblog/git小结/","2019/07/16/oldblog/hbase/","2019/07/16/oldblog/java---GC机制/","2019/07/16/oldblog/java中IO小结/","2019/07/16/oldblog/java中枚举的使用/","2019/07/16/oldblog/java中的形参与实参的理解/","2019/07/16/oldblog/java八大数据类型总结/","2019/07/16/oldblog/map总结/","2019/07/16/oldblog/kafka小结/","2019/07/16/oldblog/maven小结/","2019/07/16/oldblog/python learn/","2019/07/16/oldblog/sed & awk小结/","2019/07/16/oldblog/反射小结/","2019/07/16/oldblog/异常处理机制小结/","2019/07/16/oldblog/文本处理小结/","2019/07/16/oldblog/测试心得/","2019/07/16/oldblog/爬虫之nutch/","2020/02/25/日常总结/es/es常用命令/","2020/05/21/日常总结/es/es常用操作工具/","2019/07/31/日常总结/flink/Flink/","2019/05/16/日常总结/hadoop/hadoopHA搭建/","2020/05/11/日常总结/kafka/kafka实现/","2020/05/11/日常总结/old/Lamda积累/","2019/06/13/日常总结/old/Yarn配置/","2019/06/13/日常总结/old/flume记录/","2018/06/04/日常总结/old/hbase积累/","2019/12/24/日常总结/old/hive2总结/","2018/12/24/日常总结/old/hive总结/","2018/03/04/日常总结/old/spark学习/","2018/03/04/日常总结/old/spark学习2/","2018/03/04/日常总结/old/spark算子/","2020/05/10/日常总结/old/准备小结/","2020/05/11/日常总结/old/大数据相关分享/","2019/07/16/日常总结/oldblog/blog17/","2020/05/11/日常总结/old/kafka/","2018/03/04/日常总结/old/sqoop记录/","2019/05/17/日常总结/spark/spark操作/","2020/05/11/日常总结/old/mapreduce组件总结/","2019/07/15/日常总结/spark/stream/","2019/07/16/日常总结/spark/宽窄依赖/","2019/07/16/日常总结/spark/stream2/","2020/05/25/日常总结/编程/python/","2020/05/19/日常总结/运维/cvim f失灵问题修复/","2020/05/26/日常总结/编程/pythonQA/","2020/05/19/日常总结/运维/tmux上手/","2020/05/22/日常总结/运维/es添加字段和默认值/","2020/05/11/日常总结/运维/日常运维/","2020/05/21/日常总结/运维/vscode插件/","2019/05/17/日常总结/hadoop/hbase/hbase操作/","2020/05/20/日常总结/运维/阿里云DDNS/","2020/07/16/日常总结/分享/数仓分享/","2019/07/16/oldblog/String对比/","2020/05/11/日常总结/spark/spark常见的输入源/"];
+            const posts = ["2020/07/16/日常总结/分享/数仓分享/","2020/05/26/日常总结/编程/pythonQA/","2020/05/25/日常总结/编程/python/","2020/05/22/日常总结/运维/es添加字段和默认值/","2020/05/21/日常总结/es/es常用操作工具/","2020/05/21/日常总结/运维/vscode插件/","2020/05/20/日常总结/运维/阿里云DDNS/","2020/05/19/日常总结/运维/cvim f失灵问题修复/","2020/05/19/日常总结/运维/tmux上手/","2020/05/11/日常总结/kafka/kafka实现/","2020/05/11/日常总结/old/Lamda积累/","2020/05/11/日常总结/old/kafka/","2020/05/11/日常总结/old/mapreduce组件总结/","2020/05/11/日常总结/old/大数据相关分享/","2020/05/11/日常总结/spark/spark常见的输入源/","2020/05/11/日常总结/运维/日常运维/","2020/05/10/日常总结/old/准备小结/","2020/02/25/日常总结/es/es常用命令/","2019/12/24/日常总结/old/hive2总结/","2019/07/31/日常总结/flink/Flink/","2019/07/16/oldblog/List学习/","2019/07/16/oldblog/Restful架构/","2019/07/16/oldblog/MapReduce的核心思想/","2019/07/16/oldblog/Hadoop总结/","2019/07/16/oldblog/String对比/","2019/07/16/oldblog/Vim笔记/","2019/07/16/oldblog/hbase/","2019/07/16/oldblog/flume小结/","2019/07/16/oldblog/JVM问题/","2019/07/16/oldblog/git小结/","2019/07/16/oldblog/java---GC机制/","2019/07/16/oldblog/java中IO小结/","2019/07/16/oldblog/java中枚举的使用/","2019/07/16/oldblog/java中的形参与实参的理解/","2019/07/16/oldblog/java八大数据类型总结/","2019/07/16/oldblog/kafka小结/","2019/07/16/oldblog/map总结/","2019/07/16/oldblog/maven小结/","2019/07/16/oldblog/异常处理机制小结/","2019/07/16/oldblog/反射小结/","2019/07/16/oldblog/文本处理小结/","2019/07/16/oldblog/测试心得/","2019/07/16/oldblog/sed & awk小结/","2019/07/16/oldblog/爬虫之nutch/","2019/07/16/oldblog/python learn/","2019/07/16/日常总结/oldblog/blog17/","2019/07/16/日常总结/spark/宽窄依赖/","2019/07/16/日常总结/spark/stream2/","2019/07/15/日常总结/spark/stream/","2019/06/13/日常总结/old/Yarn配置/","2019/06/13/日常总结/old/flume记录/","2019/05/17/日常总结/spark/spark操作/","2019/05/17/日常总结/hadoop/hbase/hbase操作/","2019/05/16/日常总结/hadoop/hadoopHA搭建/","2018/12/24/日常总结/old/hive总结/","2018/06/04/日常总结/old/hbase积累/","2018/03/04/日常总结/old/spark学习/","2018/03/04/日常总结/old/spark学习2/","2018/03/04/日常总结/old/spark算子/","2018/03/04/日常总结/old/sqoop记录/"];
             function toRandomPost() {
                 const randomPost = posts[Math.floor(Math.random() * posts.length)];
                 pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);

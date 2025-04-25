@@ -1,25 +1,196 @@
-extends includes/layout.pug
+<!DOCTYPE html><html lang="zh-Hans" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>文章2020 | wang's bolg</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.png"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=3.0.19"><!-- inject head--><link rel="canonical" href="http://www.wqkenqing.ren/archives/2020/02/index.html"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><!-- aplayer--><!-- swiper--><!-- fancybox ui--><!-- katex--><!-- Open Graph--><meta name="description"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="wang's bolg"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="/img/pwa/favicon.png"><link rel="apple-touch-icon" href="/img/pwa/favicon.png" sizes="180x180"><script>console.log(' %c Solitude %c ' + '3.0.19' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script>(()=>{
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
 
-block content
-    main.layout#content-inner
-        #archive
-            .article-sort-title #{__('page.archives')}<sup>#{site.posts.find({parent: {$exists: false}}).length}</sup>
-            case theme.page.archives
-                when 0
-                    .article-sort
-                        include includes/mixins/articleSort
-                    include includes/mixins/pagination
-                when 1
-                    .recent-posts#recent-posts
-                        each post,index in page.posts.find({ parent: { $exists: false } }).data
-                            include includes/widgets/home/postList
-                        include includes/mixins/pagination
-                    if theme.comment.hot_tip.enable
-                        include ./includes/widgets/third-party/hot/index.pug
-        include includes/widgets/aside/aside
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
 
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+            },
+            diffDateFormat: (selector) => {
+                selector.forEach(item => {
+                    const date = new Date(item.getAttribute('datetime') || item.textContent);
+                    item.textContent = (date.getMonth() + 1).toString()+'/'+date.getDate().toString();
+                });
+            },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2023-04-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可"},
+    aside: {
+        state: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        witty_words: [],
+        witty_comment: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    right_menu: false,
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: false,
+};</script><!-- page-config head--><script id="config-diff">var PAGE_CONFIG = {
+    is_post: false,
+    is_page: true,
+    is_home: false,
+    page: '',
+    toc: false,
+    comment: false,
+    ai_text: false,
+    color: false,
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body id="body"><!-- universe--><!-- background img--><!-- loading--><!-- console--><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">60</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">24</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span>显示模式</span></span></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="card-tag-cloud"><a href="/tags/linux/">linux<sup>1</sup></a><a href="/tags/flink/">flink<sup>1</sup></a><a href="/tags/kafka/">kafka<sup>2</sup></a><a href="/tags/python/">python<sup>2</sup></a><a href="/tags/elasticsearch-kibana-head-vscode/">elasticsearch kibana head vscode<sup>1</sup></a><a href="/tags/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/">日常总结<sup>4</sup></a><a href="/tags/bigdata/">bigdata<sup>3</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0spark/">学习spark<sup>1</sup></a><a href="/tags/%E5%AD%A6%E4%B9%A0spark2/">学习spark2<sup>1</sup></a><a href="/tags/spark%E5%AD%A6%E4%B9%A0/">spark学习<sup>1</sup></a><a href="/tags/%E5%B0%8F%E7%BB%93/">小结<sup>1</sup></a><a href="/tags/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/">数据仓库<sup>1</sup></a><a href="/tags/sparkstream/">sparkstream<sup>1</sup></a><a href="/tags/qa/">qa<sup>1</sup></a><a href="/tags/spark-dependency/">spark dependency<sup>1</sup></a><a href="/tags/cvim/">cvim<sup>1</sup></a><a href="/tags/sparkstreaming/">sparkstreaming<sup>1</sup></a><a href="/tags/es-feild-script/">es feild script<sup>1</sup></a><a href="/tags/tmux/">tmux<sup>1</sup></a><a href="/tags/%E8%BF%90%E7%BB%B4-cdn-%E5%8A%A0%E9%80%9F/">运维 cdn 加速<sup>1</sup></a><a href="/tags/elasticsearch-drawio/">elasticsearch drawio<sup>1</sup></a><a href="/tags/python-learn/">python learn<sup>1</sup></a><a href="/tags/%E5%B8%B8%E8%A7%84api%E5%B0%81%E8%A3%85/">常规api封装<sup>1</sup></a><a href="/tags/DDNS/">DDNS<sup>1</sup></a></div></div></div></div><!-- keyboard--><!-- righhtside--><div class="page" id="body-wrap"><header class="not-top-img" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><a id="site-name" href="/" title="返回博客主页"><span class="title">Solitude</span><i class="solitude fas fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">文章2020</a></div></div><div id="menus"></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude fas fa-arrow-up"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fas fa-bars"></i></a></div></div></div></nav></header><main class="layout" id="content-inner"><div id="archive"><div class="article-sort-title">文章<sup>60</sup></div><div class="article-sort"><div class="article-sort-item year">2020</div><div class="article-sort-item"><a class="article-sort-item-img" href="/2020/02/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/es%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" title="es常用命令"><img src="/" alt="es常用命令"></a><div class="article-sort-item-info"><a class="article-sort-item-title" href="/2020/02/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/es%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" title="es常用命令" onclick="window.event.cancelBubble=true;">es常用命令</a><div class="article-sort-item-tags"></div></div></div></div><nav id="pagination"><div class="pagination"><span class="page-number current">1</span><div class="toPageGroup"><input id="toPageText" oninput="value=value.replace(/[^0-9]/g,'')" maxlength="3" title="跳转到指定页面" onkeyup="if (this.value === '0') this.value = ''"><a id="toPageButton" onclick="sco.toPage()"><i class="solitude fas fa-angles-right"></i></a></div></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="top-group"><div class="sayhi" id="sayhi" onclick="sco.changeWittyWord()"></div></div></div><div class="avatar"><img alt="头像" src="/img/logo.png"></div><div class="description"></div><div class="bottom-group"><span class="left"><div class="name">Kuiq  Wang</div><div class="desc">只有迎风，风筝才能飞得更高。</div></span><div class="social-icons is-center"></div></div></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fas fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/2020/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E5%88%86%E4%BA%AB/%E6%95%B0%E4%BB%93%E5%88%86%E4%BA%AB/" title="数仓分享"><div class="content"><span class="title" href="/2020/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E5%88%86%E4%BA%AB/%E6%95%B0%E4%BB%93%E5%88%86%E4%BA%AB/" title="数仓分享">数仓分享</span></div></a><a class="aside-list-item" href="/2020/05/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/pythonQA/" title="pythonQA"><div class="content"><span class="title" href="/2020/05/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/pythonQA/" title="pythonQA">pythonQA</span></div></a><a class="aside-list-item" href="/2020/05/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/python/" title="python 小结2"><div class="content"><span class="title" href="/2020/05/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/python/" title="python 小结2">python 小结2</span></div></a><a class="aside-list-item" href="/2020/05/22/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/es%E6%B7%BB%E5%8A%A0%E5%AD%97%E6%AE%B5%E5%92%8C%E9%BB%98%E8%AE%A4%E5%80%BC/" title="es添加字段并赋值"><div class="content"><span class="title" href="/2020/05/22/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/es%E6%B7%BB%E5%8A%A0%E5%AD%97%E6%AE%B5%E5%92%8C%E9%BB%98%E8%AE%A4%E5%80%BC/" title="es添加字段并赋值">es添加字段并赋值</span></div></a><a class="aside-list-item" href="/2020/05/21/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/es%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E5%B7%A5%E5%85%B7/" title="es常用操作工具"><div class="content"><span class="title" href="/2020/05/21/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/es/es%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E5%B7%A5%E5%85%B7/" title="es常用操作工具">es常用操作工具</span></div></a></div></div><div class="card-widget card-tags card-archives card-webinfo card-allinfo"><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章总数 :</div><div class="item-count">60</div></div><div class="webinfo-item"><div class="item-name">建站天数 :</div><div class="item-count" id="runtimeshow"></div></div><div class="webinfo-item"><div class="item-name">最后更新 :</div><time class="item-count" datetime="2025-04-25T08:17:34.766Z"></time></div></div></div></div></div></main><footer id="footer"><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2023 - 2025 By&nbsp;<a class="footer-bar-link" href="/"><img class="author-avatar" src="/img/pwa/favicon.png">Kuiq  Wang</a></div><div class="beian-group"><a class="footer-bar-link" href="https://hexo.io/">框架：Hexo</a><a class="footer-bar-link" href="https://github.com/everfu/hexo-theme-solitude">主题：Solitude</a></div></div></div></div></footer></div><!-- right_menu--><!-- inject body--><div><script src="/js/utils.js?v=3.0.19"></script><script src="/js/main.js?v=3.0.19"></script><script src="/js/third_party/waterfall.min.js?v=3.0.19"></script><script src="https://fastly.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script src="/js/tw_cn.js?v=3.0.19"></script><script src="https://fastly.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://fastly.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div class="js-pjax"></div></div><!-- pjax--><script>const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- google adsense--><!-- search--><!-- music--></body></html>
         <script>
-            const posts = ["2019/07/16/oldblog/JVM问题/","2019/07/16/oldblog/Hadoop总结/","2019/07/16/oldblog/List学习/","2019/07/16/oldblog/MapReduce的核心思想/","2019/07/16/oldblog/Restful架构/","2019/07/16/oldblog/Vim笔记/","2019/07/16/oldblog/flume小结/","2019/07/16/oldblog/git小结/","2019/07/16/oldblog/hbase/","2019/07/16/oldblog/java---GC机制/","2019/07/16/oldblog/java中IO小结/","2019/07/16/oldblog/java中枚举的使用/","2019/07/16/oldblog/java中的形参与实参的理解/","2019/07/16/oldblog/java八大数据类型总结/","2019/07/16/oldblog/map总结/","2019/07/16/oldblog/kafka小结/","2019/07/16/oldblog/maven小结/","2019/07/16/oldblog/python learn/","2019/07/16/oldblog/sed & awk小结/","2019/07/16/oldblog/反射小结/","2019/07/16/oldblog/异常处理机制小结/","2019/07/16/oldblog/文本处理小结/","2019/07/16/oldblog/测试心得/","2019/07/16/oldblog/爬虫之nutch/","2020/02/25/日常总结/es/es常用命令/","2020/05/21/日常总结/es/es常用操作工具/","2019/07/31/日常总结/flink/Flink/","2019/05/16/日常总结/hadoop/hadoopHA搭建/","2020/05/11/日常总结/kafka/kafka实现/","2020/05/11/日常总结/old/Lamda积累/","2019/06/13/日常总结/old/Yarn配置/","2019/06/13/日常总结/old/flume记录/","2018/06/04/日常总结/old/hbase积累/","2019/12/24/日常总结/old/hive2总结/","2018/12/24/日常总结/old/hive总结/","2018/03/04/日常总结/old/spark学习/","2018/03/04/日常总结/old/spark学习2/","2018/03/04/日常总结/old/spark算子/","2020/05/10/日常总结/old/准备小结/","2020/05/11/日常总结/old/大数据相关分享/","2019/07/16/日常总结/oldblog/blog17/","2020/05/11/日常总结/old/kafka/","2018/03/04/日常总结/old/sqoop记录/","2019/05/17/日常总结/spark/spark操作/","2020/05/11/日常总结/old/mapreduce组件总结/","2019/07/15/日常总结/spark/stream/","2019/07/16/日常总结/spark/宽窄依赖/","2019/07/16/日常总结/spark/stream2/","2020/05/25/日常总结/编程/python/","2020/05/19/日常总结/运维/cvim f失灵问题修复/","2020/05/26/日常总结/编程/pythonQA/","2020/05/19/日常总结/运维/tmux上手/","2020/05/22/日常总结/运维/es添加字段和默认值/","2020/05/11/日常总结/运维/日常运维/","2020/05/21/日常总结/运维/vscode插件/","2019/05/17/日常总结/hadoop/hbase/hbase操作/","2020/05/20/日常总结/运维/阿里云DDNS/","2020/07/16/日常总结/分享/数仓分享/","2019/07/16/oldblog/String对比/","2020/05/11/日常总结/spark/spark常见的输入源/"];
+            const posts = ["2020/07/16/日常总结/分享/数仓分享/","2020/05/26/日常总结/编程/pythonQA/","2020/05/25/日常总结/编程/python/","2020/05/22/日常总结/运维/es添加字段和默认值/","2020/05/21/日常总结/es/es常用操作工具/","2020/05/21/日常总结/运维/vscode插件/","2020/05/20/日常总结/运维/阿里云DDNS/","2020/05/19/日常总结/运维/cvim f失灵问题修复/","2020/05/19/日常总结/运维/tmux上手/","2020/05/11/日常总结/kafka/kafka实现/","2020/05/11/日常总结/old/Lamda积累/","2020/05/11/日常总结/old/kafka/","2020/05/11/日常总结/old/mapreduce组件总结/","2020/05/11/日常总结/old/大数据相关分享/","2020/05/11/日常总结/spark/spark常见的输入源/","2020/05/11/日常总结/运维/日常运维/","2020/05/10/日常总结/old/准备小结/","2020/02/25/日常总结/es/es常用命令/","2019/12/24/日常总结/old/hive2总结/","2019/07/31/日常总结/flink/Flink/","2019/07/16/oldblog/List学习/","2019/07/16/oldblog/Restful架构/","2019/07/16/oldblog/MapReduce的核心思想/","2019/07/16/oldblog/Hadoop总结/","2019/07/16/oldblog/String对比/","2019/07/16/oldblog/Vim笔记/","2019/07/16/oldblog/hbase/","2019/07/16/oldblog/flume小结/","2019/07/16/oldblog/JVM问题/","2019/07/16/oldblog/git小结/","2019/07/16/oldblog/java---GC机制/","2019/07/16/oldblog/java中IO小结/","2019/07/16/oldblog/java中枚举的使用/","2019/07/16/oldblog/java中的形参与实参的理解/","2019/07/16/oldblog/java八大数据类型总结/","2019/07/16/oldblog/kafka小结/","2019/07/16/oldblog/map总结/","2019/07/16/oldblog/maven小结/","2019/07/16/oldblog/异常处理机制小结/","2019/07/16/oldblog/反射小结/","2019/07/16/oldblog/文本处理小结/","2019/07/16/oldblog/测试心得/","2019/07/16/oldblog/sed & awk小结/","2019/07/16/oldblog/爬虫之nutch/","2019/07/16/oldblog/python learn/","2019/07/16/日常总结/oldblog/blog17/","2019/07/16/日常总结/spark/宽窄依赖/","2019/07/16/日常总结/spark/stream2/","2019/07/15/日常总结/spark/stream/","2019/06/13/日常总结/old/Yarn配置/","2019/06/13/日常总结/old/flume记录/","2019/05/17/日常总结/spark/spark操作/","2019/05/17/日常总结/hadoop/hbase/hbase操作/","2019/05/16/日常总结/hadoop/hadoopHA搭建/","2018/12/24/日常总结/old/hive总结/","2018/06/04/日常总结/old/hbase积累/","2018/03/04/日常总结/old/spark学习/","2018/03/04/日常总结/old/spark学习2/","2018/03/04/日常总结/old/spark算子/","2018/03/04/日常总结/old/sqoop记录/"];
             function toRandomPost() {
                 const randomPost = posts[Math.floor(Math.random() * posts.length)];
                 pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
