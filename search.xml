@@ -71,7 +71,7 @@
 <li>Backup NameNode (HADOOP-4539)：它在内存中复制了NN的当前状态，算是Warm Standby，可也就仅限于此，并没有failover等。它同样是阶段性的做checkpoint，也无法保证数据完整性<br>3. 手动把name.dir指向NFS（Network File System），这是安全的Cold Standby，可以保证元数据不丢失，但集群的恢复则完全靠手动<br>4. Facebook AvatarNode：Facebook有强大的运维做后盾，所以Avatarnode只是Hot Standby，并没有自动切换，当主NN失效的时候，需要管理员确认，然后手动把对外提供服务的虚拟IP映射到Standby NN，这样做的好处是确保不会发生脑裂的场景。其某些设计思想和Hadoop 2.0里的HA非常相似，从时间上来看，Hadoop 2.0应该是借鉴了Facebook的做法 <img src="//img.wqkenqing.ren/file/2017/7/32ec8d45379b4e4d99505b03b1b33e61-image.png" alt="32ec8d45379b4e4d99505b03b1b33e61-image.png"></li>
 </ol>
 <p>5. PrimaryNN 与StandbyNN之间通过NFS来共享FsEdits、FsImage文件，这样主备NN之间就拥有了一致的目录树和block信息；而block的 位置信息，可以根据DN向两个NN上报的信息过程中构建起来。这样再辅以虚IP，可以较好达到主备NN快速热切的目的。但是显然，这里的NFS又引入了新的SPOF<br>6. 在主备NN共享元数据的过程中，也有方案通过主NN将FsEdits的内容通过与备NN建立的网络IO流，实时写入备NN，并且保证整个过程的原子性。这种方案，解决了NFS共享元数据引入的SPOF，但是主备NN之间的网络连接又会成为新的问题</p>
-<h4 id="hadoop2-X-ha-原理-hadoop2-x之后，Clouera提出了QJM-x2F-Qurom-Journal-Manager，这是一个基于Paxos算法实现的HDFS-HA方案，它给出了一种较好的解决思路和方案-示意图如下："><a href="#hadoop2-X-ha-原理-hadoop2-x之后，Clouera提出了QJM-x2F-Qurom-Journal-Manager，这是一个基于Paxos算法实现的HDFS-HA方案，它给出了一种较好的解决思路和方案-示意图如下：" class="headerlink" title="hadoop2.X ha 原理:  hadoop2.x之后，Clouera提出了QJM&#x2F;Qurom Journal Manager，这是一个基于Paxos算法实现的HDFS HA方案，它给出了一种较好的解决思路和方案,示意图如下："></a>hadoop2.X ha 原理:  hadoop2.x之后，Clouera提出了QJM&#x2F;Qurom Journal Manager，这是一个基于Paxos算法实现的HDFS HA方案，它给出了一种较好的解决思路和方案,示意图如下：</h4><p><img src="//img.wqkenqing.ren/file/2017/7/bc057fbb4b4047928bf06b7a43364335-image.png" alt="bc057fbb4b4047928bf06b7a43364335-image.png"></p>
+<h4 id="hadoop2-X-ha-原理-hadoop2-x之后，Clouera提出了QJM-Qurom-Journal-Manager，这是一个基于Paxos算法实现的HDFS-HA方案，它给出了一种较好的解决思路和方案-示意图如下："><a href="#hadoop2-X-ha-原理-hadoop2-x之后，Clouera提出了QJM-Qurom-Journal-Manager，这是一个基于Paxos算法实现的HDFS-HA方案，它给出了一种较好的解决思路和方案-示意图如下：" class="headerlink" title="hadoop2.X ha 原理:  hadoop2.x之后，Clouera提出了QJM&#x2F;Qurom Journal Manager，这是一个基于Paxos算法实现的HDFS HA方案，它给出了一种较好的解决思路和方案,示意图如下："></a>hadoop2.X ha 原理:  hadoop2.x之后，Clouera提出了QJM&#x2F;Qurom Journal Manager，这是一个基于Paxos算法实现的HDFS HA方案，它给出了一种较好的解决思路和方案,示意图如下：</h4><p><img src="//img.wqkenqing.ren/file/2017/7/bc057fbb4b4047928bf06b7a43364335-image.png" alt="bc057fbb4b4047928bf06b7a43364335-image.png"></p>
 <ul>
 <li>基本原理就是用2N+1台 JN 存储EditLog，每次写数据操作有大多数（&gt;&#x3D;N+1）返回成功时即认为该次写成功，数据不会丢失了。当然这个算法所能容忍的是最多有N台机器挂掉，如果多于N台挂掉，这个算法就失效了。这个原理是基于Paxos算法</li>
 <li>在HA架构里面SecondaryNameNode这个冷备角色已经不存在了，为了保持standby NN时时的与主Active NN的元数据保持一致，他们之间交互通过一系列守护的轻量级进程JournalNode  + 任何修改操作在 Active NN上执行时，JN进程同时也会记录修改log到至少半数以上的JN中，这时 Standby NN 监测到JN 里面的同步log发生变化了会读取 JN 里面的修改log，然后同步到自己的的目录镜像树里面，<br>  <img src="//img.wqkenqing.ren/file/2017/7/608621d2ab52466db89e8a95d165f6e7-image.png" alt="608621d2ab52466db89e8a95d165f6e7-image.png"></li>
@@ -85,28 +85,43 @@
 ]]></content>
   </entry>
   <entry>
-    <title>JVM问题</title>
-    <url>/2019/07/16/oldblog/JVM%E9%97%AE%E9%A2%98/</url>
+    <title>List学习</title>
+    <url>/2019/07/16/oldblog/List%E5%AD%A6%E4%B9%A0/</url>
     <content><![CDATA[<p>此处简介</p>
 <span id="more"></span>
 
-<p>JVM问题<br>1、堆内存溢出<br>2、持久代内存溢出<br>3、系统频繁FGC</p>
-<p>框架使用不当<br>4、错误使用框架提供API<br>5、日志框架使用不当<br>OS内存溢出<br>6、某系统物理内存溢出<br>数据库问题<br>7、慢SQL问题</p>
-<p>案例1、堆内存溢出<br>JVM基础知识<br>1、Jvm内存分为三个大区，young区，old区和perm区；其中young区又包含三个区：Edgn区、S0、S1区<br>2、young区和old区属于heap区，占据堆内存；perm区称为持久代，不占据堆内存。<br>堆内存溢出<br>性能问题发现过程</p>
-<p>查看服务器上报错日志，发现有如下报错信息［java.lang.OutOfMemoryError: Java heap space］；根据报错信息确定是jvm 堆内存空间不够导致，于是使用jvm命令（下图）查看，发现此时old区内存空间已经被占满了，同时使用jvisualvm监控工具也<br>发现old区空间被占满（右图），整个heap区空间已经无法再容纳新对象进入。<br>建议<br>考虑大量数据一次性写入内存场景</p>
-<p>持久代内存溢出<br>现象</p>
-<p>压测某系统接口，压测前1分钟左右tps 400多，之后<br>Tps直降为零，后台报错日志：java.lang.OutOfMemoryError:PermGen space，通过jvm监控工具查看持久代（perm区）空间被占满，Old区空闲；</p>
-<p>问题定位过程<br>通过注释代码块定位问题，考虑到perm区溢出大部分跟类对象大量创建有关，故锁定问题在序列化框架使用可能有问题；<br>对于比较棘手难解决的perm溢出问题，作者构建了一个perm区溢出的场景，可以采用如下定位方案<br>1、添加jvm dump配置<br>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath&#x3D;&#x2F;data&#x2F;dump.bin<br>2、安装eclipse mat分析工具<br>3、将dump文件导入eclipse，点击［Leak Suspects］，找到跟公司有关的代码进行分析<br>此处不过多讲解，大家可以去网上查阅资料学习<br>解决办法<br>跟开发沟通后选择去掉msgpack0.6版本框架，采用java原成序列化框架，修改后系统tps稳定在400多，gc情况正常<br>修改前后gc情况对比<br>修复前<br>类似问题如何避免</p>
-<p>1、去掉项目无用jar包<br>2、避免大量使用类对象、大量使用反射<br>案例3、频繁FGC<br>（1）系统某接口频繁FGC<br>问题排查：<br>先查JVM内存信息找可疑对象<br>从内存对象实例信息中发现跟mysql连接有关，然后检测mysql配置信息<br> <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"></bean></p>
-<p>发现系统采用的是 spring框架的数据源，没有用连接池；</p>
-<p>思考<br>使用连接池有什么好处？<br>连接复用、减少连接重复建立和销毁造成的大量资源消耗</p>
-<p>然后换做hikaricp连接池做对比测试<br> &lt;bean id&#x3D;”dataSource” class&#x3D;”com.zaxxer.hikari.HikariDataSource”<br>压测半小时未出现fgc，问题得到解决<br>类似问题如何避免</p>
-<p>1、研发规范统一DB连接池，避免研发误用<br>2、减少大对象、临时对象使用</p>
-<p>案例4、错误使用框架提供API<br>现象<br>某系统本身业务逻辑处理能力很快（研发本机自测tps可以到达2w多），但是接入到framework框架后，TPS最高只能到达300笔&#x2F;S左右，而且系统负载很低</p>
-<p>问题排查<br>根据这种现象说明系统可能是堵在了某块方法上，根据这种情况一般采用线程dump的方式来查看系统具体哪些线程出现异常情况，通过线程dump 发现 ［TIMED_WAITING］状态的业务线程占比很高<br>根据线程dump信息，找到公司包名开头的信息，然后从下往上查看<br>线程dump信息，从信息中我们可以看到</p>
-<p>framework.servlet.fServlet.doPost：框架api封装了servlet dopost方法做了某些操作<br>framework.servlet.fServlet.execute：框架api执行servelt<br>framework.process.fProcessor.process：框架api进行自身逻辑处理<br>framework.filter.impl.AuthFilter.before：框架使用过滤器进行用户权限过滤</p>
-<p> 。。。。。。然后就是进行http请求操作<br>由此我们断定，就是在框架进行权限校验这块堵住了。之后跟开发沟通这块的<br>问题即可</p>
-<p>分析思路<br>压测端 ：net  服务器  jvm<br>服务端：net  服务器 nginx tomcat jvm（应用程序）算法 db（mysql redis）</p>
+<h3 id="List学习"><a href="#List学习" class="headerlink" title="List学习"></a>List学习</h3><p> <code>ArrayList不是线程安全的，只能用在单线程环境下，多线程环境下可以考虑用Collections.synchronizedList(List l)函数返回一个线程安全的ArrayList类，也可以使用concurrent并发包下的CopyOnWriteArrayList类</code></p>
+<p>ArrayList实现了Serializable接口，因此它支持序列化，能够通过序列化传输，实现了RandomAccess接口，支持快速随机访问，实际上就是通过下标序号进行快速访问，实现了Cloneable接口，能被克隆。</p>
+<p>每个ArrayList实例都有一个容量，该容量是指用来存储列表元素的数组的大小。它总是至少等于列表的大小。随着向ArrayList中不断添加元素，其容量也自动增长。自动增长会带来数据向新数组的重新拷贝，因此，如果可预知数据量的多少，可在构造ArrayList时指定其容量。在添加大量元素前，应用程序也可以使用ensureCapacity操作来增加ArrayList实例的容量，这可以减少递增式再分配的数量。<br>每个ArrayList实例都有一个容量，该容量是指用来存储列表元素的数组的大小。它总是至少等于列表的大小。随着向ArrayList中不断添加元素，其容量也自动增长。自动增长会带来数据向新数组的重新拷贝，因此，如果可预知数据量的多少，可在构造ArrayList时指定其容量。在添加大量元素前，应用程序也可以使用ensureCapacity操作来增加ArrayList实例的容量，这可以减少递增式再分配的数量。<br>从上述代码中可以看出，数组进行扩容时，会将老数组中的元素重新拷贝一份到新的数组中，每次数组容量的增长大约是其原容量的1.5倍。这种操作的代价是很高的，因此在实际使用时，我们应该尽量避免数组容量的扩张。当我们可预知要保存的元素的多少时，要在构造ArrayList实例时，就指定其容量，以避免数组扩容的发生。或者根据实际需求，通过调用ensureCapacity方法来手动增加ArrayList实例的容量。</p>
+<p>Object oldData[] &#x3D; elementData;&#x2F;&#x2F;为什么要用到oldData[]<br>乍一看来后面并没有用到关于oldData， 这句话显得多此一举！但是这是一个牵涉到内存管理的类， 所以要了解内部的问题。 而且为什么这一句还在if的内部，这跟elementData &#x3D; Arrays.copyOf(elementData, newCapacity); 这句是有关系的，下面这句Arrays.copyOf的实现时新创建了newCapacity大小的内存，然后把老的elementData放入。好像也没有用到oldData，有什么问题呢。问题就在于旧的内存的引用是elementData， elementData指向了新的内存块，如果有一个局部变量oldData变量引用旧的内存块的话，在copy的过程中就会比较安全，因为这样证明这块老的内存依然有引用，分配内存的时候就不会被侵占掉，然后copy完成后这个局部变量的生命期也过去了，然后释放才是安全的。不然在copy的的时候万一新的内存或其他线程的分配内存侵占了这块老的内存，而copy还没有结束，这将是个严重的事情。 关于ArrayList和Vector区别如下：</p>
+<pre><code>ArrayList在内存不够时默认是扩展50% + 1个，Vector是默认扩展1倍。
+Vector提供indexOf(obj, start)接口，ArrayList没有。
+Vector属于线程安全级别的，但是大多数情况下不使用Vector，因为线程安全需要更大的系统开销。
+</code></pre>
+<p> ArrayList还给我们提供了将底层数组的容量调整为当前列表保存的实际元素的大小的功能。它可以通过trimToSize方法来实现。代码如下：</p>
+<p>关于ArrayList的源码，给出几点比较重要的总结：</p>
+<pre><code>1、注意其三个不同的构造方法。无参构造方法构造的ArrayList的容量默认为10，带有Collection参数的构造方法，将Collection转化为数组赋给ArrayList的实现数组elementData。
+
+2、注意扩充容量的方法ensureCapacity。ArrayList在每次增加元素（可能是1个，也可能是一组）时，都要调用该方法来确保足够的容量。当容量不足以容纳当前的元素个数时，就设置新的容量为旧的容量的1.5倍加1，如果设置后的新容量还不够，则直接新容量设置为传入的参数（也就是所需的容量），而后用Arrays.copyof()方法将元素拷贝到新的数组（详见下面的第3点）。从中可以看出，当容量不够时，每次增加元素，都要将原来的元素拷贝到一个新的数组中，非常之耗时，也因此建议在事先能确定元素数量的情况下，才使用ArrayList，否则建议使用LinkedList。
+
+3、ArrayList的实现中大量地调用了Arrays.copyof()和System.arraycopy()方法。我们有必要对这两个方法的实现做下深入的了解。
+</code></pre>
+<p><a href="http://www.cnblogs.com/ITtangtang/p/3948555.html">http://www.cnblogs.com/ITtangtang/p/3948555.html</a></p>
+<p>. LinkedList是用链表结构存储数据的，很适合数据的动态插入和删除，随机访问和遍历速度比较慢。另外，接口中没有定义的方法get，remove，insertList，专门用于操作表头和表尾元素，可以当作堆栈、队列和双向队列使用。LinkedList没有同步方法。如果多个线程同时访问一个List，则必须自己实现访问同步。一种解决方法是在创建 List时构造一个同步的List：<br>             List list &#x3D; Collections.synchronizedList(new LinkedList(…));</p>
+<p>查看Java源代码，发现当数组的大小不够的时候，<br>需要重新建立数组，然后将元素拷贝到新的数组内，ArrayList和Vector的扩展数组的大小不同。</p>
+<p><a href="http://www.tuicool.com/articles/iQZBFb">http://www.tuicool.com/articles/iQZBFb</a></p>
+<p><a href="http://www.cnblogs.com/azai/archive/2010/12/09/1901272.html">http://www.cnblogs.com/azai/archive/2010/12/09/1901272.html</a></p>
+<hr>
+<h4 id="简化"><a href="#简化" class="headerlink" title="简化"></a>简化</h4><ul>
+<li><p>Collections.synchronizedList(List l)</p>
+</li>
+<li><p>Serializable 、RandomAccess 、Cloneable</p>
+</li>
+<li><p>ensureCapacity</p>
+<p>从上面的源码剖析可以看出这三种List实现的一些典型适用场景，如果经常对数组做随机插入操作，特别是插入的比较靠前，那么LinkedList的性能优势就非常明显，而如果都只是末尾插入，则ArrayList更占据优势，如果需要线程安全，则使用Vector或者创建线程安全的ArrayList。</p>
+</li>
+</ul>
+<p>在使用基于数组实现的ArrayList 和Vector 时我们要指定初始容量，因为我们在源码中也看到了，在添加时首先要进行容量的判断，如果容量不够则要创建新数组，还要将原来数组中的数据复制到新数组中，这个过程会减低效率并且会浪费资源。</p>
 ]]></content>
   </entry>
   <entry>
@@ -289,46 +304,6 @@ System.out.println(ok==ok1)
 ]]></content>
   </entry>
   <entry>
-    <title>List学习</title>
-    <url>/2019/07/16/oldblog/List%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[<p>此处简介</p>
-<span id="more"></span>
-
-<h3 id="List学习"><a href="#List学习" class="headerlink" title="List学习"></a>List学习</h3><p> <code>ArrayList不是线程安全的，只能用在单线程环境下，多线程环境下可以考虑用Collections.synchronizedList(List l)函数返回一个线程安全的ArrayList类，也可以使用concurrent并发包下的CopyOnWriteArrayList类</code></p>
-<p>ArrayList实现了Serializable接口，因此它支持序列化，能够通过序列化传输，实现了RandomAccess接口，支持快速随机访问，实际上就是通过下标序号进行快速访问，实现了Cloneable接口，能被克隆。</p>
-<p>每个ArrayList实例都有一个容量，该容量是指用来存储列表元素的数组的大小。它总是至少等于列表的大小。随着向ArrayList中不断添加元素，其容量也自动增长。自动增长会带来数据向新数组的重新拷贝，因此，如果可预知数据量的多少，可在构造ArrayList时指定其容量。在添加大量元素前，应用程序也可以使用ensureCapacity操作来增加ArrayList实例的容量，这可以减少递增式再分配的数量。<br>每个ArrayList实例都有一个容量，该容量是指用来存储列表元素的数组的大小。它总是至少等于列表的大小。随着向ArrayList中不断添加元素，其容量也自动增长。自动增长会带来数据向新数组的重新拷贝，因此，如果可预知数据量的多少，可在构造ArrayList时指定其容量。在添加大量元素前，应用程序也可以使用ensureCapacity操作来增加ArrayList实例的容量，这可以减少递增式再分配的数量。<br>从上述代码中可以看出，数组进行扩容时，会将老数组中的元素重新拷贝一份到新的数组中，每次数组容量的增长大约是其原容量的1.5倍。这种操作的代价是很高的，因此在实际使用时，我们应该尽量避免数组容量的扩张。当我们可预知要保存的元素的多少时，要在构造ArrayList实例时，就指定其容量，以避免数组扩容的发生。或者根据实际需求，通过调用ensureCapacity方法来手动增加ArrayList实例的容量。</p>
-<p>Object oldData[] &#x3D; elementData;&#x2F;&#x2F;为什么要用到oldData[]<br>乍一看来后面并没有用到关于oldData， 这句话显得多此一举！但是这是一个牵涉到内存管理的类， 所以要了解内部的问题。 而且为什么这一句还在if的内部，这跟elementData &#x3D; Arrays.copyOf(elementData, newCapacity); 这句是有关系的，下面这句Arrays.copyOf的实现时新创建了newCapacity大小的内存，然后把老的elementData放入。好像也没有用到oldData，有什么问题呢。问题就在于旧的内存的引用是elementData， elementData指向了新的内存块，如果有一个局部变量oldData变量引用旧的内存块的话，在copy的过程中就会比较安全，因为这样证明这块老的内存依然有引用，分配内存的时候就不会被侵占掉，然后copy完成后这个局部变量的生命期也过去了，然后释放才是安全的。不然在copy的的时候万一新的内存或其他线程的分配内存侵占了这块老的内存，而copy还没有结束，这将是个严重的事情。 关于ArrayList和Vector区别如下：</p>
-<pre><code>ArrayList在内存不够时默认是扩展50% + 1个，Vector是默认扩展1倍。
-Vector提供indexOf(obj, start)接口，ArrayList没有。
-Vector属于线程安全级别的，但是大多数情况下不使用Vector，因为线程安全需要更大的系统开销。
-</code></pre>
-<p> ArrayList还给我们提供了将底层数组的容量调整为当前列表保存的实际元素的大小的功能。它可以通过trimToSize方法来实现。代码如下：</p>
-<p>关于ArrayList的源码，给出几点比较重要的总结：</p>
-<pre><code>1、注意其三个不同的构造方法。无参构造方法构造的ArrayList的容量默认为10，带有Collection参数的构造方法，将Collection转化为数组赋给ArrayList的实现数组elementData。
-
-2、注意扩充容量的方法ensureCapacity。ArrayList在每次增加元素（可能是1个，也可能是一组）时，都要调用该方法来确保足够的容量。当容量不足以容纳当前的元素个数时，就设置新的容量为旧的容量的1.5倍加1，如果设置后的新容量还不够，则直接新容量设置为传入的参数（也就是所需的容量），而后用Arrays.copyof()方法将元素拷贝到新的数组（详见下面的第3点）。从中可以看出，当容量不够时，每次增加元素，都要将原来的元素拷贝到一个新的数组中，非常之耗时，也因此建议在事先能确定元素数量的情况下，才使用ArrayList，否则建议使用LinkedList。
-
-3、ArrayList的实现中大量地调用了Arrays.copyof()和System.arraycopy()方法。我们有必要对这两个方法的实现做下深入的了解。
-</code></pre>
-<p><a href="http://www.cnblogs.com/ITtangtang/p/3948555.html">http://www.cnblogs.com/ITtangtang/p/3948555.html</a></p>
-<p>. LinkedList是用链表结构存储数据的，很适合数据的动态插入和删除，随机访问和遍历速度比较慢。另外，接口中没有定义的方法get，remove，insertList，专门用于操作表头和表尾元素，可以当作堆栈、队列和双向队列使用。LinkedList没有同步方法。如果多个线程同时访问一个List，则必须自己实现访问同步。一种解决方法是在创建 List时构造一个同步的List：<br>             List list &#x3D; Collections.synchronizedList(new LinkedList(…));</p>
-<p>查看Java源代码，发现当数组的大小不够的时候，<br>需要重新建立数组，然后将元素拷贝到新的数组内，ArrayList和Vector的扩展数组的大小不同。</p>
-<p><a href="http://www.tuicool.com/articles/iQZBFb">http://www.tuicool.com/articles/iQZBFb</a></p>
-<p><a href="http://www.cnblogs.com/azai/archive/2010/12/09/1901272.html">http://www.cnblogs.com/azai/archive/2010/12/09/1901272.html</a></p>
-<hr>
-<h4 id="简化"><a href="#简化" class="headerlink" title="简化"></a>简化</h4><ul>
-<li><p>Collections.synchronizedList(List l)</p>
-</li>
-<li><p>Serializable 、RandomAccess 、Cloneable</p>
-</li>
-<li><p>ensureCapacity</p>
-<p>从上面的源码剖析可以看出这三种List实现的一些典型适用场景，如果经常对数组做随机插入操作，特别是插入的比较靠前，那么LinkedList的性能优势就非常明显，而如果都只是末尾插入，则ArrayList更占据优势，如果需要线程安全，则使用Vector或者创建线程安全的ArrayList。</p>
-</li>
-</ul>
-<p>在使用基于数组实现的ArrayList 和Vector 时我们要指定初始容量，因为我们在源码中也看到了，在添加时首先要进行容量的判断，如果容量不够则要创建新数组，还要将原来数组中的数据复制到新数组中，这个过程会减低效率并且会浪费资源。</p>
-]]></content>
-  </entry>
-  <entry>
     <title>Vim笔记</title>
     <url>/2019/07/16/oldblog/Vim%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<p>此处简介</p>
@@ -353,8 +328,24 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 <h4 id="搜索和替换命令"><a href="#搜索和替换命令" class="headerlink" title="搜索和替换命令"></a>搜索和替换命令</h4><p>命令 作用<br>&#x2F;string 向前搜索指定字符串<br>搜索时忽略大小写 :set ic<br>n 搜索指定字符串的下一个出现位置<br>:%s&#x2F;old&#x2F;new&#x2F;g  全文替换指定字符串<br>:n1,n2s&#x2F;old&#x2F;new&#x2F;g  在一定范围内替换指定字符串 注：n是从前往后，N是从后往前找<br>set noic是设置大小写敏感<br>:n1,n2s&#x2F;old&#x2F;new&#x2F;c    替换时进行询问是否真的替换</p>
 <p>ZZ与:wq的作用一样，都是保存退出<br>对于readonly文件，如果是root或者改文件所有者，即使该文件没有写权限，使用:wq!也能保存该修改之后的文件。<br>仅仅保存但不退出 :w<br>另存为  :w &#x2F;root&#x2F;file.bak</p>
 <hr>
-<h4 id="其它命令"><a href="#其它命令" class="headerlink" title="其它命令"></a>其它命令</h4><p>导入文件 :r 文件名<br>在vi中执行命令 :! 命令<br>定义快捷键 :map 快捷键  触发命令<br>范例：  :map  ^P  I#<ESC>         注：^p是这样输入的 ctrl+v+v  –&gt; ^p<br>     :map  ^B  0x<br>连续行注释 :n1,n2s&#x2F;^&#x2F;#&#x2F;g              注：^表示行首<br>    :n1,n2s&#x2F;^#&#x2F;&#x2F;g<br>    :n1,n2s&#x2F;^&#x2F;//&#x2F;g<br>替换  :ab huhuimail    <a href="mailto:&#104;&#117;&#x68;&#117;&#x69;&#99;&#115;&#64;&#103;&#109;&#x61;&#x69;&#108;&#x2e;&#x63;&#x6f;&#x6d;">&#104;&#117;&#x68;&#117;&#x69;&#99;&#115;&#64;&#103;&#109;&#x61;&#x69;&#108;&#x2e;&#x63;&#x6f;&#x6d;</a>         取消ab命令    :unan huhuimail<br>:r !date   在vi中加入命令执行的结果<br>快捷键插入邮箱  :map ^e <a href="mailto:&#x69;&#x68;&#x75;&#104;&#117;&#105;&#99;&#115;&#64;&#x67;&#109;&#x61;&#x69;&#x6c;&#46;&#99;&#111;&#x6d;">&#x69;&#x68;&#x75;&#104;&#117;&#105;&#99;&#115;&#64;&#x67;&#109;&#x61;&#x69;&#x6c;&#46;&#99;&#111;&#x6d;</a></ESC></p>
+<h4 id="其它命令"><a href="#其它命令" class="headerlink" title="其它命令"></a>其它命令</h4><p>导入文件 :r 文件名<br>在vi中执行命令 :! 命令<br>定义快捷键 :map 快捷键  触发命令<br>范例：  :map  ^P  I#<ESC>         注：^p是这样输入的 ctrl+v+v  –&gt; ^p<br>     :map  ^B  0x<br>连续行注释 :n1,n2s&#x2F;^&#x2F;#&#x2F;g              注：^表示行首<br>    :n1,n2s&#x2F;^#&#x2F;&#x2F;g<br>    :n1,n2s&#x2F;^&#x2F;//&#x2F;g<br>替换  :ab huhuimail    <a href="mailto:&#x68;&#117;&#x68;&#117;&#x69;&#99;&#115;&#64;&#103;&#109;&#97;&#105;&#x6c;&#46;&#x63;&#111;&#109;">&#x68;&#117;&#x68;&#117;&#x69;&#99;&#115;&#64;&#103;&#109;&#97;&#105;&#x6c;&#46;&#x63;&#111;&#109;</a>         取消ab命令    :unan huhuimail<br>:r !date   在vi中加入命令执行的结果<br>快捷键插入邮箱  :map ^e <a href="mailto:&#x69;&#x68;&#117;&#104;&#x75;&#x69;&#x63;&#x73;&#64;&#x67;&#109;&#x61;&#x69;&#108;&#46;&#99;&#x6f;&#x6d;">&#x69;&#x68;&#117;&#104;&#x75;&#x69;&#x63;&#x73;&#64;&#x67;&#109;&#x61;&#x69;&#108;&#46;&#99;&#x6f;&#x6d;</a></ESC></p>
 <h4 id="修改用户vim设置"><a href="#修改用户vim设置" class="headerlink" title="修改用户vim设置"></a>修改用户vim设置</h4><p>修改用户vim设置，比如能永久保存快捷键<br>vi ~&#x2F;.vimrc<br>缺省这个文件是空的，然后可以写入一些快捷键</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>flume小结</title>
+    <url>/2019/07/16/oldblog/flume%E5%B0%8F%E7%BB%93/</url>
+    <content><![CDATA[<p>此处简介</p>
+<span id="more"></span>
+
+<h2 id="flume小结"><a href="#flume小结" class="headerlink" title="flume小结"></a>flume小结</h2><p><code>此次flume环境的搭建是针对实际日志业务，整个过程还算顺利</code><br>针对flume的引入更多的偏向应用层面。所以更多的要熟悉相关配置与参数的设置</p>
+<h3 id="flume的整体构思"><a href="#flume的整体构思" class="headerlink" title="flume的整体构思"></a>flume的整体构思</h3><p>采用的是flume框架中的flume-ng。整体架构如下图<br><img src="//img.wqkenqing.ren/file/2017/7/c6589103d8ba4dffaf21c52b37cc7e17-image.png" alt="c6589103d8ba4dffaf21c52b37cc7e17-image.png"><br>log_product环节尚有争议，主要针对flume环节进行小结。<br>原从效率上考虑，打算在跳板机上搭建直接接入hadoop的单flume节点，因为网络权限等问题，无法直接写入所以放弃。转而改为在hadoop环境中也引入一个flume节点(flume-server)。因client是单节点，所以没有必要引入fail-over机制。因此flume-server也是单节点<br>。</p>
+<hr>
+<h3 id><a href="#" class="headerlink" title></a></h3><p>写入hdfs时有三个参数要注意<br>rollSize<br>rollCount<br>rollInterval<br>这三个参数对写入单个hdfs文件时的大小，行，时间。</p>
+<hr>
+<p>flume-ng agent -n agent1 -c conf -f flume-client.properties -Dflume.root.logger&#x3D;DEBUG,console</p>
+<p>flume-ng agent -n agent1 -c conf -f flume-client.properties -Dflume.root.logger&#x3D;DEBUG,console &amp;</p>
+<p>flume-ng agent -n a1 -c ..&#x2F;conf -f flume-server.properties -Dflume.root.logger&#x3D;DEBUG,console &amp;</p>
 ]]></content>
   </entry>
   <entry>
@@ -375,9 +366,9 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 <li>git log –pretty&#x3D;oneline 简约查看log</li>
 <li>git diff 查看文件与版本库中的差异</li>
 <li>git checkout – file 文件在工作区的修改全部撤销</li>
-<li>git remote add origin <a href="mailto:&#x67;&#105;&#116;&#64;&#x67;&#105;&#x74;&#104;&#117;&#x62;&#46;&#99;&#111;&#109;">&#x67;&#105;&#116;&#64;&#x67;&#105;&#x74;&#104;&#117;&#x62;&#46;&#99;&#111;&#109;</a>:michaelliao&#x2F;learngit.git 添加远程库</li>
+<li>git remote add origin <a href="mailto:&#x67;&#105;&#116;&#x40;&#103;&#x69;&#116;&#104;&#117;&#98;&#46;&#99;&#111;&#x6d;">&#x67;&#105;&#116;&#x40;&#103;&#x69;&#116;&#104;&#117;&#98;&#46;&#99;&#111;&#x6d;</a>:michaelliao&#x2F;learngit.git 添加远程库</li>
 <li>git push -u origin master 推送分支</li>
-<li>git clone <a href="mailto:&#x67;&#105;&#x74;&#x40;&#x67;&#x69;&#116;&#104;&#117;&#x62;&#46;&#99;&#x6f;&#109;">&#x67;&#105;&#x74;&#x40;&#x67;&#x69;&#116;&#104;&#117;&#x62;&#46;&#99;&#x6f;&#109;</a>:michaelliao&#x2F;gitskills.git 克隆</li>
+<li>git clone <a href="mailto:&#x67;&#x69;&#x74;&#x40;&#x67;&#x69;&#116;&#x68;&#117;&#x62;&#x2e;&#99;&#x6f;&#109;">&#x67;&#x69;&#x74;&#x40;&#x67;&#x69;&#116;&#x68;&#117;&#x62;&#x2e;&#99;&#x6f;&#109;</a>:michaelliao&#x2F;gitskills.git 克隆</li>
 <li>git checkout -b dev 创建并切换分支</li>
 <li>git branch dev 创建分支</li>
 <li>git checkout dev  切换分支</li>
@@ -578,22 +569,6 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 <li><code>BufferReader</code></li>
 </ul>
 <p>read(char[],0,len)的理解<br>将len从0位开始装入char[]中，然后通过String.valueOf(char[])转换成字符串</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>flume小结</title>
-    <url>/2019/07/16/oldblog/flume%E5%B0%8F%E7%BB%93/</url>
-    <content><![CDATA[<p>此处简介</p>
-<span id="more"></span>
-
-<h2 id="flume小结"><a href="#flume小结" class="headerlink" title="flume小结"></a>flume小结</h2><p><code>此次flume环境的搭建是针对实际日志业务，整个过程还算顺利</code><br>针对flume的引入更多的偏向应用层面。所以更多的要熟悉相关配置与参数的设置</p>
-<h3 id="flume的整体构思"><a href="#flume的整体构思" class="headerlink" title="flume的整体构思"></a>flume的整体构思</h3><p>采用的是flume框架中的flume-ng。整体架构如下图<br><img src="//img.wqkenqing.ren/file/2017/7/c6589103d8ba4dffaf21c52b37cc7e17-image.png" alt="c6589103d8ba4dffaf21c52b37cc7e17-image.png"><br>log_product环节尚有争议，主要针对flume环节进行小结。<br>原从效率上考虑，打算在跳板机上搭建直接接入hadoop的单flume节点，因为网络权限等问题，无法直接写入所以放弃。转而改为在hadoop环境中也引入一个flume节点(flume-server)。因client是单节点，所以没有必要引入fail-over机制。因此flume-server也是单节点<br>。</p>
-<hr>
-<h3 id><a href="#" class="headerlink" title></a></h3><p>写入hdfs时有三个参数要注意<br>rollSize<br>rollCount<br>rollInterval<br>这三个参数对写入单个hdfs文件时的大小，行，时间。</p>
-<hr>
-<p>flume-ng agent -n agent1 -c conf -f flume-client.properties -Dflume.root.logger&#x3D;DEBUG,console</p>
-<p>flume-ng agent -n agent1 -c conf -f flume-client.properties -Dflume.root.logger&#x3D;DEBUG,console &amp;</p>
-<p>flume-ng agent -n a1 -c ..&#x2F;conf -f flume-server.properties -Dflume.root.logger&#x3D;DEBUG,console &amp;</p>
 ]]></content>
   </entry>
   <entry>
@@ -856,50 +831,6 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 ]]></content>
   </entry>
   <entry>
-    <title>python learn</title>
-    <url>/2019/07/16/oldblog/python%20learn/</url>
-    <content><![CDATA[<p>此处简介</p>
-<span id="more"></span>
-
-<p><code>the record for python</code></p>
-<h3 id="Python-知识点"><a href="#Python-知识点" class="headerlink" title="Python 知识点"></a>Python 知识点</h3><h4 id="标识符号"><a href="#标识符号" class="headerlink" title="标识符号"></a>标识符号</h4><p>在 Python 里，标识符有字母、数字、下划线组成。<br>在 Python 中，所有标识符可以包括英文、数字以及下划线(_)，但不能以数字开头。</p>
-<p>以下划线开头的标识符是有特殊意义的。以单下划线开头 _foo 的代表不能直接访问的类属性，需通过类提供的接口进行访问，不能用 from xxx import * 而导入；</p>
-<p>以双下划线开头的 __foo 代表类的私有成员；以双下划线开头和结尾的 <strong>foo</strong> 代表 Python 里特殊方法专用的标识，如 <strong>init</strong>() 代表类的构造函数。</p>
-<p>Python 可以同一行显示多条语句，方法是用分号 ; 分开，</p>
-<h4 id="行和缩进"><a href="#行和缩进" class="headerlink" title="行和缩进"></a>行和缩进</h4><p>python 最具特色的就是用缩进来写模块。<br>缩进的空白数量是可变的，但是所有代码块语句必须包含相同的缩进空白数量，这个必须严格执行<br>因此，在 Python 的代码块中必须使用相同数目的行首缩进空格数。<br>建议你在每个缩进层次使用 单个制表符 或 两个空格 或 四个空格 , 切记不能混用</p>
-<h4 id="多行语句"><a href="#多行语句" class="headerlink" title="多行语句"></a>多行语句</h4><p>Python语句中一般以新行作为为语句的结束符。<br>但是我们可以使用斜杠（ \）将一行的语句分为多行显示，</p>
-<h4 id="Python-引号"><a href="#Python-引号" class="headerlink" title="Python 引号"></a>Python 引号</h4><p>Python 可以使用引号( ‘ )、双引号( “ )、三引号( ‘’’ 或 “”” ) 来表示字符串，引号的开始与结束必须的相同类型的。<br>其中三引号可以由多行组成，编写多行文本的快捷语法，常用语文档字符串，在文件的特定地点，被当做注释。</p>
-<h4 id="Python注释"><a href="#Python注释" class="headerlink" title="Python注释"></a>Python注释</h4><p>python 中多行注释使用三个单引号(‘’’)或三个双引号(“””)。</p>
-<h4 id="Python空行"><a href="#Python空行" class="headerlink" title="Python空行"></a>Python空行</h4><p>函数之间或类的方法之间用空行分隔，表示一段新的代码的开始。类和函数入口之间也用一行空行分隔，以突出函数入口的开始。<br>空行与代码缩进不同，空行并不是Python语法的一部分。书写时不插入空行，Python解释器运行也不会出错。但是空行的作用在于分隔两段不同功能或含义的代码，便于日后代码的维护或重构。<br>记住：空行也是程序代码的一部分。</p>
-<h4 id="Python-变量类型"><a href="#Python-变量类型" class="headerlink" title="Python 变量类型"></a>Python 变量类型</h4><p>变量存储在内存中的值。这就意味着在创建变量时会在内存中开辟一个空间。<br>基于变量的数据类型，解释器会分配指定内存，并决定什么数据可以被存储在内存中。<br>因此，变量可以指定不同的数据类型，这些变量可以存储整数，小数或字符。</p>
-<p><strong>变量赋值</strong></p>
-<p>Python 中的变量赋值不需要类型声明。<br>每个变量在内存中创建，都包括变量的标识，名称和数据这些信息。<br>每个变量在使用前都必须赋值，变量赋值以后该变量才会被创建。<br>等号（&#x3D;）用来给变量赋值。</p>
-<h4 id="python-标准数据类型"><a href="#python-标准数据类型" class="headerlink" title="python 标准数据类型"></a>python 标准数据类型</h4><p>python 定义了一些标准类型，用于存储各种类型的数据。<br>Python有五个标准的数据类型：<br>Numbers（数字）<br>String（字符串）<br>List（列表）<br>Tuple（元组）<br>Dictionary（字典）</p>
-<h4 id="Python数字"><a href="#Python数字" class="headerlink" title="Python数字"></a>Python数字</h4><p>数字数据类型用于存储数值。<br>他们是不可改变的数据类型，这意味着改变数字数据类型会分配一个新的对象。<br>当你指定一个值时，Number对象就会被创建：<br>您也可以使用del语句删除一些对象的引用。<br>del语句的语法是：</p>
-<p>del var1[,var2[,var3[….,varN]]]]</p>
-<p>您可以通过使用del语句删除单个或多个对象的引用。例如：</p>
-<p>del var<br>del var_a, var_b</p>
-<p>Python支持四种不同的数字类型：</p>
-<p>int（有符号整型）</p>
-<p>long（长整型[也可以代表八进制和十六进制]）</p>
-<p>float（浮点型）</p>
-<p>complex（复数）</p>
-<h4 id="Python字符串"><a href="#Python字符串" class="headerlink" title="Python字符串"></a>Python字符串</h4><p>字符串或串(String)是由数字、字母、下划线组成的一串字符。</p>
-<p>一般记为 :<br>s&#x3D;”a1a2···an”(n&gt;&#x3D;0)<br>它是编程语言中表示文本的数据类型。</p>
-<p>python的字串列表有2种取值顺序:</p>
-<p>从左到右索引默认0开始的，最大范围是字符串长度少1</p>
-<p>从右到左索引默认-1开始的，最大范围是字符串开头</p>
-<p>当使用以冒号分隔的字符串，python返回一个新的对象，结果包含了以这对偏移标识的连续的内容，左边的开始是包含了下边界。<br>上面的结果包含了s[1]的值l，而取到的最大范围不包括上边界，就是s[5]的值p。</p>
-<p>加号（+）是字符串连接运算符，星号（*）是重复操作</p>
-<h4 id="Python列表"><a href="#Python列表" class="headerlink" title="Python列表"></a>Python列表</h4><p>List（列表） 是 Python 中使用最频繁的数据类型。</p>
-<h4 id="python元组"><a href="#python元组" class="headerlink" title="python元组"></a>python元组</h4><p>元组是另一个数据类型，类似于List（列表）。</p>
-<p>元组用”()”标识。内部元素用逗号隔开。但是元组不能二次赋值，相当于只读列表</p>
-<h4 id="Python-字典"><a href="#Python-字典" class="headerlink" title="Python 字典"></a>Python 字典</h4>]]></content>
-      <tags>
-        <tag>python</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>异常处理机制小结</title>
     <url>/2019/07/16/oldblog/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%9C%BA%E5%88%B6%E5%B0%8F%E7%BB%93/</url>
     <content><![CDATA[<p>此处简介</p>
@@ -981,6 +912,53 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 ]]></content>
   </entry>
   <entry>
+    <title>sed &amp; awk小结</title>
+    <url>/2019/07/16/oldblog/sed%20&amp;%20awk%E5%B0%8F%E7%BB%93/</url>
+    <content><![CDATA[<p>此处简介</p>
+<span id="more"></span>
+
+<h1 id="sed-awk小结"><a href="#sed-awk小结" class="headerlink" title="sed &amp; awk小结"></a>sed &amp; awk小结</h1><p><code>一直想认真掌握sed与awk已经很久了，但一直未找个以特别详细的资料和时间来做这件事，正好这两天受到启发，转而翻墙搜索国外资源，有了很大的收获，趁次机会攻克下来</code></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>sed与awk总得来说是两样东西，本身无直接关联，做在日常使用时两者经常使用到，并且常常混合使用，所以此次小结放在一起，分总式结构进行小结</p>
+<h2 id="sed"><a href="#sed" class="headerlink" title="sed"></a>sed</h2><p>sed相较awk更偏于工具一点，全称应该是strem editor (即流式编辑器)。面向的是一行一行内容</p>
+<h3 id="使用形式"><a href="#使用形式" class="headerlink" title="使用形式"></a>使用形式</h3><p>sed [-nefr] [动作]<br>选项与参数：<br>-n ：使用安静(silent)模式。在一般 sed 的用法中，所有来自 STDIN 的数据一般都会被列出到终端上。但如果加上 -n 参数后，则只有经过sed 特殊处理的那一行(或者动作)才会被列出来。<br>-e ：直接在命令列模式上进行 sed 的动作编辑；<br>-f ：直接将 sed 的动作写在一个文件内， -f filename 则可以运行 filename 内的 sed 动作；<br>-r ：sed 的动作支持的是延伸型正规表示法的语法。(默认是基础正规表示法语法)<br>-i ：直接修改读取的文件内容，而不是输出到终端。</p>
+<p>动作说明： [n1[,n2]]function<br>n1, n2 ：不见得会存在，一般代表『选择进行动作的行数』，举例来说，如果我的动作是需要在 10 到 20 行之间进行的，则『 10,20[动作行为] 』</p>
+<p><strong>function：</strong><br>a ：新增， a 的后面可以接字串，而这些字串会在新的一行出现(目前的下一行)～<br>c ：取代， c 的后面可以接字串，这些字串可以取代 n1,n2 之间的行！<br>d ：删除，因为是删除啊，所以 d 后面通常不接任何咚咚；<br>i ：插入， i 的后面可以接字串，而这些字串会在新的一行出现(目前的上一行)；<br>p ：列印，亦即将某个选择的数据印出。通常 p 会与参数 sed -n 一起运行～<br>s ：取代，可以直接进行取代的工作哩！通常这个 s 的动作可以搭配正规表示法！例如 1,20s&#x2F;old&#x2F;new&#x2F;g 就是啦！</p>
+<hr>
+<h2 id="awk"><a href="#awk" class="headerlink" title="awk"></a>awk</h2><p><code>尝试看awk已有些时日，整体效率不太好，但大体也有思路，现对awk进行一些简单总结，后面则进行实例操作</code><br>awk的细节小点比较多，一次或无法完全总结全，但总体感觉下来发现熟悉大体模式，具体细节可以再通过即时检索解决</p>
+<h3 id="awk命令的基本格式是"><a href="#awk命令的基本格式是" class="headerlink" title="awk命令的基本格式是:"></a>awk命令的基本格式是:</h3><blockquote>
+<p><code>awk &#39;/search_pattern/ &#123; action_to_t[](http://)ake_on_matches; another_action; &#125;&#39; file_to_parse</code></p>
+</blockquote>
+<p>其中searach 与action都可省略其中之一，若action省略，那么action默认为print操作<br>如何search省略，那么默认action针对的是每一行如<br><img src="//img.wqkenqing.ren/file/2017/7/b193032f8daa40faaffc84b673b46885-image.png" alt="b193032f8daa40faaffc84b673b46885-image.png"><br><img src="//img.wqkenqing.ren/file/2017/7/06ddb1ad717c434e939c3d0461b2d937-image.png" alt="06ddb1ad717c434e939c3d0461b2d937-image.png"></p>
+<hr>
+<p>附几个操作实例如<br><img src="//img.wqkenqing.ren/file/2017/7/1b777aa53595428e9d56e0b66052f48c-image.png" alt="1b777aa53595428e9d56e0b66052f48c-image.png"></p>
+<p><img src="//img.wqkenqing.ren/file/2017/7/a1e8b526c4a042b48e0e161e6eae35fe-image.png" alt="a1e8b526c4a042b48e0e161e6eae35fe-image.png"></p>
+<p><img src="//img.wqkenqing.ren/file/2017/7/de2e1925530d410ba52f25ff0781f0b5-image.png" alt="de2e1925530d410ba52f25ff0781f0b5-image.png"></p>
+<p><strong>这里是以空白区分了列，通过$后加不同的数字，表示不同的列，$0表示这一行，$1表示第一列</strong>，类推。</p>
+<h3 id="awk的内置变量"><a href="#awk的内置变量" class="headerlink" title="awk的内置变量"></a>awk的内置变量</h3><ul>
+<li><strong>FILENAME</strong>:当前输入文件的名称</li>
+<li><strong>FNR</strong>:当前输入文件数</li>
+<li><strong>FS</strong>:当前环境中的分隔符，默认是空白</li>
+<li><strong>NF</strong>:输入文件的每行对应的列数</li>
+<li><strong>NR</strong>:当前是第几个记录</li>
+<li><strong>OFS</strong>:列输出时的分隔符，默认是空白</li>
+<li><strong>ORS</strong>:记录输出时的分隔符，默认是新起一行</li>
+<li><strong>RS</strong>输入记录中的分隔符，默认是newline character</li>
+</ul>
+<p> 正如以上内置变量的存在，所以，awk在正式使用进可能面临更多复杂情况，而之前那种简单模式可以无法应对。于是，常用的awk的使用形态扩充为</p>
+<blockquote>
+<p>awk ‘BEGIN { action; }<br>&#x2F;search&#x2F; { action; }<br>END { action; }’ input_file</p>
+</blockquote>
+<p>这里引入了BEGIN与END两个部份，用于做一些初始化或善后处理。<br><img src="//img.wqkenqing.ren/file/2017/7/8a8d39f410944dcc9584c7052e2e46a4-image.png" alt="8a8d39f410944dcc9584c7052e2e46a4-image.png"></p>
+<p><img src="//img.wqkenqing.ren/file/2017/7/3fb8e3723fbd439990cd8e000c673c9b-image.png" alt="3fb8e3723fbd439990cd8e000c673c9b-image.png"></p>
+<h3 id="awk的一些常见的匹配操作"><a href="#awk的一些常见的匹配操作" class="headerlink" title="awk的一些常见的匹配操作"></a>awk的一些常见的匹配操作</h3><ul>
+<li>awk ‘&#x2F;sa&#x2F;‘ file</li>
+<li>awk ‘$2 ~ &#x2F;^sa&#x2F;‘ file<br>$number表示只匹配该列<br>~ 表示“是”<br>!~表示“不是”</li>
+</ul>
+<hr>
+<p>至此一这就总结了一些较为基础的awk使用，就一般工作而言，已经能应对很多场景了。<br>后续我会再进行更为详细的总结<br>待续~~~</p>
+]]></content>
+  </entry>
+  <entry>
     <title>测试心得</title>
     <url>/2019/07/16/oldblog/%E6%B5%8B%E8%AF%95%E5%BF%83%E5%BE%97/</url>
     <content><![CDATA[<p>此处简介</p>
@@ -1043,51 +1021,48 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 ]]></content>
   </entry>
   <entry>
-    <title>sed &amp; awk小结</title>
-    <url>/2019/07/16/oldblog/sed%20&amp;%20awk%E5%B0%8F%E7%BB%93/</url>
+    <title>python learn</title>
+    <url>/2019/07/16/oldblog/python%20learn/</url>
     <content><![CDATA[<p>此处简介</p>
 <span id="more"></span>
 
-<h1 id="sed-amp-awk小结"><a href="#sed-amp-awk小结" class="headerlink" title="sed &amp; awk小结"></a>sed &amp; awk小结</h1><p><code>一直想认真掌握sed与awk已经很久了，但一直未找个以特别详细的资料和时间来做这件事，正好这两天受到启发，转而翻墙搜索国外资源，有了很大的收获，趁次机会攻克下来</code></p>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>sed与awk总得来说是两样东西，本身无直接关联，做在日常使用时两者经常使用到，并且常常混合使用，所以此次小结放在一起，分总式结构进行小结</p>
-<h2 id="sed"><a href="#sed" class="headerlink" title="sed"></a>sed</h2><p>sed相较awk更偏于工具一点，全称应该是strem editor (即流式编辑器)。面向的是一行一行内容</p>
-<h3 id="使用形式"><a href="#使用形式" class="headerlink" title="使用形式"></a>使用形式</h3><p>sed [-nefr] [动作]<br>选项与参数：<br>-n ：使用安静(silent)模式。在一般 sed 的用法中，所有来自 STDIN 的数据一般都会被列出到终端上。但如果加上 -n 参数后，则只有经过sed 特殊处理的那一行(或者动作)才会被列出来。<br>-e ：直接在命令列模式上进行 sed 的动作编辑；<br>-f ：直接将 sed 的动作写在一个文件内， -f filename 则可以运行 filename 内的 sed 动作；<br>-r ：sed 的动作支持的是延伸型正规表示法的语法。(默认是基础正规表示法语法)<br>-i ：直接修改读取的文件内容，而不是输出到终端。</p>
-<p>动作说明： [n1[,n2]]function<br>n1, n2 ：不见得会存在，一般代表『选择进行动作的行数』，举例来说，如果我的动作是需要在 10 到 20 行之间进行的，则『 10,20[动作行为] 』</p>
-<p><strong>function：</strong><br>a ：新增， a 的后面可以接字串，而这些字串会在新的一行出现(目前的下一行)～<br>c ：取代， c 的后面可以接字串，这些字串可以取代 n1,n2 之间的行！<br>d ：删除，因为是删除啊，所以 d 后面通常不接任何咚咚；<br>i ：插入， i 的后面可以接字串，而这些字串会在新的一行出现(目前的上一行)；<br>p ：列印，亦即将某个选择的数据印出。通常 p 会与参数 sed -n 一起运行～<br>s ：取代，可以直接进行取代的工作哩！通常这个 s 的动作可以搭配正规表示法！例如 1,20s&#x2F;old&#x2F;new&#x2F;g 就是啦！</p>
-<hr>
-<h2 id="awk"><a href="#awk" class="headerlink" title="awk"></a>awk</h2><p><code>尝试看awk已有些时日，整体效率不太好，但大体也有思路，现对awk进行一些简单总结，后面则进行实例操作</code><br>awk的细节小点比较多，一次或无法完全总结全，但总体感觉下来发现熟悉大体模式，具体细节可以再通过即时检索解决</p>
-<h3 id="awk命令的基本格式是"><a href="#awk命令的基本格式是" class="headerlink" title="awk命令的基本格式是:"></a>awk命令的基本格式是:</h3><blockquote>
-<p><code>awk &#39;/search_pattern/ &#123; action_to_t[](http://)ake_on_matches; another_action; &#125;&#39; file_to_parse</code></p>
-</blockquote>
-<p>其中searach 与action都可省略其中之一，若action省略，那么action默认为print操作<br>如何search省略，那么默认action针对的是每一行如<br><img src="//img.wqkenqing.ren/file/2017/7/b193032f8daa40faaffc84b673b46885-image.png" alt="b193032f8daa40faaffc84b673b46885-image.png"><br><img src="//img.wqkenqing.ren/file/2017/7/06ddb1ad717c434e939c3d0461b2d937-image.png" alt="06ddb1ad717c434e939c3d0461b2d937-image.png"></p>
-<hr>
-<p>附几个操作实例如<br><img src="//img.wqkenqing.ren/file/2017/7/1b777aa53595428e9d56e0b66052f48c-image.png" alt="1b777aa53595428e9d56e0b66052f48c-image.png"></p>
-<p><img src="//img.wqkenqing.ren/file/2017/7/a1e8b526c4a042b48e0e161e6eae35fe-image.png" alt="a1e8b526c4a042b48e0e161e6eae35fe-image.png"></p>
-<p><img src="//img.wqkenqing.ren/file/2017/7/de2e1925530d410ba52f25ff0781f0b5-image.png" alt="de2e1925530d410ba52f25ff0781f0b5-image.png"></p>
-<p><strong>这里是以空白区分了列，通过$后加不同的数字，表示不同的列，$0表示这一行，$1表示第一列</strong>，类推。</p>
-<h3 id="awk的内置变量"><a href="#awk的内置变量" class="headerlink" title="awk的内置变量"></a>awk的内置变量</h3><ul>
-<li><strong>FILENAME</strong>:当前输入文件的名称</li>
-<li><strong>FNR</strong>:当前输入文件数</li>
-<li><strong>FS</strong>:当前环境中的分隔符，默认是空白</li>
-<li><strong>NF</strong>:输入文件的每行对应的列数</li>
-<li><strong>NR</strong>:当前是第几个记录</li>
-<li><strong>OFS</strong>:列输出时的分隔符，默认是空白</li>
-<li><strong>ORS</strong>:记录输出时的分隔符，默认是新起一行</li>
-<li><strong>RS</strong>输入记录中的分隔符，默认是newline character</li>
-</ul>
-<p> 正如以上内置变量的存在，所以，awk在正式使用进可能面临更多复杂情况，而之前那种简单模式可以无法应对。于是，常用的awk的使用形态扩充为</p>
-<blockquote>
-<p>awk ‘BEGIN { action; }<br>&#x2F;search&#x2F; { action; }<br>END { action; }’ input_file</p>
-</blockquote>
-<p>这里引入了BEGIN与END两个部份，用于做一些初始化或善后处理。<br><img src="//img.wqkenqing.ren/file/2017/7/8a8d39f410944dcc9584c7052e2e46a4-image.png" alt="8a8d39f410944dcc9584c7052e2e46a4-image.png"></p>
-<p><img src="//img.wqkenqing.ren/file/2017/7/3fb8e3723fbd439990cd8e000c673c9b-image.png" alt="3fb8e3723fbd439990cd8e000c673c9b-image.png"></p>
-<h3 id="awk的一些常见的匹配操作"><a href="#awk的一些常见的匹配操作" class="headerlink" title="awk的一些常见的匹配操作"></a>awk的一些常见的匹配操作</h3><ul>
-<li>awk ‘&#x2F;sa&#x2F;‘ file</li>
-<li>awk ‘$2 ~ &#x2F;^sa&#x2F;‘ file<br>$number表示只匹配该列<br>~ 表示“是”<br>!~表示“不是”</li>
-</ul>
-<hr>
-<p>至此一这就总结了一些较为基础的awk使用，就一般工作而言，已经能应对很多场景了。<br>后续我会再进行更为详细的总结<br>待续~~~</p>
-]]></content>
+<p><code>the record for python</code></p>
+<h3 id="Python-知识点"><a href="#Python-知识点" class="headerlink" title="Python 知识点"></a>Python 知识点</h3><h4 id="标识符号"><a href="#标识符号" class="headerlink" title="标识符号"></a>标识符号</h4><p>在 Python 里，标识符有字母、数字、下划线组成。<br>在 Python 中，所有标识符可以包括英文、数字以及下划线(_)，但不能以数字开头。</p>
+<p>以下划线开头的标识符是有特殊意义的。以单下划线开头 _foo 的代表不能直接访问的类属性，需通过类提供的接口进行访问，不能用 from xxx import * 而导入；</p>
+<p>以双下划线开头的 __foo 代表类的私有成员；以双下划线开头和结尾的 <strong>foo</strong> 代表 Python 里特殊方法专用的标识，如 <strong>init</strong>() 代表类的构造函数。</p>
+<p>Python 可以同一行显示多条语句，方法是用分号 ; 分开，</p>
+<h4 id="行和缩进"><a href="#行和缩进" class="headerlink" title="行和缩进"></a>行和缩进</h4><p>python 最具特色的就是用缩进来写模块。<br>缩进的空白数量是可变的，但是所有代码块语句必须包含相同的缩进空白数量，这个必须严格执行<br>因此，在 Python 的代码块中必须使用相同数目的行首缩进空格数。<br>建议你在每个缩进层次使用 单个制表符 或 两个空格 或 四个空格 , 切记不能混用</p>
+<h4 id="多行语句"><a href="#多行语句" class="headerlink" title="多行语句"></a>多行语句</h4><p>Python语句中一般以新行作为为语句的结束符。<br>但是我们可以使用斜杠（ \）将一行的语句分为多行显示，</p>
+<h4 id="Python-引号"><a href="#Python-引号" class="headerlink" title="Python 引号"></a>Python 引号</h4><p>Python 可以使用引号( ‘ )、双引号( “ )、三引号( ‘’’ 或 “”” ) 来表示字符串，引号的开始与结束必须的相同类型的。<br>其中三引号可以由多行组成，编写多行文本的快捷语法，常用语文档字符串，在文件的特定地点，被当做注释。</p>
+<h4 id="Python注释"><a href="#Python注释" class="headerlink" title="Python注释"></a>Python注释</h4><p>python 中多行注释使用三个单引号(‘’’)或三个双引号(“””)。</p>
+<h4 id="Python空行"><a href="#Python空行" class="headerlink" title="Python空行"></a>Python空行</h4><p>函数之间或类的方法之间用空行分隔，表示一段新的代码的开始。类和函数入口之间也用一行空行分隔，以突出函数入口的开始。<br>空行与代码缩进不同，空行并不是Python语法的一部分。书写时不插入空行，Python解释器运行也不会出错。但是空行的作用在于分隔两段不同功能或含义的代码，便于日后代码的维护或重构。<br>记住：空行也是程序代码的一部分。</p>
+<h4 id="Python-变量类型"><a href="#Python-变量类型" class="headerlink" title="Python 变量类型"></a>Python 变量类型</h4><p>变量存储在内存中的值。这就意味着在创建变量时会在内存中开辟一个空间。<br>基于变量的数据类型，解释器会分配指定内存，并决定什么数据可以被存储在内存中。<br>因此，变量可以指定不同的数据类型，这些变量可以存储整数，小数或字符。</p>
+<p><strong>变量赋值</strong></p>
+<p>Python 中的变量赋值不需要类型声明。<br>每个变量在内存中创建，都包括变量的标识，名称和数据这些信息。<br>每个变量在使用前都必须赋值，变量赋值以后该变量才会被创建。<br>等号（&#x3D;）用来给变量赋值。</p>
+<h4 id="python-标准数据类型"><a href="#python-标准数据类型" class="headerlink" title="python 标准数据类型"></a>python 标准数据类型</h4><p>python 定义了一些标准类型，用于存储各种类型的数据。<br>Python有五个标准的数据类型：<br>Numbers（数字）<br>String（字符串）<br>List（列表）<br>Tuple（元组）<br>Dictionary（字典）</p>
+<h4 id="Python数字"><a href="#Python数字" class="headerlink" title="Python数字"></a>Python数字</h4><p>数字数据类型用于存储数值。<br>他们是不可改变的数据类型，这意味着改变数字数据类型会分配一个新的对象。<br>当你指定一个值时，Number对象就会被创建：<br>您也可以使用del语句删除一些对象的引用。<br>del语句的语法是：</p>
+<p>del var1[,var2[,var3[….,varN]]]]</p>
+<p>您可以通过使用del语句删除单个或多个对象的引用。例如：</p>
+<p>del var<br>del var_a, var_b</p>
+<p>Python支持四种不同的数字类型：</p>
+<p>int（有符号整型）</p>
+<p>long（长整型[也可以代表八进制和十六进制]）</p>
+<p>float（浮点型）</p>
+<p>complex（复数）</p>
+<h4 id="Python字符串"><a href="#Python字符串" class="headerlink" title="Python字符串"></a>Python字符串</h4><p>字符串或串(String)是由数字、字母、下划线组成的一串字符。</p>
+<p>一般记为 :<br>s&#x3D;”a1a2···an”(n&gt;&#x3D;0)<br>它是编程语言中表示文本的数据类型。</p>
+<p>python的字串列表有2种取值顺序:</p>
+<p>从左到右索引默认0开始的，最大范围是字符串长度少1</p>
+<p>从右到左索引默认-1开始的，最大范围是字符串开头</p>
+<p>当使用以冒号分隔的字符串，python返回一个新的对象，结果包含了以这对偏移标识的连续的内容，左边的开始是包含了下边界。<br>上面的结果包含了s[1]的值l，而取到的最大范围不包括上边界，就是s[5]的值p。</p>
+<p>加号（+）是字符串连接运算符，星号（*）是重复操作</p>
+<h4 id="Python列表"><a href="#Python列表" class="headerlink" title="Python列表"></a>Python列表</h4><p>List（列表） 是 Python 中使用最频繁的数据类型。</p>
+<h4 id="python元组"><a href="#python元组" class="headerlink" title="python元组"></a>python元组</h4><p>元组是另一个数据类型，类似于List（列表）。</p>
+<p>元组用”()”标识。内部元素用逗号隔开。但是元组不能二次赋值，相当于只读列表</p>
+<h4 id="Python-字典"><a href="#Python-字典" class="headerlink" title="Python 字典"></a>Python 字典</h4>]]></content>
+      <tags>
+        <tag>python</tag>
+      </tags>
   </entry>
   <entry>
     <title>es常用操作工具</title>
@@ -1118,27 +1093,6 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
       </tags>
   </entry>
   <entry>
-    <title>hadoop高可用模式搭建</title>
-    <url>/2019/05/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/hadoop/hadoopHA%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<p>发现对hadoop的相关版本的组件,进程还有些模糊,借着针对hadoopHA模式搭建的过程,对hadoop<br>进行一次细统的回顾.</p>
-<span id="more"></span>
-
-<h1 id="hadoop-HA搭建与总结"><a href="#hadoop-HA搭建与总结" class="headerlink" title="hadoop HA搭建与总结"></a>hadoop HA搭建与总结</h1><h2 id="什么是HA"><a href="#什么是HA" class="headerlink" title="什么是HA"></a>什么是HA</h2><p>HA即高可用</p>
-<h2 id="HA相关配置"><a href="#HA相关配置" class="headerlink" title="HA相关配置"></a>HA相关配置</h2><h3 id="core-site-xml"><a href="#core-site-xml" class="headerlink" title="core-site.xml"></a>core-site.xml</h3><p>基本一致</p>
-<h3 id="hdfs-site-xml"><a href="#hdfs-site-xml" class="headerlink" title="hdfs-site.xml"></a>hdfs-site.xml</h3><p>这里有明显差别<br>hadoop2.X与hadoop1.X的高可能中的明显差异就是从这里开始的.<br>2.x 引入了nameservice. 该nameservice可支持最大两个namenode.<br>1.x img 和edits统一放置在namenode上.<br>2.x 则通过journalnodes来共享edits日志.</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="meta">&lt;?xml-stylesheet type=<span class="string">&quot;text/xsl&quot;</span> href=<span class="string">&quot;configuration.xsl&quot;</span>?&gt;</span></span><br><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span></span><br><span class="line"><span class="comment">  you may not use this file except in compliance with the License.</span></span><br><span class="line"><span class="comment">  You may obtain a copy of the License at</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">    http://www.apache.org/licenses/LICENSE-2.0</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  Unless required by applicable law or agreed to in writing, software</span></span><br><span class="line"><span class="comment">  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span></span><br><span class="line"><span class="comment">  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span></span><br><span class="line"><span class="comment">  See the License for the specific language governing permissions and</span></span><br><span class="line"><span class="comment">  limitations under the License. See accompanying LICENSE file.</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- Put site-specific property overrides in this file. --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line"> <span class="comment">&lt;!-- 为namenode集群定义一个services name --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.nameservices<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>ns1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- nameservice 包含哪些namenode，为各个namenode起名 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.ha.namenodes.ns1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode,datanode1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">   <span class="comment">&lt;!-- 名为master188的namenode的rpc地址和端口号，rpc用来和datanode通讯 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.rpc-address.ns1.namenode<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode:9000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- 名为master189的namenode的rpc地址和端口号，rpc用来和datanode通讯 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.rpc-address.ns1.datanode1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>datanode1:9000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!--名为master188的namenode的http地址和端口号，用来和web客户端通讯 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.http-address.ns1.namenode<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode:50070<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 名为master189的namenode的http地址和端口号，用来和web客户端通讯 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.http-address.ns1.datanode1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>datanode1:50070<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">&lt;!-- namenode间用于共享编辑日志的journal节点列表 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.shared.edits.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>qjournal://namenode:8485;datanode1:8485;datanode2:8485/ns1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- 指定该集群出现故障时，是否自动切换到另一台namenode --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.ha.automatic-failover.enabled.ns1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">      <span class="comment">&lt;!-- journalnode 上用于存放edits日志的目录 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.journalnode.edits.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/dfs/data/dfs/journalnode<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">&lt;!-- 客户端连接可用状态的NameNode所用的代理类 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.client.failover.proxy.provider.ns1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- 一旦需要NameNode切换，使用ssh方式进行操作 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.ha.fencing.methods<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>sshfence<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- 如果使用ssh进行故障切换，使用ssh通信时用的密钥存储的位置 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.ha.fencing.ssh.private-key-files<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/.ssh/id_rsa<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- connect-timeout超时时间 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.ha.fencing.ssh.connect-timeout<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>30000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.name.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/dfs/name<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.data.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/dfs/data<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.permissions<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>false<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.replication<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">value</span>&gt;</span>3<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="mapreduce-site-xml"><a href="#mapreduce-site-xml" class="headerlink" title="mapreduce-site.xml"></a>mapreduce-site.xml</h3><p>变动不大</p>
-<h3 id="yarn-site-xml"><a href="#yarn-site-xml" class="headerlink" title="yarn-site.xml"></a>yarn-site.xml</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span>?&gt;</span></span><br><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span></span><br><span class="line"><span class="comment">  you may not use this file except in compliance with the License.</span></span><br><span class="line"><span class="comment">  You may obtain a copy of the License at</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">    http://www.apache.org/licenses/LICENSE-2.0</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  Unless required by applicable law or agreed to in writing, software</span></span><br><span class="line"><span class="comment">  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span></span><br><span class="line"><span class="comment">  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span></span><br><span class="line"><span class="comment">  See the License for the specific language governing permissions and</span></span><br><span class="line"><span class="comment">  limitations under the License. See accompanying LICENSE file.</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">       <span class="comment">&lt;!-- 启用HA高可用性 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.ha.enabled<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">      </span><br><span class="line">        <span class="comment">&lt;!-- 指定resourcemanager的名字 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.cluster-id<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>yrc<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">      </span><br><span class="line">        <span class="comment">&lt;!-- 使用了2个resourcemanager,分别指定Resourcemanager的地址 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.ha.rm-ids<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>rm1,rm2<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定rm1的地址 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.hostname.rm1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定rm2的地址  --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.hostname.rm2<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>datanode1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定当前机器master188作为rm1 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.ha.id<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>rm1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定zookeeper集群机器 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.zk-address<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode:2181,datanode1:2181,datanode2:2181<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- NodeManager上运行的附属服务，默认是mapreduce_shuffle --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.aux-services<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>mapreduce_shuffle<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">      </span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.hostname<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>kuiqwang<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.aux-services<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>mapreduce_shuffle<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.log.server.url<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>http://namenode:19888/tmp/logs/hadoop/logs/<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">                <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.local-dirs<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/logs/yarn<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.log-dirs<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/logs/userlogs<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--内存,核数大小配置 --&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.resource.memory-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>4096<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.minimum-allocation-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>1024<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.maximum-allocation-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>3072<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.app.mapreduce.am.resource.mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>3072<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.app.mapreduce.am.command-opts<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>-Xmx3276m<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.resource.cpu-vcores<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>2<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.maximum-allocation-vcores<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>3<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="HA过程中主要用到的操作命令"><a href="#HA过程中主要用到的操作命令" class="headerlink" title="HA过程中主要用到的操作命令"></a>HA过程中主要用到的操作命令</h3><p>当配置文件完成后,先启动journalnode,以助namenode 和standby node 共享edits文件<br>hadoop-daemon.sh<br><img src="http://img.wqkenqing.ren/urHEX6.png"></p>
-<p>然后再进行namdnode格式化,hadoop namenode -format<br>进行namenode格式化<br>当namenode格式化完成后可以先启动该节点的namenode<br>hadoop-daemon.sh start namenode<br>然后再在另一namdnode节点执行<br>hdfs namenode -bootstrapStandby<br>到这可以将之前的journalnode停用,然后start-dfs.sh</p>
-<p>因为要用到zookeeper协助同步配置文件与操作日志,所以这里可以先对zookeeper进行hdfs内容的格式化<br>hdfs zkfc –formatZK<br>然后启动FailOver进程<br>hadoop-daemon.sh start zkfc<br><img src="http://img.wqkenqing.ren/lvuo9N.png"><br>至此则是这些进程<br>然后启用yarn.<br>即<br>start-yarn.sh<br>到这里HA过程中用到的一些常用指令大致总结完成</p>
-<hr>
-<p>至此 hadoop HA的常规总结完成.后续再补充一些细节,如standy 节点切的,与切换机制.HA背后的运作机制,与效果</p>
-]]></content>
-  </entry>
-  <entry>
     <title>kafka学习</title>
     <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/kafka/kafka%E5%AE%9E%E7%8E%B0/</url>
     <content><![CDATA[<p>[ x ]  Consumer Group里只会被某一个Consumer消费 ,Kafka还允许不同Consumer Group同时消费同一条消息，这一特性可以为消息的多元化处理提供支持。</p>
@@ -1152,6 +1106,50 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 ]]></content>
       <tags>
         <tag>kafka</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>flink学习</title>
+    <url>/2019/07/31/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/flink/Flink/</url>
+    <content><![CDATA[<p>flink内容记录</p>
+<span id="more"></span>
+
+<h2 id="搭建"><a href="#搭建" class="headerlink" title="搭建"></a>搭建</h2><h2 id="创建maven项目"><a href="#创建maven项目" class="headerlink" title="创建maven项目"></a>创建maven项目</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mvn archetype:generate \</span><br><span class="line">    -DarchetypeGroupId=org.apache.flink \</span><br><span class="line">    -DarchetypeArtifactId=flink-quickstart-java \</span><br><span class="line">    -DarchetypeVersion=1.6.1 \</span><br><span class="line">    -DgroupId=my-flink-project \</span><br><span class="line">    -DartifactId=my-flink-project \</span><br><span class="line">    -Dversion=0.1 \</span><br><span class="line">    -Dpackage=myflink \</span><br><span class="line">    -DinteractiveMode=false</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">mvn clean package -Dmaven.test.skip=true</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flink run -c myflink.demo.SocketTextStreamWordCount my-flink-project-0.1.jar 127.0.0.1 9000</span><br></pre></td></tr></table></figure>
+
+<h2 id="DataStream-API"><a href="#DataStream-API" class="headerlink" title="DataStream API"></a>DataStream API</h2><p>flink程序工作解剖图<br><img src="http://img.wqkenqing.ren/FIyXNI.png"></p>
+<h3 id="执行环境"><a href="#执行环境" class="headerlink" title="执行环境"></a>执行环境</h3><p>flink支持</p>
+<ul>
+<li>获取已经存在的flink环境</li>
+<li>创建一个本地环境</li>
+<li>创建一个远程环境</li>
+</ul>
+<h3 id="DataSource"><a href="#DataSource" class="headerlink" title="DataSource"></a>DataSource</h3><h4 id="预置source"><a href="#预置source" class="headerlink" title="预置source"></a>预置source</h4><p>Socket-based</p>
+<ul>
+<li>socketTextStream();</li>
+</ul>
+<p>File-based</p>
+<h3 id="Transfomations"><a href="#Transfomations" class="headerlink" title="Transfomations"></a>Transfomations</h3><ul>
+<li>map</li>
+<li>flatMap</li>
+<li>filter</li>
+<li>keyBy</li>
+<li>reduce</li>
+<li>fold</li>
+</ul>
+<p>合计</p>
+<ul>
+<li>min</li>
+<li>max</li>
+<li>sum</li>
+</ul>
+<p>窗口</p>
+]]></content>
+      <tags>
+        <tag>flink</tag>
       </tags>
   </entry>
   <entry>
@@ -1363,9 +1361,30 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 ]]></content>
   </entry>
   <entry>
+    <title>hadoop高可用模式搭建</title>
+    <url>/2019/05/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/hadoop/hadoopHA%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<p>发现对hadoop的相关版本的组件,进程还有些模糊,借着针对hadoopHA模式搭建的过程,对hadoop<br>进行一次细统的回顾.</p>
+<span id="more"></span>
+
+<h1 id="hadoop-HA搭建与总结"><a href="#hadoop-HA搭建与总结" class="headerlink" title="hadoop HA搭建与总结"></a>hadoop HA搭建与总结</h1><h2 id="什么是HA"><a href="#什么是HA" class="headerlink" title="什么是HA"></a>什么是HA</h2><p>HA即高可用</p>
+<h2 id="HA相关配置"><a href="#HA相关配置" class="headerlink" title="HA相关配置"></a>HA相关配置</h2><h3 id="core-site-xml"><a href="#core-site-xml" class="headerlink" title="core-site.xml"></a>core-site.xml</h3><p>基本一致</p>
+<h3 id="hdfs-site-xml"><a href="#hdfs-site-xml" class="headerlink" title="hdfs-site.xml"></a>hdfs-site.xml</h3><p>这里有明显差别<br>hadoop2.X与hadoop1.X的高可能中的明显差异就是从这里开始的.<br>2.x 引入了nameservice. 该nameservice可支持最大两个namenode.<br>1.x img 和edits统一放置在namenode上.<br>2.x 则通过journalnodes来共享edits日志.</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="meta">&lt;?xml-stylesheet type=<span class="string">&quot;text/xsl&quot;</span> href=<span class="string">&quot;configuration.xsl&quot;</span>?&gt;</span></span><br><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span></span><br><span class="line"><span class="comment">  you may not use this file except in compliance with the License.</span></span><br><span class="line"><span class="comment">  You may obtain a copy of the License at</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">    http://www.apache.org/licenses/LICENSE-2.0</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  Unless required by applicable law or agreed to in writing, software</span></span><br><span class="line"><span class="comment">  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span></span><br><span class="line"><span class="comment">  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span></span><br><span class="line"><span class="comment">  See the License for the specific language governing permissions and</span></span><br><span class="line"><span class="comment">  limitations under the License. See accompanying LICENSE file.</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- Put site-specific property overrides in this file. --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line"> <span class="comment">&lt;!-- 为namenode集群定义一个services name --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.nameservices<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>ns1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- nameservice 包含哪些namenode，为各个namenode起名 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.ha.namenodes.ns1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode,datanode1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">   <span class="comment">&lt;!-- 名为master188的namenode的rpc地址和端口号，rpc用来和datanode通讯 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.rpc-address.ns1.namenode<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode:9000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- 名为master189的namenode的rpc地址和端口号，rpc用来和datanode通讯 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.rpc-address.ns1.datanode1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>datanode1:9000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!--名为master188的namenode的http地址和端口号，用来和web客户端通讯 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.http-address.ns1.namenode<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode:50070<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">&lt;!-- 名为master189的namenode的http地址和端口号，用来和web客户端通讯 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.http-address.ns1.datanode1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>datanode1:50070<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">&lt;!-- namenode间用于共享编辑日志的journal节点列表 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.shared.edits.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>qjournal://namenode:8485;datanode1:8485;datanode2:8485/ns1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- 指定该集群出现故障时，是否自动切换到另一台namenode --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.ha.automatic-failover.enabled.ns1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">      <span class="comment">&lt;!-- journalnode 上用于存放edits日志的目录 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.journalnode.edits.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/dfs/data/dfs/journalnode<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">&lt;!-- 客户端连接可用状态的NameNode所用的代理类 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.client.failover.proxy.provider.ns1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- 一旦需要NameNode切换，使用ssh方式进行操作 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.ha.fencing.methods<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>sshfence<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- 如果使用ssh进行故障切换，使用ssh通信时用的密钥存储的位置 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.ha.fencing.ssh.private-key-files<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/.ssh/id_rsa<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">&lt;!-- connect-timeout超时时间 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.ha.fencing.ssh.connect-timeout<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>30000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.name.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/dfs/name<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.data.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/dfs/data<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.permissions<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>false<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.replication<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">value</span>&gt;</span>3<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="mapreduce-site-xml"><a href="#mapreduce-site-xml" class="headerlink" title="mapreduce-site.xml"></a>mapreduce-site.xml</h3><p>变动不大</p>
+<h3 id="yarn-site-xml"><a href="#yarn-site-xml" class="headerlink" title="yarn-site.xml"></a>yarn-site.xml</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span>?&gt;</span></span><br><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span></span><br><span class="line"><span class="comment">  you may not use this file except in compliance with the License.</span></span><br><span class="line"><span class="comment">  You may obtain a copy of the License at</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">    http://www.apache.org/licenses/LICENSE-2.0</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  Unless required by applicable law or agreed to in writing, software</span></span><br><span class="line"><span class="comment">  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span></span><br><span class="line"><span class="comment">  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span></span><br><span class="line"><span class="comment">  See the License for the specific language governing permissions and</span></span><br><span class="line"><span class="comment">  limitations under the License. See accompanying LICENSE file.</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">       <span class="comment">&lt;!-- 启用HA高可用性 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.ha.enabled<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">      </span><br><span class="line">        <span class="comment">&lt;!-- 指定resourcemanager的名字 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.cluster-id<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>yrc<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">      </span><br><span class="line">        <span class="comment">&lt;!-- 使用了2个resourcemanager,分别指定Resourcemanager的地址 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.ha.rm-ids<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>rm1,rm2<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定rm1的地址 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.hostname.rm1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定rm2的地址  --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.hostname.rm2<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>datanode1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定当前机器master188作为rm1 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.ha.id<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>rm1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- 指定zookeeper集群机器 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.zk-address<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>namenode:2181,datanode1:2181,datanode2:2181<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">&lt;!-- NodeManager上运行的附属服务，默认是mapreduce_shuffle --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.aux-services<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>mapreduce_shuffle<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">      </span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.hostname<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>kuiqwang<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.aux-services<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>mapreduce_shuffle<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.log.server.url<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">value</span>&gt;</span>http://namenode:19888/tmp/logs/hadoop/logs/<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">                <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.local-dirs<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/logs/yarn<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.log-dirs<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hadoop_store/logs/userlogs<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--内存,核数大小配置 --&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.resource.memory-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>4096<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.minimum-allocation-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>1024<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.maximum-allocation-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>3072<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.app.mapreduce.am.resource.mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>3072<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.app.mapreduce.am.command-opts<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>-Xmx3276m<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.resource.cpu-vcores<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>2<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.maximum-allocation-vcores<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>3<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="HA过程中主要用到的操作命令"><a href="#HA过程中主要用到的操作命令" class="headerlink" title="HA过程中主要用到的操作命令"></a>HA过程中主要用到的操作命令</h3><p>当配置文件完成后,先启动journalnode,以助namenode 和standby node 共享edits文件<br>hadoop-daemon.sh<br><img src="http://img.wqkenqing.ren/urHEX6.png"></p>
+<p>然后再进行namdnode格式化,hadoop namenode -format<br>进行namenode格式化<br>当namenode格式化完成后可以先启动该节点的namenode<br>hadoop-daemon.sh start namenode<br>然后再在另一namdnode节点执行<br>hdfs namenode -bootstrapStandby<br>到这可以将之前的journalnode停用,然后start-dfs.sh</p>
+<p>因为要用到zookeeper协助同步配置文件与操作日志,所以这里可以先对zookeeper进行hdfs内容的格式化<br>hdfs zkfc –formatZK<br>然后启动FailOver进程<br>hadoop-daemon.sh start zkfc<br><img src="http://img.wqkenqing.ren/lvuo9N.png"><br>至此则是这些进程<br>然后启用yarn.<br>即<br>start-yarn.sh<br>到这里HA过程中用到的一些常用指令大致总结完成</p>
+<hr>
+<p>至此 hadoop HA的常规总结完成.后续再补充一些细节,如standy 节点切的,与切换机制.HA背后的运作机制,与效果</p>
+]]></content>
+  </entry>
+  <entry>
     <title>Lambda&amp;Stream.md</title>
     <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/old/Lamda%E7%A7%AF%E7%B4%AF/</url>
-    <content><![CDATA[<h1 id="Lambda-amp-Stream积累"><a href="#Lambda-amp-Stream积累" class="headerlink" title="Lambda&amp;Stream积累"></a>Lambda&amp;Stream积累</h1><span id="more"></span>
+    <content><![CDATA[<h1 id="Lambda-Stream积累"><a href="#Lambda-Stream积累" class="headerlink" title="Lambda&amp;Stream积累"></a>Lambda&amp;Stream积累</h1><span id="more"></span>
 <h2 id="Lambda"><a href="#Lambda" class="headerlink" title="Lambda"></a>Lambda</h2><p>Lambda主要是一个类语法长糖,尽量为java引入函数编程等实现,细节后续再补充</p>
 <h2 id="Stream"><a href="#Stream" class="headerlink" title="Stream"></a>Stream</h2><p>java8提拱的新特性之一就有stream.stream主要是针对集合的处理类.提供了一系列集合处理方式.<br>配合使用lambda写出简介优美的代码</p>
 <h3 id="Stream的使用"><a href="#Stream的使用" class="headerlink" title="Stream的使用"></a>Stream的使用</h3><p>通过如</p>
@@ -1388,6 +1407,32 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
       <tags>
         <tag>日常总结</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>kafka小结</title>
+    <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/oldblog/blog17/</url>
+    <content><![CDATA[<p>此处简介</p>
+<span id="more"></span>
+
+<h2 id="kafka小结"><a href="#kafka小结" class="headerlink" title="kafka小结"></a>kafka小结</h2><p>消息系统术语<br>kafka特性</p>
+<ul>
+<li>分布式的</li>
+<li>可分区的</li>
+<li>可复制的</li>
+</ul>
+<p>在普通的消息系统的功上，还有自己独特的设计</p>
+<p>Kafka将消息以topic为单位进行归纳。<br>将向Kafka topic发布消息的程序成为producers.<br>将预订topics并消费消息的程序成为consumer.<br>Kafka以集群的方式运行，可以由一个或多个服务组成，每个服务叫做一个broker.<br>producers通过网络将消息发送到Kafka集群，集群向消费者提供消息，</p>
+<p><img src="//img.wqkenqing.ren/file/2017/7/827fdc820cae4619859042761c3b40a9-image.png" alt="827fdc820cae4619859042761c3b40a9-image.png"></p>
+<p>客户端和服务端通过TCP协议通信。Kafka提供了Java客户端，并且对多种语言都提供了支持。</p>
+<hr>
+<p>Topics 和Logs</p>
+<p>先来看一下Kafka提供的一个抽象概念:topic.<br>一个topic是对一组消息的归纳。对每个topic，Kafka 对它的日志进行了分区<br><img src="//img.wqkenqing.ren/file/2017/7/bf0d2ddee1d14cb29fd54483a622d67c-image.png" alt="bf0d2ddee1d14cb29fd54483a622d67c-image.png"></p>
+<p>一个topic是对一组消息的归纳。<br>对每个topic，Kafka 对它的日志进行了分区，</p>
+<p>每个分区都由一系列有序的、不可变的消息组成，这些消息被连续的追加到分区中。分区中的每个消息都有一个连续的序列号叫做offset,用来在分区中唯一的标识这个消息。</p>
+<hr>
+<h3 id="kafka常用指令收集"><a href="#kafka常用指令收集" class="headerlink" title="kafka常用指令收集"></a>kafka常用指令收集</h3><p><strong>查看topic的详细信息</strong><br>kafka-topics.sh -zookeeper 127.0.0.1:2181 -describe -topic topic name</p>
+<p><strong>为topic增加副本</strong><br>kafka-reassign-partitions.sh -zookeeper 127.0.0.1:2181 -reassignment-json-file json&#x2F;partitions-to-move.json -execute<br><strong>创建topic</strong><br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic name<br><strong>为topic增加partition</strong><br>kafka-topics.sh –zookeeper 127.0.0.1:2181 –alter –partitions 20 –topic name<br><strong>kafka生产者客户端命令</strong><br>kafka-console-producer.sh –broker-list localhost:9092 –topic name<br><strong>kafka消费者客户端命令</strong><br>kafka-console-consumer.sh -zookeeper localhost:2181 –from-beginning –topic name<br><strong>kafka服务启动</strong><br>kafka-server-start.sh -daemon ..&#x2F;config&#x2F;server.properties<br><strong>删除topic</strong><br>kafka-run-class.sh kafka.admin.DeleteTopicCommand –topic testKJ1 –zookeeper 127.0.0.1:2181<br>kafka-topics.sh –zookeeper localhost:2181 –delete –topic testKJ1<br><strong>查看consumer组内消费的offset</strong><br>kafka-run-class.sh kafka.tools.ConsumerOffsetChecker –zookeeper localhost:2181 –group test –topic name</p>
+]]></content>
   </entry>
   <entry>
     <title>Yarn配置细节</title>
@@ -1880,7 +1925,7 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 <h3 id="hbase"><a href="#hbase" class="headerlink" title="hbase"></a>hbase</h3><p>Base是一个构建在HDFS上的分布式列存储系统；<br>Base是基于Google BigTable模型开发的，典型的key&#x2F;value系统；<br>Base是Apache Hadoop生态系统中的重要一员，主要用于海量结构化数据存储；</p>
 <p>大：一个表可以有数十亿行，上百万列；无模式：每行都有一个可排序的主键和任意多的列，列可以根据需要动态的增加，同一张表中不同的行可以有截然不同的列；面向列：面向列（族）的存储和权限控制，列（族）独立检索；稀疏：空（null）列并不占用存储空间，表可以设计的非常稀疏；数据多版本：每个单元中的数据可以有多个版本，默认情况下版本号自动分配，是单元格插入时的时间戳；数据类型单一：Hbase中的数据都是字符串，没有类型</p>
 <h4 id="openTSDB"><a href="#openTSDB" class="headerlink" title="openTSDB"></a>openTSDB</h4><p>基于Hbase的分布式的，可伸缩的时间序列数据库。<br>主要用途，就是做监控系统；譬如收集大规模集群（包括网络设备、操作系统、应用程序）的监控数据并进行存储，查询。<br><img src="http://img.wqkenqing.ren/2019-04-15-11-27-46.png" alt="2019-04-15-11-27-46"></p>
-<h4 id="solr-amp-Phoenix"><a href="#solr-amp-Phoenix" class="headerlink" title="solr &amp; Phoenix"></a>solr &amp; Phoenix</h4><p>二级索引</p>
+<h4 id="solr-Phoenix"><a href="#solr-Phoenix" class="headerlink" title="solr &amp; Phoenix"></a>solr &amp; Phoenix</h4><p>二级索引</p>
 <h3 id="hive"><a href="#hive" class="headerlink" title="hive"></a>hive</h3><p>ive 是一个基于 Hadoop 文件系统之上的数据仓库架构。它可以将结构化的数据文件映射为一张数据库表，并提供简单的 sql 查询功能。还可以将 sql 语句转换为 MapReduce 任务运行。<br>底部计算引擎还可以用用Tez, spark等.<br><img src="http://img.wqkenqing.ren/2019-04-15-11-36-43.png" alt="2019-04-15-11-36-43"></p>
 <h5 id="Impala"><a href="#Impala" class="headerlink" title="Impala"></a>Impala</h5><p>Impala是Cloudera公司推出，提供对HDFS、Hbase数据的高性能、低延迟的交互式SQL查询功能。</p>
 <ul>
@@ -1909,7 +1954,7 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 <p>spark-streaming中使用离散化流（discretized stream）作为抽象的表示，叫做DStream。它是随时间推移而收集数据的序列，每个时间段收集到的数据在DStream内部以一个RDD的形式存在。DStream支持从kafka，flume,hdfs,s3等获取输入。DStream也支持两种操作，即转化操作和输出操作</p>
 <p>spark-sql<br>Spark SQL 提供了查询结构化数据及计算结果等信息的接口.<br>查询结果以 Datasets and DataFrames 形式返回</p>
 <p>…</p>
-<h3 id="flink-x2F-blink"><a href="#flink-x2F-blink" class="headerlink" title="flink&#x2F;blink"></a>flink&#x2F;blink</h3><p>略</p>
+<h3 id="flink-blink"><a href="#flink-blink" class="headerlink" title="flink&#x2F;blink"></a>flink&#x2F;blink</h3><p>略</p>
 <h2 id="传输类"><a href="#传输类" class="headerlink" title="传输类"></a>传输类</h2><h3 id="kafka"><a href="#kafka" class="headerlink" title="kafka"></a>kafka</h3><p>Kafka是分布式发布-订阅消息系统,一个分布式的，可划分的，冗余备份的持久性的日志服务。它主要用于处理活跃的流式数据。日常中常与spark-streaming结合实用,为其提供无边界数据</p>
 <p><img src="http://img.wqkenqing.ren/2019-04-16-15-06-25.png" alt="2019-04-16-15-06-25"></p>
 <h2 id="管理类-Hue-cloudera-manager"><a href="#管理类-Hue-cloudera-manager" class="headerlink" title="管理类 Hue cloudera-manager"></a>管理类 Hue cloudera-manager</h2><p>ue与cm 都是由cloudera提供,后面cloudera将hue开源给了apache.如果基础集群环境是采用的是开源自主搭建,可考虑引入hue.另一些大数据服务公司,有集成打包自己的一些大数据产品,如cdh等.但这些服务收费,涉及到成本问题.所以如何选用,需要相关斟酌.</p>
@@ -1956,67 +2001,6 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
       </tags>
   </entry>
   <entry>
-    <title>kafka小结</title>
-    <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/oldblog/blog17/</url>
-    <content><![CDATA[<p>此处简介</p>
-<span id="more"></span>
-
-<h2 id="kafka小结"><a href="#kafka小结" class="headerlink" title="kafka小结"></a>kafka小结</h2><p>消息系统术语<br>kafka特性</p>
-<ul>
-<li>分布式的</li>
-<li>可分区的</li>
-<li>可复制的</li>
-</ul>
-<p>在普通的消息系统的功上，还有自己独特的设计</p>
-<p>Kafka将消息以topic为单位进行归纳。<br>将向Kafka topic发布消息的程序成为producers.<br>将预订topics并消费消息的程序成为consumer.<br>Kafka以集群的方式运行，可以由一个或多个服务组成，每个服务叫做一个broker.<br>producers通过网络将消息发送到Kafka集群，集群向消费者提供消息，</p>
-<p><img src="//img.wqkenqing.ren/file/2017/7/827fdc820cae4619859042761c3b40a9-image.png" alt="827fdc820cae4619859042761c3b40a9-image.png"></p>
-<p>客户端和服务端通过TCP协议通信。Kafka提供了Java客户端，并且对多种语言都提供了支持。</p>
-<hr>
-<p>Topics 和Logs</p>
-<p>先来看一下Kafka提供的一个抽象概念:topic.<br>一个topic是对一组消息的归纳。对每个topic，Kafka 对它的日志进行了分区<br><img src="//img.wqkenqing.ren/file/2017/7/bf0d2ddee1d14cb29fd54483a622d67c-image.png" alt="bf0d2ddee1d14cb29fd54483a622d67c-image.png"></p>
-<p>一个topic是对一组消息的归纳。<br>对每个topic，Kafka 对它的日志进行了分区，</p>
-<p>每个分区都由一系列有序的、不可变的消息组成，这些消息被连续的追加到分区中。分区中的每个消息都有一个连续的序列号叫做offset,用来在分区中唯一的标识这个消息。</p>
-<hr>
-<h3 id="kafka常用指令收集"><a href="#kafka常用指令收集" class="headerlink" title="kafka常用指令收集"></a>kafka常用指令收集</h3><p><strong>查看topic的详细信息</strong><br>kafka-topics.sh -zookeeper 127.0.0.1:2181 -describe -topic topic name</p>
-<p><strong>为topic增加副本</strong><br>kafka-reassign-partitions.sh -zookeeper 127.0.0.1:2181 -reassignment-json-file json&#x2F;partitions-to-move.json -execute<br><strong>创建topic</strong><br>kafka-topics.sh –create –zookeeper localhost:2181 –replication-factor 1 –partitions 1 –topic name<br><strong>为topic增加partition</strong><br>kafka-topics.sh –zookeeper 127.0.0.1:2181 –alter –partitions 20 –topic name<br><strong>kafka生产者客户端命令</strong><br>kafka-console-producer.sh –broker-list localhost:9092 –topic name<br><strong>kafka消费者客户端命令</strong><br>kafka-console-consumer.sh -zookeeper localhost:2181 –from-beginning –topic name<br><strong>kafka服务启动</strong><br>kafka-server-start.sh -daemon ..&#x2F;config&#x2F;server.properties<br><strong>删除topic</strong><br>kafka-run-class.sh kafka.admin.DeleteTopicCommand –topic testKJ1 –zookeeper 127.0.0.1:2181<br>kafka-topics.sh –zookeeper localhost:2181 –delete –topic testKJ1<br><strong>查看consumer组内消费的offset</strong><br>kafka-run-class.sh kafka.tools.ConsumerOffsetChecker –zookeeper localhost:2181 –group test –topic name</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>updateStateByKey&amp;mapStateWithKey</title>
-    <url>/2019/07/15/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/stream/</url>
-    <content><![CDATA[<p>spark中如何实现全局count</p>
-<span id="more"></span>
-
-<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>两种方式都可以实现对同一key的累计统计</p>
-<p>区别<br>updateStateByKey会返回无增量数据的状态,所以会相对较大的数据资源开销<br>mapStateWithKey 相当于增量统计</p>
-<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>updateStateByKey :</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Function2&lt;List&lt;Integer&gt;, Optional&lt;Integer&gt;, Optional&lt;Integer&gt;&gt; <span class="title function_">updateFunctionByUpdate</span><span class="params">()</span> &#123;</span><br><span class="line">       Function2&lt;List&lt;Integer&gt;, Optional&lt;Integer&gt;, Optional&lt;Integer&gt;&gt; updateFunction = (values, s1) -&gt; &#123;</span><br><span class="line">           <span class="type">Integer</span> <span class="variable">newSum</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">           <span class="keyword">if</span> (s1.isPresent()) &#123;</span><br><span class="line">               newSum = s1.get();</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           Iterator&lt;Integer&gt; i = values.iterator();</span><br><span class="line">           <span class="keyword">while</span> (i.hasNext()) &#123;</span><br><span class="line">               newSum += i.next();</span><br><span class="line">           &#125;</span><br><span class="line">           <span class="keyword">return</span> Optional.of(newSum);</span><br><span class="line">       &#125;;</span><br><span class="line">       <span class="keyword">return</span> updateFunction;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>mapStateWithKey :</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Function3&lt;String, Optional&lt;Integer&gt;, State&lt;Integer&gt;, Tuple2&lt;String, Integer&gt;&gt; <span class="title function_">updateFunctionByMap</span><span class="params">()</span> &#123;</span><br><span class="line">       Function3&lt;String, Optional&lt;Integer&gt;, State&lt;Integer&gt;, Tuple2&lt;String, Integer&gt;&gt; updateFunction2 = (word, one,</span><br><span class="line">                                                                                                        state) -&gt; &#123;</span><br><span class="line">           <span class="type">int</span> <span class="variable">sum</span> <span class="operator">=</span> one.or(<span class="number">0</span>) + (state.exists() ? state.get() : <span class="number">0</span>);</span><br><span class="line">           Tuple2&lt;String, Integer&gt; output = <span class="keyword">new</span> <span class="title class_">Tuple2</span>&lt;String, Integer&gt;(word, sum);</span><br><span class="line">           state.update(sum);</span><br><span class="line">           <span class="keyword">return</span> output;</span><br><span class="line">       &#125;;</span><br><span class="line">       <span class="keyword">return</span> updateFunction2;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-]]></content>
-      <tags>
-        <tag>sparkstream</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>spark操作.md</title>
-    <url>/2019/05/17/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/spark%E6%93%8D%E4%BD%9C/</url>
-    <content><![CDATA[<p>spark编程积累</p>
-<span id="more"></span>
-
-<h1 id="spark编程"><a href="#spark编程" class="headerlink" title="spark编程"></a>spark编程</h1><h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><h3 id="hdfs"><a href="#hdfs" class="headerlink" title="hdfs"></a>hdfs</h3><p>操作hdfs比较常规,直接通过<br>context.textfile(path) &#x2F;&#x2F;即可实现</p>
-<h3 id="hbase"><a href="#hbase" class="headerlink" title="hbase"></a>hbase</h3><p>hbase 则要通过newAPIHadoopRDD来实现</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="type">Configuration</span> <span class="variable">hconf</span> <span class="operator">=</span> HbaseOperate.getConf();</span><br><span class="line">    <span class="type">Scan</span> <span class="variable">scan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scan</span>();</span><br><span class="line">    hconf.set(TableInputFormat.INPUT_TABLE, <span class="string">&quot;company&quot;</span>);</span><br><span class="line">    hconf.set(TableInputFormat.SCAN, convertScanToString(scan));</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>参考以上这段代码</p>
-<p>另</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> String <span class="title function_">convertScanToString</span><span class="params">(Scan scan)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">     ClientProtos.<span class="type">Scan</span> <span class="variable">proto</span> <span class="operator">=</span> ProtobufUtil.toScan(scan);</span><br><span class="line">     <span class="keyword">return</span> Base64.encodeBytes(proto.toByteArray());</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<p>以上是为实现scan指令传输字符的封装.</p>
-<p>两者底层都是通过persist实现</p>
-]]></content>
-  </entry>
-  <entry>
     <title>spark常见的输入源</title>
     <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/spark%E5%B8%B8%E8%A7%81%E7%9A%84%E8%BE%93%E5%85%A5%E6%BA%90/</url>
     <content><![CDATA[<p>spark 输入源整理</p>
@@ -2046,6 +2030,23 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 
 
 <h2 id="kafka"><a href="#kafka" class="headerlink" title="kafka"></a>kafka</h2>]]></content>
+  </entry>
+  <entry>
+    <title>updateStateByKey&amp;mapStateWithKey</title>
+    <url>/2019/07/15/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/stream/</url>
+    <content><![CDATA[<p>spark中如何实现全局count</p>
+<span id="more"></span>
+
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>两种方式都可以实现对同一key的累计统计</p>
+<p>区别<br>updateStateByKey会返回无增量数据的状态,所以会相对较大的数据资源开销<br>mapStateWithKey 相当于增量统计</p>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>updateStateByKey :</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Function2&lt;List&lt;Integer&gt;, Optional&lt;Integer&gt;, Optional&lt;Integer&gt;&gt; <span class="title function_">updateFunctionByUpdate</span><span class="params">()</span> &#123;</span><br><span class="line">       Function2&lt;List&lt;Integer&gt;, Optional&lt;Integer&gt;, Optional&lt;Integer&gt;&gt; updateFunction = (values, s1) -&gt; &#123;</span><br><span class="line">           <span class="type">Integer</span> <span class="variable">newSum</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">           <span class="keyword">if</span> (s1.isPresent()) &#123;</span><br><span class="line">               newSum = s1.get();</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           Iterator&lt;Integer&gt; i = values.iterator();</span><br><span class="line">           <span class="keyword">while</span> (i.hasNext()) &#123;</span><br><span class="line">               newSum += i.next();</span><br><span class="line">           &#125;</span><br><span class="line">           <span class="keyword">return</span> Optional.of(newSum);</span><br><span class="line">       &#125;;</span><br><span class="line">       <span class="keyword">return</span> updateFunction;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>mapStateWithKey :</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Function3&lt;String, Optional&lt;Integer&gt;, State&lt;Integer&gt;, Tuple2&lt;String, Integer&gt;&gt; <span class="title function_">updateFunctionByMap</span><span class="params">()</span> &#123;</span><br><span class="line">       Function3&lt;String, Optional&lt;Integer&gt;, State&lt;Integer&gt;, Tuple2&lt;String, Integer&gt;&gt; updateFunction2 = (word, one,</span><br><span class="line">                                                                                                        state) -&gt; &#123;</span><br><span class="line">           <span class="type">int</span> <span class="variable">sum</span> <span class="operator">=</span> one.or(<span class="number">0</span>) + (state.exists() ? state.get() : <span class="number">0</span>);</span><br><span class="line">           Tuple2&lt;String, Integer&gt; output = <span class="keyword">new</span> <span class="title class_">Tuple2</span>&lt;String, Integer&gt;(word, sum);</span><br><span class="line">           state.update(sum);</span><br><span class="line">           <span class="keyword">return</span> output;</span><br><span class="line">       &#125;;</span><br><span class="line">       <span class="keyword">return</span> updateFunction2;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>sparkstream</tag>
+      </tags>
   </entry>
   <entry>
     <title>sparkstreaming 窗口操作</title>
@@ -2096,6 +2097,378 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
 ]]></content>
       <tags>
         <tag>sparkstreaming</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>宽窄依赖</title>
+    <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/%E5%AE%BD%E7%AA%84%E4%BE%9D%E8%B5%96/</url>
+    <content><![CDATA[<p>spark依赖说明</p>
+<span id="more"></span>
+
+<h2 id="种类"><a href="#种类" class="headerlink" title="种类"></a>种类</h2><p>spark的依赖关系大致有两类</p>
+<ul>
+<li>narrow dependency</li>
+<li>wide dependency</li>
+</ul>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><h3 id="narrow-dependency"><a href="#narrow-dependency" class="headerlink" title="narrow dependency"></a>narrow dependency</h3><p>父Partition &#x3D;&#x3D;&#x3D;&gt; 子partition 多对一或一对一   flatMap ,mapToPair ,map ,filter等算子<br>父partition &#x3D;&#x3D;&#x3D;&gt; 子partition 一对多          reduce ,group by 等.</p>
+<h3 id="stage"><a href="#stage" class="headerlink" title="stage"></a>stage</h3><p>当一个dag串联遇到宽依赖时形成stage.一个stage对应一个task.这个task的并行度由最后一个依赖决定.应该就是说由wide dependency 的具体并行度决度.如<br>reduce ,partition&#x3D;3.就3的并行度.这里的参数可以设置.</p>
+<p>wide dependency 必定对应的有shuffle.但shuffle不一定是wide dependency  如sort orderby</p>
+<p>join 即可能发生shuffle也可能不,具体看情况.</p>
+<h3 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h3><p>一个stage划分好后.一条数据的具体运算逻辑是会一直走完所有计算逻辑后才会落地.这是与mapreduce的区别<br>mapreduce是计算逻辑走完落地,再启动,计算又落地.</p>
+<p>所以说spark的效率比mapreduce高也是有这个原因.dag串联后,运算优先.</p>
+]]></content>
+      <tags>
+        <tag>spark dependency</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>spark操作.md</title>
+    <url>/2019/05/17/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/spark%E6%93%8D%E4%BD%9C/</url>
+    <content><![CDATA[<p>spark编程积累</p>
+<span id="more"></span>
+
+<h1 id="spark编程"><a href="#spark编程" class="headerlink" title="spark编程"></a>spark编程</h1><h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><h3 id="hdfs"><a href="#hdfs" class="headerlink" title="hdfs"></a>hdfs</h3><p>操作hdfs比较常规,直接通过<br>context.textfile(path) &#x2F;&#x2F;即可实现</p>
+<h3 id="hbase"><a href="#hbase" class="headerlink" title="hbase"></a>hbase</h3><p>hbase 则要通过newAPIHadoopRDD来实现</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">JavaPairRDD&lt;ImmutableBytesWritable, Result&gt; javaRDD = jsc.newAPIHadoopRDD(HbaseOperate.getConf(), TableInputFormat.class, ImmutableBytesWritable.class, Result.class);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这里要特别说明的是,这里的conf承担了更多的责任,如指定表名,指定scan传输字符串等.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="type">Configuration</span> <span class="variable">hconf</span> <span class="operator">=</span> HbaseOperate.getConf();</span><br><span class="line">    <span class="type">Scan</span> <span class="variable">scan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scan</span>();</span><br><span class="line">    hconf.set(TableInputFormat.INPUT_TABLE, <span class="string">&quot;company&quot;</span>);</span><br><span class="line">    hconf.set(TableInputFormat.SCAN, convertScanToString(scan));</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>参考以上这段代码</p>
+<p>另</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> String <span class="title function_">convertScanToString</span><span class="params">(Scan scan)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">     ClientProtos.<span class="type">Scan</span> <span class="variable">proto</span> <span class="operator">=</span> ProtobufUtil.toScan(scan);</span><br><span class="line">     <span class="keyword">return</span> Base64.encodeBytes(proto.toByteArray());</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>以上是为实现scan指令传输字符的封装.</p>
+<p>两者底层都是通过persist实现</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>pythonQA</title>
+    <url>/2020/05/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/pythonQA/</url>
+    <content><![CDATA[<span id="more"></span>
+
+<h1 id="pythonQA"><a href="#pythonQA" class="headerlink" title="pythonQA"></a>pythonQA</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">关于python的一些QA</span><br></pre></td></tr></table></figure>
+
+<h2 id="Q-python中自增为什么不能用"><a href="#Q-python中自增为什么不能用" class="headerlink" title="Q:python中自增为什么不能用++"></a>Q:python中自增为什么不能用++</h2><p>A:因为python中,不同的变量名,但若值为一样的话,他的变量id是一样的.即两个变量名指向地址是一样的,若通过++,来实现自增,那么意味着,其它变量名所指引的地址也应该发生改变.这与我们实际想用的情况不一定一致.所以python中的++自增是通过,a&#x3D;a+a的形式来实现的</p>
+]]></content>
+      <tags>
+        <tag>python</tag>
+        <tag>qa</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>python 小结2</title>
+    <url>/2020/05/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/python/</url>
+    <content><![CDATA[<span id="more"></span>
+
+<!-- TOC -->
+
+<ul>
+<li><a href="#python%E4%B8%AD%E7%9A%84%E5%8F%98%E9%87%8F%E5%88%9B%E5%BB%BA">python中的变量创建</a><ul>
+<li><a href="#python-%E5%8F%98%E9%87%8F%E5%91%BD%E5%90%8D">python 变量命名</a></li>
+<li><a href="#%E5%A4%9A%E4%B8%AA%E5%8F%98%E9%87%8F%E8%B5%8B%E5%80%BC">多个变量赋值</a></li>
+</ul>
+</li>
+<li><a href="#%E5%88%97%E8%A1%A8%E4%B8%8E%E5%85%83%E7%BB%84">列表与元组</a><ul>
+<li><a href="#%E5%88%97%E8%A1%A8">列表</a><ul>
+<li><a href="#%E5%A6%82%E4%BD%95%E8%AE%BF%E9%97%AE%E5%88%97%E8%A1%A8%E4%B8%AD%E7%9A%84%E5%80%BC">如何访问列表中的值</a></li>
+<li><a href="#%E5%88%97%E8%A1%A8%E8%BF%90%E7%AE%97%E7%AC%A6">列表运算符</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%83%E7%BB%84tuple">元组(tuple)</a><ul>
+<li><a href="#%E5%88%9B%E5%BB%BA%E5%85%83%E7%BB%84">创建元组</a></li>
+<li><a href="#%E8%AE%BF%E9%97%AE%E5%85%83%E7%BB%84">访问元组</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#dict%E5%AD%97%E5%85%B8">dict(字典)</a><ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%AD%97%E5%85%B8">什么是字典</a></li>
+<li><a href="#%E5%AD%97%E5%85%B8%E7%9A%84%E5%88%9B%E5%BB%BA">字典的创建</a></li>
+</ul>
+</li>
+<li><a href="#set">set()</a><ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AFset">什么是set</a></li>
+<li><a href="#set%E7%9A%84%E5%88%9B%E5%BB%BA">set的创建</a></li>
+</ul>
+</li>
+</ul>
+<!-- /TOC -->
+
+<h2 id="python中的变量创建"><a href="#python中的变量创建" class="headerlink" title="python中的变量创建"></a>python中的变量创建</h2><h3 id="python-变量命名"><a href="#python-变量命名" class="headerlink" title="python 变量命名"></a>python 变量命名</h3><p>在 Python 程序中，变量是用一个变量名表示，可以是任意数据类型，变量名必须是大小写英文、数字和下划线（_）的组合，且不能用数字开头</p>
+<h3 id="多个变量赋值"><a href="#多个变量赋值" class="headerlink" title="多个变量赋值"></a>多个变量赋值</h3><p>eg:<br>a&#x3D;b&#x3D;c&#x3D;1</p>
+<p>eg:<br>a,b,c&#x3D;1,2,”the is varible”<br><img src="http://img.wqkenqing.ren/2020-05-25-14-48-23.png" alt="2020-05-25-14-48-23"></p>
+<h2 id="列表与元组"><a href="#列表与元组" class="headerlink" title="列表与元组"></a>列表与元组</h2><p><img src="http://img.wqkenqing.ren/2020-05-25-14-54-41.png" alt="2020-05-25-14-54-41"></p>
+<h3 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h3><p>eg:</p>
+<p>list1&#x3D;[“1”,2,”three”]</p>
+<p>即列表名,’[]’ 列表符组成</p>
+<p>列表中的元素类型可以不一致.</p>
+<h4 id="如何访问列表中的值"><a href="#如何访问列表中的值" class="headerlink" title="如何访问列表中的值"></a>如何访问列表中的值</h4><ol>
+<li>通过索引下标来访问</li>
+</ol>
+<p>即已知索引长度为3</p>
+<p>我们可以通过<br>list1[i]</p>
+<p>i为0~2之间的整数</p>
+<p>这与java中的数组类似</p>
+<p>2.通过下标区间来访问</p>
+<p>如 list1[0:2]<br>可以取到list[0],list[1]<br>这里是因为[0:2]是左闭右开的</p>
+<p><img src="http://img.wqkenqing.ren/2020-05-25-15-09-50.png" alt="2020-05-25-15-09-50"><br>&#96;</p>
+<h4 id="列表运算符"><a href="#列表运算符" class="headerlink" title="列表运算符"></a>列表运算符</h4><table>
+<thead>
+<tr>
+<th>Python 表达式</th>
+<th>结果</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>len(list1)</td>
+<td>3</td>
+<td>list的长度</td>
+</tr>
+<tr>
+<td>[1, 2, 3] + [4, 5, 6]</td>
+<td>[1, 2, 3, 4, 5, 6]</td>
+<td>组合</td>
+</tr>
+<tr>
+<td>[“yes”]*2</td>
+<td>[“yes”,”yes”]</td>
+<td>复制</td>
+</tr>
+<tr>
+<td>2 in [1,2,3]</td>
+<td>True</td>
+<td>元素是否存在于列表中</td>
+</tr>
+<tr>
+<td>for a in list : function</td>
+<td></td>
+<td>迭代</td>
+</tr>
+</tbody></table>
+<p>一些常见的方法<br><img src="http://img.wqkenqing.ren/2020-05-25-15-26-54.png" alt="2020-05-25-15-26-54"></p>
+<h3 id="元组-tuple"><a href="#元组-tuple" class="headerlink" title="元组(tuple)"></a>元组(tuple)</h3><p>uple 一旦初始化就不能修改。 也就是说元组（tuple）是不可变的，那么不可变是指什么意思呢？<br>即声明元组后,只可获取相应的内容,但不能再通过insert ,append ,pop,remove等方法再操作其内容</p>
+<h4 id="创建元组"><a href="#创建元组" class="headerlink" title="创建元组"></a>创建元组</h4><p>tuple1&#x3D;(1,”2”,”three”)</p>
+<p><code>空元组</code><br>tuple2&#x3D;()</p>
+<h4 id="访问元组"><a href="#访问元组" class="headerlink" title="访问元组"></a>访问元组</h4><p><img src="http://img.wqkenqing.ren/2020-05-25-15-45-07.png" alt="2020-05-25-15-45-07"><br><img src="http://img.wqkenqing.ren/2020-05-25-15-44-48.png" alt="2020-05-25-15-44-48"></p>
+<h2 id="dict-字典"><a href="#dict-字典" class="headerlink" title="dict(字典)"></a>dict(字典)</h2><h3 id="什么是字典"><a href="#什么是字典" class="headerlink" title="什么是字典"></a>什么是字典</h3><p>类似java中的map key-val形式</p>
+<h3 id="字典的创建"><a href="#字典的创建" class="headerlink" title="字典的创建"></a>字典的创建</h3><p>dict&#x3D;{“key1”:”val1”,”key2”:”val2”}</p>
+<h2 id="set"><a href="#set" class="headerlink" title="set()"></a>set()</h2><h3 id="什么是set"><a href="#什么是set" class="headerlink" title="什么是set"></a>什么是set</h3><p>set与java中的set异同,这里是一个无序不重复的元素集,基本功能包括数据存放与消除重复元素</p>
+<h3 id="set的创建"><a href="#set的创建" class="headerlink" title="set的创建"></a>set的创建</h3><p>创建一个set,需要提供一个list</p>
+]]></content>
+      <tags>
+        <tag>python learn</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>cvim f失灵问题修复</title>
+    <url>/2020/05/19/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/cvim%20f%E5%A4%B1%E7%81%B5%E9%97%AE%E9%A2%98%E4%BF%AE%E5%A4%8D/</url>
+    <content><![CDATA[<p>此处是简介</p>
+<span id="more"></span>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cvim突然失灵,调试发现是js版本问题.cvim插件发行版暂未解决该问题.但有对应的修复分支</span><br></pre></td></tr></table></figure>
+
+
+
+<p>问题修复</p>
+<p>one : 克隆库: <a href="https://github.com/antonioyon/chromium-vim/tree/issue-716-fix-broken-hints">https://github.com/antonioyon/chromium-vim/tree/issue-716-fix-broken-hints</a></p>
+<p>two: 切换分支到 <code>issue-716-fix-broken-hints</code></p>
+<p>three: 若无npm 则先安装npm</p>
+<p>four: npm install , make</p>
+<p>five: chrome 地址栏输入 chrome:&#x2F;&#x2F;extensions .选择加载已解压文件</p>
+<p>six: 刷新页面,检查是否已经生效</p>
+]]></content>
+      <tags>
+        <tag>cvim</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>es添加字段并赋值</title>
+    <url>/2020/05/22/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/es%E6%B7%BB%E5%8A%A0%E5%AD%97%E6%AE%B5%E5%92%8C%E9%BB%98%E8%AE%A4%E5%80%BC/</url>
+    <content><![CDATA[<span id="more"></span>
+
+
+<p>添加字段即</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">PUT /index/_mapping</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    ...</span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">给es添加字段</span><br></pre></td></tr></table></figure>
+
+<p>这里主要通过script脚本.<br>并且在elasticsearch1.3后这个默认配置是被关掉的.</p>
+<p>即在elasticsearch.yml中添加<br>script.inline&#x3D;true<br>script.indexed&#x3D;true<br>一开始我在true后面加了空格,配置不被识别,所以这里要注意</p>
+<p>开启了script.line后通过update_by_query进行操作,这里注意以下写法已经过时</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">POST /index/_update_by_query?conflicts=proceed</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;script&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;lang&quot;</span><span class="punctuation">:</span><span class="string">&quot;painless&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;inline&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ctx._source.name=&#x27;trhee&#x27;&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>即inline这种写法已经过时. 现在主要用的是source</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">POST /index/_update_by_query?conflicts=proceed</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;script&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;lang&quot;</span><span class="punctuation">:</span><span class="string">&quot;painless&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ctx._source.name=&#x27;trhee&#x27;&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>还能加入条件判断</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">POST /index/_update_by_query?conflicts=proceed</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;script&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;lang&quot;</span><span class="punctuation">:</span><span class="string">&quot;painless&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;if(ctx._source.name==&#x27;&#x27;)&#123;ctx._source.name=&#x27;trhee&#x27;&#125;&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>至此即可以实现对_source.name字段的数据进行默认赋值</p>
+]]></content>
+      <tags>
+        <tag>es feild script</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>tmux上手[转载]</title>
+    <url>/2020/05/19/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/tmux%E4%B8%8A%E6%89%8B/</url>
+    <content><![CDATA[<p>此处是简介</p>
+<span id="more"></span>
+
+<p>mac os 通过 brew install tmux</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tmux 接收快捷键的指令是 ^ + B 即mac中的control + B</span><br></pre></td></tr></table></figure>
+
+<p>窗格的操作</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">这些操作都是通过 ^+b 来接收</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="left">操作符</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">%</td>
+<td align="left">左右创建两个窗格</td>
+</tr>
+<tr>
+<td align="left">‘’</td>
+<td align="left">左右创建两个窗格</td>
+</tr>
+<tr>
+<td align="left">x</td>
+<td align="left">关闭当前窗格</td>
+</tr>
+<tr>
+<td align="left">{</td>
+<td align="left">前移当前窗格</td>
+</tr>
+<tr>
+<td align="left">}</td>
+<td align="left">后移当前窗格</td>
+</tr>
+<tr>
+<td align="left">;</td>
+<td align="left">选择上次用的窗格</td>
+</tr>
+<tr>
+<td align="left">o</td>
+<td align="left">选择下一个窗格</td>
+</tr>
+<tr>
+<td align="left">space</td>
+<td align="left">切换窗格布局</td>
+</tr>
+<tr>
+<td align="left">z</td>
+<td align="left">放大窗格</td>
+</tr>
+<tr>
+<td align="left">q</td>
+<td align="left">显示序号</td>
+</tr>
+</tbody></table>
+<h3 id="窗口操作"><a href="#窗口操作" class="headerlink" title="窗口操作"></a>窗口操作</h3><p>tmux 除了窗格以外，还有窗口（window） 的概念。依次使用以下快捷键来熟悉 tmux 的窗口操作：</p>
+<ul>
+<li><code>c</code> 新建窗口，此时当前窗口会切换至新窗口，不影响原有窗口的状态</li>
+<li><code>p</code> 切换至上一窗口</li>
+<li><code>n</code> 切换至下一窗口</li>
+<li><code>w</code> 窗口列表选择，注意 macOS 下使用 <code>⌃p</code> 和 <code>⌃n</code> 进行上下选择</li>
+<li><code>&amp;</code> 关闭当前窗口</li>
+<li><code>,</code> 重命名窗口，可以使用中文，重命名后能在 tmux 状态栏更快速的识别窗口 id</li>
+<li><code>0</code> 切换至 0 号窗口，使用其他数字 id 切换至对应窗口</li>
+<li><code>f</code> 根据窗口名搜索选择窗口，可模糊匹配</li>
+</ul>
+<h3 id="会话操作"><a href="#会话操作" class="headerlink" title="会话操作"></a>会话操作</h3><p>如果运行了多次 <code>tmux</code> 命令则会开启多个 tmux 会话（session）。在 tmux 会话中，使用前缀快捷键 <code>⌃b</code> 配合以下快捷键可操作会话：</p>
+<ul>
+<li><code>$</code> 重命名当前会话</li>
+<li><code>s</code> 选择会话列表</li>
+<li><code>d</code> detach 当前会话，运行后将会退出 tmux 进程，返回至 shell 主进程</li>
+</ul>
+<p>在 shell 主进程下运行以下命令可以操作 tmux 会话： </p>
+<p>在 shell 主进程下运行以下命令可以操作 tmux 会话：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tmux new -s foo # 新建名称为 foo 的会话</span><br><span class="line">tmux ls # 列出所有 tmux 会话</span><br><span class="line">tmux a # 恢复至上一次的会话</span><br><span class="line">tmux a -t foo # 恢复名称为 foo 的会话，会话默认名称为数字</span><br><span class="line">tmux kill-session -t foo # 删除名称为 foo 的会话</span><br><span class="line">tmux kill-server # 删除所有的会话</span><br></pre></td></tr></table></figure>
+
+
+
+<p><a href="https://www.cnblogs.com/kaiye/p/6275207.html">原文连接</a></p>
+]]></content>
+      <tags>
+        <tag>tmux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>vscode插件</title>
+    <url>/2020/05/21/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/vscode%E6%8F%92%E4%BB%B6/</url>
+    <content><![CDATA[<span id="more"></span>
+
+<h1 id="vscode插件"><a href="#vscode插件" class="headerlink" title="vscode插件"></a>vscode插件</h1><h2 id="draw-io-思维导图"><a href="#draw-io-思维导图" class="headerlink" title="draw.io(思维导图)"></a>draw.io(思维导图)</h2><p>在应用商店搜索<br>Draw.io Integration</p>
+<p>并install<br>即可安装draw.io</p>
+<p>然后创建drawio后缀的文件即可使用对应的导图功能</p>
+<p>这个好处是免费并与vscode集成.即实现all in one 的功能</p>
+<p><img src="http://img.wqkenqing.ren/2020-05-21-16-35-19.png" alt="2020-05-21-16-35-19"></p>
+]]></content>
+      <tags>
+        <tag>elasticsearch drawio</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>日常运维</title>
+    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/</url>
+    <content><![CDATA[<p>此处是简介</p>
+<span id="more"></span>
+
+<h2 id="hexo-加速"><a href="#hexo-加速" class="headerlink" title="hexo 加速"></a>hexo 加速</h2><p>通过更换公共CDN的js css资源.实现了较大改变</p>
+<h2 id="hexo-LocalSearch一直转圈问题修复"><a href="#hexo-LocalSearch一直转圈问题修复" class="headerlink" title="hexo LocalSearch一直转圈问题修复"></a>hexo LocalSearch一直转圈问题修复</h2><p>主要成因有两,一是search.xml没有成功加载,二是search.xml中的数据有问题.</p>
+<p>前者通过配置_config.yml文档和对应主题下的_config.yml配置</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">search:</span></span><br><span class="line">  <span class="attr">path:</span> <span class="string">search.xml</span></span><br><span class="line">  <span class="attr">field:</span> <span class="string">post</span></span><br><span class="line">  <span class="attr">format:</span> <span class="string">html</span></span><br><span class="line">  <span class="attr">limit:</span> <span class="number">10000</span></span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">local_search:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="comment"># if auto, trigger search by changing input</span></span><br><span class="line">  <span class="comment"># if manual, trigger search by pressing enter key or search button</span></span><br><span class="line">  <span class="attr">trigger:</span> <span class="string">auto</span></span><br><span class="line">  <span class="comment"># show top n results per article, show all results by setting to -1</span></span><br><span class="line">  <span class="attr">top_n_per_article:</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>同时记得关闭Algolia_Search</strong></p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Algolia Search</span></span><br><span class="line"><span class="attr">algolia_search:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+
+
+
+]]></content>
+      <tags>
+        <tag>运维 cdn 加速</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>阿里云DDNS[转载]</title>
+    <url>/2020/05/20/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/%E9%98%BF%E9%87%8C%E4%BA%91DDNS/</url>
+    <content><![CDATA[<p>阿里云DDNS</p>
+<span id="more"></span>
+
+<h1 id="阿里云DDNS"><a href="#阿里云DDNS" class="headerlink" title="阿里云DDNS"></a>阿里云DDNS</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">因为电信带宽的动态ip的问题,域名解析时常失效,所以用到这里的DDNS</span><br></pre></td></tr></table></figure>
+
+<p>自己带宽的设置略过.</p>
+<p>前提准备</p>
+<ol>
+<li>阿里云accesskyes配置</li>
+<li>能运行docker镜像的服务器</li>
+<li>docker镜像</li>
+</ol>
+<h2 id="阿里云-accesskeys申请"><a href="#阿里云-accesskeys申请" class="headerlink" title="阿里云 accesskeys申请"></a>阿里云 accesskeys申请</h2><p>登陆,点击右侧头像选择accesskeys即可.</p>
+<p>获得ID与scret内容</p>
+<h2 id="docker容器下载"><a href="#docker容器下载" class="headerlink" title="docker容器下载"></a>docker容器下载</h2><p><a href="https://hub.docker.com/r/chenhw2/aliyun-ddns-cli/">https://hub.docker.com/r/chenhw2/aliyun-ddns-cli/</a></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker pull chenhw2/aliyun-ddns-cli</span><br></pre></td></tr></table></figure>
+
+
+
+<p>启动容器</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker run -d \</span><br><span class="line">	--restart=always \</span><br><span class="line">	--name ddns-aliyun \</span><br><span class="line">    -e &quot;AKID=131323131231212&quot; \</span><br><span class="line">    -e &quot;AKSCT=dsfasfwerwefdfsfsdfsfs&quot; \</span><br><span class="line">    -e &quot;DOMAIN=dev.foxwho.com&quot; \</span><br><span class="line">    -e &quot;REDO=600&quot; \</span><br><span class="line">    chenhw2/aliyun-ddns-cli</span><br></pre></td></tr></table></figure>
+
+<p>容器启动成功后，你可以看看 域名解析是否已经自动更新解析IP</p>
+<p><a href="https://blog.csdn.net/fenglailea/article/details/102511502">原文地址</a></p>
+]]></content>
+      <tags>
+        <tag>DDNS</tag>
       </tags>
   </entry>
   <entry>
@@ -2274,404 +2647,6 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
       </tags>
   </entry>
   <entry>
-    <title>宽窄依赖</title>
-    <url>/2019/07/16/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/spark/%E5%AE%BD%E7%AA%84%E4%BE%9D%E8%B5%96/</url>
-    <content><![CDATA[<p>spark依赖说明</p>
-<span id="more"></span>
-
-<h2 id="种类"><a href="#种类" class="headerlink" title="种类"></a>种类</h2><p>spark的依赖关系大致有两类</p>
-<ul>
-<li>narrow dependency</li>
-<li>wide dependency</li>
-</ul>
-<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><h3 id="narrow-dependency"><a href="#narrow-dependency" class="headerlink" title="narrow dependency"></a>narrow dependency</h3><p>父Partition &#x3D;&#x3D;&#x3D;&gt; 子partition 多对一或一对一   flatMap ,mapToPair ,map ,filter等算子<br>父partition &#x3D;&#x3D;&#x3D;&gt; 子partition 一对多          reduce ,group by 等.</p>
-<h3 id="stage"><a href="#stage" class="headerlink" title="stage"></a>stage</h3><p>当一个dag串联遇到宽依赖时形成stage.一个stage对应一个task.这个task的并行度由最后一个依赖决定.应该就是说由wide dependency 的具体并行度决度.如<br>reduce ,partition&#x3D;3.就3的并行度.这里的参数可以设置.</p>
-<p>wide dependency 必定对应的有shuffle.但shuffle不一定是wide dependency  如sort orderby</p>
-<p>join 即可能发生shuffle也可能不,具体看情况.</p>
-<h3 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h3><p>一个stage划分好后.一条数据的具体运算逻辑是会一直走完所有计算逻辑后才会落地.这是与mapreduce的区别<br>mapreduce是计算逻辑走完落地,再启动,计算又落地.</p>
-<p>所以说spark的效率比mapreduce高也是有这个原因.dag串联后,运算优先.</p>
-]]></content>
-      <tags>
-        <tag>spark dependency</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>python 小结2</title>
-    <url>/2020/05/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/python/</url>
-    <content><![CDATA[<span id="more"></span>
-
-<!-- TOC -->
-
-<ul>
-<li><a href="#python%E4%B8%AD%E7%9A%84%E5%8F%98%E9%87%8F%E5%88%9B%E5%BB%BA">python中的变量创建</a><ul>
-<li><a href="#python-%E5%8F%98%E9%87%8F%E5%91%BD%E5%90%8D">python 变量命名</a></li>
-<li><a href="#%E5%A4%9A%E4%B8%AA%E5%8F%98%E9%87%8F%E8%B5%8B%E5%80%BC">多个变量赋值</a></li>
-</ul>
-</li>
-<li><a href="#%E5%88%97%E8%A1%A8%E4%B8%8E%E5%85%83%E7%BB%84">列表与元组</a><ul>
-<li><a href="#%E5%88%97%E8%A1%A8">列表</a><ul>
-<li><a href="#%E5%A6%82%E4%BD%95%E8%AE%BF%E9%97%AE%E5%88%97%E8%A1%A8%E4%B8%AD%E7%9A%84%E5%80%BC">如何访问列表中的值</a></li>
-<li><a href="#%E5%88%97%E8%A1%A8%E8%BF%90%E7%AE%97%E7%AC%A6">列表运算符</a></li>
-</ul>
-</li>
-<li><a href="#%E5%85%83%E7%BB%84tuple">元组(tuple)</a><ul>
-<li><a href="#%E5%88%9B%E5%BB%BA%E5%85%83%E7%BB%84">创建元组</a></li>
-<li><a href="#%E8%AE%BF%E9%97%AE%E5%85%83%E7%BB%84">访问元组</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#dict%E5%AD%97%E5%85%B8">dict(字典)</a><ul>
-<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%AD%97%E5%85%B8">什么是字典</a></li>
-<li><a href="#%E5%AD%97%E5%85%B8%E7%9A%84%E5%88%9B%E5%BB%BA">字典的创建</a></li>
-</ul>
-</li>
-<li><a href="#set">set()</a><ul>
-<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AFset">什么是set</a></li>
-<li><a href="#set%E7%9A%84%E5%88%9B%E5%BB%BA">set的创建</a></li>
-</ul>
-</li>
-</ul>
-<!-- /TOC -->
-
-<h2 id="python中的变量创建"><a href="#python中的变量创建" class="headerlink" title="python中的变量创建"></a>python中的变量创建</h2><h3 id="python-变量命名"><a href="#python-变量命名" class="headerlink" title="python 变量命名"></a>python 变量命名</h3><p>在 Python 程序中，变量是用一个变量名表示，可以是任意数据类型，变量名必须是大小写英文、数字和下划线（_）的组合，且不能用数字开头</p>
-<h3 id="多个变量赋值"><a href="#多个变量赋值" class="headerlink" title="多个变量赋值"></a>多个变量赋值</h3><p>eg:<br>a&#x3D;b&#x3D;c&#x3D;1</p>
-<p>eg:<br>a,b,c&#x3D;1,2,”the is varible”<br><img src="http://img.wqkenqing.ren/2020-05-25-14-48-23.png" alt="2020-05-25-14-48-23"></p>
-<h2 id="列表与元组"><a href="#列表与元组" class="headerlink" title="列表与元组"></a>列表与元组</h2><p><img src="http://img.wqkenqing.ren/2020-05-25-14-54-41.png" alt="2020-05-25-14-54-41"></p>
-<h3 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h3><p>eg:</p>
-<p>list1&#x3D;[“1”,2,”three”]</p>
-<p>即列表名,’[]’ 列表符组成</p>
-<p>列表中的元素类型可以不一致.</p>
-<h4 id="如何访问列表中的值"><a href="#如何访问列表中的值" class="headerlink" title="如何访问列表中的值"></a>如何访问列表中的值</h4><ol>
-<li>通过索引下标来访问</li>
-</ol>
-<p>即已知索引长度为3</p>
-<p>我们可以通过<br>list1[i]</p>
-<p>i为0~2之间的整数</p>
-<p>这与java中的数组类似</p>
-<p>2.通过下标区间来访问</p>
-<p>如 list1[0:2]<br>可以取到list[0],list[1]<br>这里是因为[0:2]是左闭右开的</p>
-<p><img src="http://img.wqkenqing.ren/2020-05-25-15-09-50.png" alt="2020-05-25-15-09-50"><br>&#96;</p>
-<h4 id="列表运算符"><a href="#列表运算符" class="headerlink" title="列表运算符"></a>列表运算符</h4><table>
-<thead>
-<tr>
-<th>Python 表达式</th>
-<th>结果</th>
-<th>描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>len(list1)</td>
-<td>3</td>
-<td>list的长度</td>
-</tr>
-<tr>
-<td>[1, 2, 3] + [4, 5, 6]</td>
-<td>[1, 2, 3, 4, 5, 6]</td>
-<td>组合</td>
-</tr>
-<tr>
-<td>[“yes”]*2</td>
-<td>[“yes”,”yes”]</td>
-<td>复制</td>
-</tr>
-<tr>
-<td>2 in [1,2,3]</td>
-<td>True</td>
-<td>元素是否存在于列表中</td>
-</tr>
-<tr>
-<td>for a in list : function</td>
-<td></td>
-<td>迭代</td>
-</tr>
-</tbody></table>
-<p>一些常见的方法<br><img src="http://img.wqkenqing.ren/2020-05-25-15-26-54.png" alt="2020-05-25-15-26-54"></p>
-<h3 id="元组-tuple"><a href="#元组-tuple" class="headerlink" title="元组(tuple)"></a>元组(tuple)</h3><p>uple 一旦初始化就不能修改。 也就是说元组（tuple）是不可变的，那么不可变是指什么意思呢？<br>即声明元组后,只可获取相应的内容,但不能再通过insert ,append ,pop,remove等方法再操作其内容</p>
-<h4 id="创建元组"><a href="#创建元组" class="headerlink" title="创建元组"></a>创建元组</h4><p>tuple1&#x3D;(1,”2”,”three”)</p>
-<p><code>空元组</code><br>tuple2&#x3D;()</p>
-<h4 id="访问元组"><a href="#访问元组" class="headerlink" title="访问元组"></a>访问元组</h4><p><img src="http://img.wqkenqing.ren/2020-05-25-15-45-07.png" alt="2020-05-25-15-45-07"><br><img src="http://img.wqkenqing.ren/2020-05-25-15-44-48.png" alt="2020-05-25-15-44-48"></p>
-<h2 id="dict-字典"><a href="#dict-字典" class="headerlink" title="dict(字典)"></a>dict(字典)</h2><h3 id="什么是字典"><a href="#什么是字典" class="headerlink" title="什么是字典"></a>什么是字典</h3><p>类似java中的map key-val形式</p>
-<h3 id="字典的创建"><a href="#字典的创建" class="headerlink" title="字典的创建"></a>字典的创建</h3><p>dict&#x3D;{“key1”:”val1”,”key2”:”val2”}</p>
-<h2 id="set"><a href="#set" class="headerlink" title="set()"></a>set()</h2><h3 id="什么是set"><a href="#什么是set" class="headerlink" title="什么是set"></a>什么是set</h3><p>set与java中的set异同,这里是一个无序不重复的元素集,基本功能包括数据存放与消除重复元素</p>
-<h3 id="set的创建"><a href="#set的创建" class="headerlink" title="set的创建"></a>set的创建</h3><p>创建一个set,需要提供一个list</p>
-]]></content>
-      <tags>
-        <tag>python learn</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pythonQA</title>
-    <url>/2020/05/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E7%BC%96%E7%A8%8B/pythonQA/</url>
-    <content><![CDATA[<span id="more"></span>
-
-<h1 id="pythonQA"><a href="#pythonQA" class="headerlink" title="pythonQA"></a>pythonQA</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">关于python的一些QA</span><br></pre></td></tr></table></figure>
-
-<h2 id="Q-python中自增为什么不能用"><a href="#Q-python中自增为什么不能用" class="headerlink" title="Q:python中自增为什么不能用++"></a>Q:python中自增为什么不能用++</h2><p>A:因为python中,不同的变量名,但若值为一样的话,他的变量id是一样的.即两个变量名指向地址是一样的,若通过++,来实现自增,那么意味着,其它变量名所指引的地址也应该发生改变.这与我们实际想用的情况不一定一致.所以python中的++自增是通过,a&#x3D;a+a的形式来实现的</p>
-]]></content>
-      <tags>
-        <tag>python</tag>
-        <tag>qa</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>flink学习</title>
-    <url>/2019/07/31/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/flink/Flink/</url>
-    <content><![CDATA[<p>flink内容记录</p>
-<span id="more"></span>
-
-<h2 id="搭建"><a href="#搭建" class="headerlink" title="搭建"></a>搭建</h2><h2 id="创建maven项目"><a href="#创建maven项目" class="headerlink" title="创建maven项目"></a>创建maven项目</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mvn archetype:generate \</span><br><span class="line">    -DarchetypeGroupId=org.apache.flink \</span><br><span class="line">    -DarchetypeArtifactId=flink-quickstart-java \</span><br><span class="line">    -DarchetypeVersion=1.6.1 \</span><br><span class="line">    -DgroupId=my-flink-project \</span><br><span class="line">    -DartifactId=my-flink-project \</span><br><span class="line">    -Dversion=0.1 \</span><br><span class="line">    -Dpackage=myflink \</span><br><span class="line">    -DinteractiveMode=false</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">mvn clean package -Dmaven.test.skip=true</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flink run -c myflink.demo.SocketTextStreamWordCount my-flink-project-0.1.jar 127.0.0.1 9000</span><br></pre></td></tr></table></figure>
-
-<h2 id="DataStream-API"><a href="#DataStream-API" class="headerlink" title="DataStream API"></a>DataStream API</h2><p>flink程序工作解剖图<br><img src="http://img.wqkenqing.ren/FIyXNI.png"></p>
-<h3 id="执行环境"><a href="#执行环境" class="headerlink" title="执行环境"></a>执行环境</h3><p>flink支持</p>
-<ul>
-<li>获取已经存在的flink环境</li>
-<li>创建一个本地环境</li>
-<li>创建一个远程环境</li>
-</ul>
-<h3 id="DataSource"><a href="#DataSource" class="headerlink" title="DataSource"></a>DataSource</h3><h4 id="预置source"><a href="#预置source" class="headerlink" title="预置source"></a>预置source</h4><p>Socket-based</p>
-<ul>
-<li>socketTextStream();</li>
-</ul>
-<p>File-based</p>
-<h3 id="Transfomations"><a href="#Transfomations" class="headerlink" title="Transfomations"></a>Transfomations</h3><ul>
-<li>map</li>
-<li>flatMap</li>
-<li>filter</li>
-<li>keyBy</li>
-<li>reduce</li>
-<li>fold</li>
-</ul>
-<p>合计</p>
-<ul>
-<li>min</li>
-<li>max</li>
-<li>sum</li>
-</ul>
-<p>窗口</p>
-]]></content>
-      <tags>
-        <tag>flink</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>cvim f失灵问题修复</title>
-    <url>/2020/05/19/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/cvim%20f%E5%A4%B1%E7%81%B5%E9%97%AE%E9%A2%98%E4%BF%AE%E5%A4%8D/</url>
-    <content><![CDATA[<p>此处是简介</p>
-<span id="more"></span>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cvim突然失灵,调试发现是js版本问题.cvim插件发行版暂未解决该问题.但有对应的修复分支</span><br></pre></td></tr></table></figure>
-
-
-
-<p>问题修复</p>
-<p>one : 克隆库: <a href="https://github.com/antonioyon/chromium-vim/tree/issue-716-fix-broken-hints">https://github.com/antonioyon/chromium-vim/tree/issue-716-fix-broken-hints</a></p>
-<p>two: 切换分支到 <code>issue-716-fix-broken-hints</code></p>
-<p>three: 若无npm 则先安装npm</p>
-<p>four: npm install , make</p>
-<p>five: chrome 地址栏输入 chrome:&#x2F;&#x2F;extensions .选择加载已解压文件</p>
-<p>six: 刷新页面,检查是否已经生效</p>
-]]></content>
-      <tags>
-        <tag>cvim</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>es添加字段并赋值</title>
-    <url>/2020/05/22/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/es%E6%B7%BB%E5%8A%A0%E5%AD%97%E6%AE%B5%E5%92%8C%E9%BB%98%E8%AE%A4%E5%80%BC/</url>
-    <content><![CDATA[<span id="more"></span>
-
-
-<p>添加字段即</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">PUT /index/_mapping</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    ...</span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">给es添加字段</span><br></pre></td></tr></table></figure>
-
-<p>这里主要通过script脚本.<br>并且在elasticsearch1.3后这个默认配置是被关掉的.</p>
-<p>即在elasticsearch.yml中添加<br>script.inline&#x3D;true<br>script.indexed&#x3D;true<br>一开始我在true后面加了空格,配置不被识别,所以这里要注意</p>
-<p>开启了script.line后通过update_by_query进行操作,这里注意以下写法已经过时</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">POST /index/_update_by_query?conflicts=proceed</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;script&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;lang&quot;</span><span class="punctuation">:</span><span class="string">&quot;painless&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;inline&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ctx._source.name=&#x27;trhee&#x27;&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>即inline这种写法已经过时. 现在主要用的是source</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">POST /index/_update_by_query?conflicts=proceed</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;script&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;lang&quot;</span><span class="punctuation">:</span><span class="string">&quot;painless&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ctx._source.name=&#x27;trhee&#x27;&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>还能加入条件判断</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">POST /index/_update_by_query?conflicts=proceed</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;script&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;lang&quot;</span><span class="punctuation">:</span><span class="string">&quot;painless&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;if(ctx._source.name==&#x27;&#x27;)&#123;ctx._source.name=&#x27;trhee&#x27;&#125;&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>至此即可以实现对_source.name字段的数据进行默认赋值</p>
-]]></content>
-      <tags>
-        <tag>es feild script</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>vscode插件</title>
-    <url>/2020/05/21/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/vscode%E6%8F%92%E4%BB%B6/</url>
-    <content><![CDATA[<span id="more"></span>
-
-<h1 id="vscode插件"><a href="#vscode插件" class="headerlink" title="vscode插件"></a>vscode插件</h1><h2 id="draw-io-思维导图"><a href="#draw-io-思维导图" class="headerlink" title="draw.io(思维导图)"></a>draw.io(思维导图)</h2><p>在应用商店搜索<br>Draw.io Integration</p>
-<p>并install<br>即可安装draw.io</p>
-<p>然后创建drawio后缀的文件即可使用对应的导图功能</p>
-<p>这个好处是免费并与vscode集成.即实现all in one 的功能</p>
-<p><img src="http://img.wqkenqing.ren/2020-05-21-16-35-19.png" alt="2020-05-21-16-35-19"></p>
-]]></content>
-      <tags>
-        <tag>elasticsearch drawio</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>日常运维</title>
-    <url>/2020/05/11/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/</url>
-    <content><![CDATA[<p>此处是简介</p>
-<span id="more"></span>
-
-<h2 id="hexo-加速"><a href="#hexo-加速" class="headerlink" title="hexo 加速"></a>hexo 加速</h2><p>通过更换公共CDN的js css资源.实现了较大改变</p>
-<h2 id="hexo-LocalSearch一直转圈问题修复"><a href="#hexo-LocalSearch一直转圈问题修复" class="headerlink" title="hexo LocalSearch一直转圈问题修复"></a>hexo LocalSearch一直转圈问题修复</h2><p>主要成因有两,一是search.xml没有成功加载,二是search.xml中的数据有问题.</p>
-<p>前者通过配置_config.yml文档和对应主题下的_config.yml配置</p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">search:</span></span><br><span class="line">  <span class="attr">path:</span> <span class="string">search.xml</span></span><br><span class="line">  <span class="attr">field:</span> <span class="string">post</span></span><br><span class="line">  <span class="attr">format:</span> <span class="string">html</span></span><br><span class="line">  <span class="attr">limit:</span> <span class="number">10000</span></span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">local_search:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="comment"># if auto, trigger search by changing input</span></span><br><span class="line">  <span class="comment"># if manual, trigger search by pressing enter key or search button</span></span><br><span class="line">  <span class="attr">trigger:</span> <span class="string">auto</span></span><br><span class="line">  <span class="comment"># show top n results per article, show all results by setting to -1</span></span><br><span class="line">  <span class="attr">top_n_per_article:</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>同时记得关闭Algolia_Search</strong></p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Algolia Search</span></span><br><span class="line"><span class="attr">algolia_search:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
-
-
-
-]]></content>
-      <tags>
-        <tag>运维 cdn 加速</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>阿里云DDNS[转载]</title>
-    <url>/2020/05/20/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/%E9%98%BF%E9%87%8C%E4%BA%91DDNS/</url>
-    <content><![CDATA[<p>阿里云DDNS</p>
-<span id="more"></span>
-
-<h1 id="阿里云DDNS"><a href="#阿里云DDNS" class="headerlink" title="阿里云DDNS"></a>阿里云DDNS</h1><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">因为电信带宽的动态ip的问题,域名解析时常失效,所以用到这里的DDNS</span><br></pre></td></tr></table></figure>
-
-<p>自己带宽的设置略过.</p>
-<p>前提准备</p>
-<ol>
-<li>阿里云accesskyes配置</li>
-<li>能运行docker镜像的服务器</li>
-<li>docker镜像</li>
-</ol>
-<h2 id="阿里云-accesskeys申请"><a href="#阿里云-accesskeys申请" class="headerlink" title="阿里云 accesskeys申请"></a>阿里云 accesskeys申请</h2><p>登陆,点击右侧头像选择accesskeys即可.</p>
-<p>获得ID与scret内容</p>
-<h2 id="docker容器下载"><a href="#docker容器下载" class="headerlink" title="docker容器下载"></a>docker容器下载</h2><p><a href="https://hub.docker.com/r/chenhw2/aliyun-ddns-cli/">https://hub.docker.com/r/chenhw2/aliyun-ddns-cli/</a></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker pull chenhw2/aliyun-ddns-cli</span><br></pre></td></tr></table></figure>
-
-
-
-<p>启动容器</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker run -d \</span><br><span class="line">	--restart=always \</span><br><span class="line">	--name ddns-aliyun \</span><br><span class="line">    -e &quot;AKID=131323131231212&quot; \</span><br><span class="line">    -e &quot;AKSCT=dsfasfwerwefdfsfsdfsfs&quot; \</span><br><span class="line">    -e &quot;DOMAIN=dev.foxwho.com&quot; \</span><br><span class="line">    -e &quot;REDO=600&quot; \</span><br><span class="line">    chenhw2/aliyun-ddns-cli</span><br></pre></td></tr></table></figure>
-
-<p>容器启动成功后，你可以看看 域名解析是否已经自动更新解析IP</p>
-<p><a href="https://blog.csdn.net/fenglailea/article/details/102511502">原文地址</a></p>
-]]></content>
-      <tags>
-        <tag>DDNS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>tmux上手[转载]</title>
-    <url>/2020/05/19/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/tmux%E4%B8%8A%E6%89%8B/</url>
-    <content><![CDATA[<p>此处是简介</p>
-<span id="more"></span>
-
-<p>mac os 通过 brew install tmux</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tmux 接收快捷键的指令是 ^ + B 即mac中的control + B</span><br></pre></td></tr></table></figure>
-
-<p>窗格的操作</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">这些操作都是通过 ^+b 来接收</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<table>
-<thead>
-<tr>
-<th align="left">操作符</th>
-<th align="left">作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">%</td>
-<td align="left">左右创建两个窗格</td>
-</tr>
-<tr>
-<td align="left">‘’</td>
-<td align="left">左右创建两个窗格</td>
-</tr>
-<tr>
-<td align="left">x</td>
-<td align="left">关闭当前窗格</td>
-</tr>
-<tr>
-<td align="left">{</td>
-<td align="left">前移当前窗格</td>
-</tr>
-<tr>
-<td align="left">}</td>
-<td align="left">后移当前窗格</td>
-</tr>
-<tr>
-<td align="left">;</td>
-<td align="left">选择上次用的窗格</td>
-</tr>
-<tr>
-<td align="left">o</td>
-<td align="left">选择下一个窗格</td>
-</tr>
-<tr>
-<td align="left">space</td>
-<td align="left">切换窗格布局</td>
-</tr>
-<tr>
-<td align="left">z</td>
-<td align="left">放大窗格</td>
-</tr>
-<tr>
-<td align="left">q</td>
-<td align="left">显示序号</td>
-</tr>
-</tbody></table>
-<h3 id="窗口操作"><a href="#窗口操作" class="headerlink" title="窗口操作"></a>窗口操作</h3><p>tmux 除了窗格以外，还有窗口（window） 的概念。依次使用以下快捷键来熟悉 tmux 的窗口操作：</p>
-<ul>
-<li><code>c</code> 新建窗口，此时当前窗口会切换至新窗口，不影响原有窗口的状态</li>
-<li><code>p</code> 切换至上一窗口</li>
-<li><code>n</code> 切换至下一窗口</li>
-<li><code>w</code> 窗口列表选择，注意 macOS 下使用 <code>⌃p</code> 和 <code>⌃n</code> 进行上下选择</li>
-<li><code>&amp;</code> 关闭当前窗口</li>
-<li><code>,</code> 重命名窗口，可以使用中文，重命名后能在 tmux 状态栏更快速的识别窗口 id</li>
-<li><code>0</code> 切换至 0 号窗口，使用其他数字 id 切换至对应窗口</li>
-<li><code>f</code> 根据窗口名搜索选择窗口，可模糊匹配</li>
-</ul>
-<h3 id="会话操作"><a href="#会话操作" class="headerlink" title="会话操作"></a>会话操作</h3><p>如果运行了多次 <code>tmux</code> 命令则会开启多个 tmux 会话（session）。在 tmux 会话中，使用前缀快捷键 <code>⌃b</code> 配合以下快捷键可操作会话：</p>
-<ul>
-<li><code>$</code> 重命名当前会话</li>
-<li><code>s</code> 选择会话列表</li>
-<li><code>d</code> detach 当前会话，运行后将会退出 tmux 进程，返回至 shell 主进程</li>
-</ul>
-<p>在 shell 主进程下运行以下命令可以操作 tmux 会话： </p>
-<p>在 shell 主进程下运行以下命令可以操作 tmux 会话：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tmux new -s foo # 新建名称为 foo 的会话</span><br><span class="line">tmux ls # 列出所有 tmux 会话</span><br><span class="line">tmux a # 恢复至上一次的会话</span><br><span class="line">tmux a -t foo # 恢复名称为 foo 的会话，会话默认名称为数字</span><br><span class="line">tmux kill-session -t foo # 删除名称为 foo 的会话</span><br><span class="line">tmux kill-server # 删除所有的会话</span><br></pre></td></tr></table></figure>
-
-
-
-<p><a href="https://www.cnblogs.com/kaiye/p/6275207.html">原文连接</a></p>
-]]></content>
-      <tags>
-        <tag>tmux</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>hbaes操作</title>
     <url>/2019/05/17/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/hadoop/hbase/hbase%E6%93%8D%E4%BD%9C/</url>
     <content><![CDATA[<p>对hbase常规api进行封装</p>
@@ -2681,5 +2656,30 @@ Vector属于线程安全级别的，但是大多数情况下不使用Vector，�
       <tags>
         <tag>常规api封装</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>JVM问题</title>
+    <url>/2019/07/16/oldblog/JVM%E9%97%AE%E9%A2%98/</url>
+    <content><![CDATA[<p>此处简介</p>
+<span id="more"></span>
+
+<p>JVM问题<br>1、堆内存溢出<br>2、持久代内存溢出<br>3、系统频繁FGC</p>
+<p>框架使用不当<br>4、错误使用框架提供API<br>5、日志框架使用不当<br>OS内存溢出<br>6、某系统物理内存溢出<br>数据库问题<br>7、慢SQL问题</p>
+<p>案例1、堆内存溢出<br>JVM基础知识<br>1、Jvm内存分为三个大区，young区，old区和perm区；其中young区又包含三个区：Edgn区、S0、S1区<br>2、young区和old区属于heap区，占据堆内存；perm区称为持久代，不占据堆内存。<br>堆内存溢出<br>性能问题发现过程</p>
+<p>查看服务器上报错日志，发现有如下报错信息［java.lang.OutOfMemoryError: Java heap space］；根据报错信息确定是jvm 堆内存空间不够导致，于是使用jvm命令（下图）查看，发现此时old区内存空间已经被占满了，同时使用jvisualvm监控工具也<br>发现old区空间被占满（右图），整个heap区空间已经无法再容纳新对象进入。<br>建议<br>考虑大量数据一次性写入内存场景</p>
+<p>持久代内存溢出<br>现象</p>
+<p>压测某系统接口，压测前1分钟左右tps 400多，之后<br>Tps直降为零，后台报错日志：java.lang.OutOfMemoryError:PermGen space，通过jvm监控工具查看持久代（perm区）空间被占满，Old区空闲；</p>
+<p>问题定位过程<br>通过注释代码块定位问题，考虑到perm区溢出大部分跟类对象大量创建有关，故锁定问题在序列化框架使用可能有问题；<br>对于比较棘手难解决的perm溢出问题，作者构建了一个perm区溢出的场景，可以采用如下定位方案<br>1、添加jvm dump配置<br>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath&#x3D;&#x2F;data&#x2F;dump.bin<br>2、安装eclipse mat分析工具<br>3、将dump文件导入eclipse，点击［Leak Suspects］，找到跟公司有关的代码进行分析<br>此处不过多讲解，大家可以去网上查阅资料学习<br>解决办法<br>跟开发沟通后选择去掉msgpack0.6版本框架，采用java原成序列化框架，修改后系统tps稳定在400多，gc情况正常<br>修改前后gc情况对比<br>修复前<br>类似问题如何避免</p>
+<p>1、去掉项目无用jar包<br>2、避免大量使用类对象、大量使用反射<br>案例3、频繁FGC<br>（1）系统某接口频繁FGC<br>问题排查：<br>先查JVM内存信息找可疑对象<br>从内存对象实例信息中发现跟mysql连接有关，然后检测mysql配置信息<br> <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"></bean></p>
+<p>发现系统采用的是 spring框架的数据源，没有用连接池；</p>
+<p>思考<br>使用连接池有什么好处？<br>连接复用、减少连接重复建立和销毁造成的大量资源消耗</p>
+<p>然后换做hikaricp连接池做对比测试<br> &lt;bean id&#x3D;”dataSource” class&#x3D;”com.zaxxer.hikari.HikariDataSource”<br>压测半小时未出现fgc，问题得到解决<br>类似问题如何避免</p>
+<p>1、研发规范统一DB连接池，避免研发误用<br>2、减少大对象、临时对象使用</p>
+<p>案例4、错误使用框架提供API<br>现象<br>某系统本身业务逻辑处理能力很快（研发本机自测tps可以到达2w多），但是接入到framework框架后，TPS最高只能到达300笔&#x2F;S左右，而且系统负载很低</p>
+<p>问题排查<br>根据这种现象说明系统可能是堵在了某块方法上，根据这种情况一般采用线程dump的方式来查看系统具体哪些线程出现异常情况，通过线程dump 发现 ［TIMED_WAITING］状态的业务线程占比很高<br>根据线程dump信息，找到公司包名开头的信息，然后从下往上查看<br>线程dump信息，从信息中我们可以看到</p>
+<p>framework.servlet.fServlet.doPost：框架api封装了servlet dopost方法做了某些操作<br>framework.servlet.fServlet.execute：框架api执行servelt<br>framework.process.fProcessor.process：框架api进行自身逻辑处理<br>framework.filter.impl.AuthFilter.before：框架使用过滤器进行用户权限过滤</p>
+<p> 。。。。。。然后就是进行http请求操作<br>由此我们断定，就是在框架进行权限校验这块堵住了。之后跟开发沟通这块的<br>问题即可</p>
+<p>分析思路<br>压测端 ：net  服务器  jvm<br>服务端：net  服务器 nginx tomcat jvm（应用程序）算法 db（mysql redis）</p>
+]]></content>
   </entry>
 </search>
