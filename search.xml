@@ -95,7 +95,7 @@
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>至此，通过上述操作，有较大可能是能成功启用https功能，但不得不说的是每个人的基本功不一样，我上文中可能省略了一些我觉得常识性的内容，对一些朋友来说可能不清楚，还是会导致一些问题出现，可以通过私信我进行交流。nextcloud不启用https有一些插件是无法正常使用的，所以建议朋友们花些心思配置一下，祝好!</p>
 ]]></content>
       <categories>
-        <category>运维</category>
+        <category>运维组件</category>
       </categories>
   </entry>
 </search>
