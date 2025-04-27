@@ -1,0 +1,251 @@
+<!DOCTYPE html><html lang="zh-Hans" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>一个程序员的教资考试经验 | wang's bolg</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.png"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=3.0.15"><!-- inject head--><link rel="canonical" href="http://www.wqkenqing.ren/2025/04/27/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%80%83%E8%AF%81/%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E6%95%99%E8%B5%84%E8%80%83%E8%AF%95%E7%BB%8F%E9%AA%8C/index.html"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><!-- aplayer--><!-- swiper--><!-- fancybox ui--><!-- katex--><!-- Open Graph--><meta name="description" content="这是一篇关于程序员考教师资格证的经验博客，供有有类似想法的朋友们参考 无论做什么事，一般来讲我们是 What、How 、Do 等三个大的环节 接下来我们也围绕这三个大环节开展 1、What ：什么是教资?教资：全称教师资格证 是教育部依据《中华人民共和国教师法》《教师资格条例》《教师资格证书"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="wang's bolg"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="/img/pwa/favicon.png"><link rel="apple-touch-icon" href="/img/pwa/favicon.png" sizes="180x180"><script>console.log(' %c Solitude %c ' + '3.0.15' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script>(()=>{
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+          },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2023-04-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可"},
+    aside: {
+        state: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        witty_words: [],
+        witty_comment: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    right_menu: false,
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: false,
+};</script><!-- page-config head--><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: false,
+    ai_text: false,
+    color: false,
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body id="body"><!-- universe--><!-- background img--><!-- loading--><!-- console--><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span>显示模式</span></span></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="card-tag-cloud"></div></div></div></div><!-- keyboard--><!-- righhtside--><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><a id="site-name" href="/" title="返回博客主页"><span class="title">KuiqWang</span><i class="solitude fas fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">一个程序员的教资考试经验</a></div></div><div id="menus"></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude fas fa-arrow-up"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fas fa-bars"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="https://www.notion.so/images/page-cover/met_emanuel_leutze.jpg" alt="一个程序员的教资考试经验"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E8%80%83%E8%AF%81/">考证</a></span><div class="tag_share"><div class="post-meta__tag-list"></div></div></div></div><h1 class="post-title">一个程序员的教资考试经验</h1><div id="post-meta"><div class="meta-secondline"></div></div></div><div id="post-info-bottom"></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content article-container"><hr>
+<blockquote>
+<p>这是一篇关于程序员考教师资格证的经验博客，供有有类似想法的朋友们参考</p>
+</blockquote>
+<hr>
+<p>无论做什么事，一般来讲我们是 What、How 、Do 等三个大的环节</p>
+<p>接下来我们也围绕这三个大环节开展</p>
+<h1 id="1、What-：什么是教资"><a href="#1、What-：什么是教资" class="headerlink" title="1、What ：什么是教资?"></a>1、What ：什么是教资?</h1><h3 id="教资：全称教师资格证"><a href="#教资：全称教师资格证" class="headerlink" title="教资：全称教师资格证"></a>教资：全称教师资格证</h3><hr>
+<p>是<a href="https://baike.baidu.com/item/%E6%95%99%E8%82%B2%E9%83%A8/239078?fromModule=lemma_inlink">教育部</a>依据《<a href="https://baike.baidu.com/item/%E4%B8%AD%E5%8D%8E%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD%E6%95%99%E5%B8%88%E6%B3%95/2134813?fromModule=lemma_inlink">中华人民共和国教师法</a>》《<a href="https://baike.baidu.com/item/%E6%95%99%E5%B8%88%E8%B5%84%E6%A0%BC%E6%9D%A1%E4%BE%8B/7976692?fromModule=lemma_inlink">教师资格条例</a>》《<a href="https://baike.baidu.com/item/%E6%95%99%E5%B8%88%E8%B5%84%E6%A0%BC%E8%AF%81%E4%B9%A6%E7%AE%A1%E7%90%86%E8%A7%84%E5%AE%9A/11020727?fromModule=lemma_inlink">教师资格证书管理规定</a>》和《<a href="https://baike.baidu.com/item/%E5%9B%BD%E5%AE%B6%E8%81%8C%E4%B8%9A%E8%B5%84%E6%A0%BC%E7%9B%AE%E5%BD%95/22125463?fromModule=lemma_inlink">国家职业资格目录</a>》等法律法规设立的<a href="https://baike.baidu.com/item/%E5%9B%BD%E5%AE%B6%E8%81%8C%E4%B8%9A%E8%B5%84%E6%A0%BC%E8%AF%81%E4%B9%A6/9428809?fromModule=lemma_inlink">国家职业资格证书</a>，是持证人具备国家认定的<a href="https://baike.baidu.com/item/%E6%95%99%E5%B8%88%E8%B5%84%E6%A0%BC/6062141?fromModule=lemma_inlink">教师资格</a>的法定凭证。基本上来讲，你要从事相关的教育教学工作，都要先有此证。</p>
+<p>按阶段分类的话，它还可以分为:</p>
+<p>（1）幼儿园教师资格；</p>
+<p>（2）小学教师资格；</p>
+<p>（3）初级中学教师和初级职业学校文化课、专业课教师资格（统称”初级中学教师资格”）；</p>
+<p>（4）高级中学教师资格；</p>
+<p>（5）中等专业学校、技工学校、职业高级中学文化课、专业课教师资格（统称”中等职业学校教师资格”）；</p>
+<p>（6）中等专业学校、技工学校、职业高级中学实习指导教师资格（统称”中等职业学校实习指导教师资格”）；</p>
+<p>（7）高等学校教师资格。</p>
+<hr>
+<p>要注意的是教师资格证是向下兼容的，也就是一般来说中学的教师资格证是可以教小学，但小学的资格证无法去中学任教</p>
+<p>按照对应的科目来分类的话，还可以分为</p>
+<ol>
+<li>语文</li>
+<li>数学</li>
+<li>英语</li>
+<li>信息技术</li>
+<li>等</li>
+</ol>
+<p>对应科目的从业资格证，对应科目的资格证可以任相应科目的课。</p>
+<hr>
+<p><strong>一个人可以同时考取多个科目与阶段的教师资格证</strong></p>
+<hr>
+<h4 id="程序员说"><a href="#程序员说" class="headerlink" title="程序员说"></a>程序员说</h4><p>我常听到身边的人说，考这些有什么用，更多的人说这个问题，更多的是纯粹的疑问，而非鄙视。</p>
+<p>我想说的是，这个证书并非一个就业保障，而是一个从业资格证。教师这个行业相对特殊，虽然外面有很多培训机构中所谓的老师，让“老师”已经有些变味了，但至少一个正规的学校或组织，“老师”的专业性要求还是相对较高。所以这里的教资，更多的就是你如果想要从事这个行业的基本资格证书。</p>
+<p>然后，因为教师这个行业是自古以来就有的，这个行业的生命力还是很绵远幽长的。具体行情，则由需要结合自身所在地，进行调研，总体来说，相应的工作机会还是有的。</p>
+<hr>
+<h3 id="教资考试相关"><a href="#教资考试相关" class="headerlink" title="教资考试相关"></a>教资考试相关</h3><ol>
+<li>教资的考试一年一般有两场上半年与下半年各一场<ol>
+<li>上半年是一月份报名，三月份考试，四月份出成绩，五月份面试</li>
+<li>下半年是十月份考试，十二月面试</li>
+</ol>
+</li>
+<li>教资的考试分为笔试与面试<ol>
+<li>只有笔试先过了，才能参加面试</li>
+</ol>
+</li>
+<li>教资笔试考试一般分为三门<ol>
+<li>科一：综合素质</li>
+<li>科二： 教育知识与能力</li>
+<li>科三： 专业知识(有些科目的科三融合到了面试中了，笔试中没有科三，具体在报名系统报名时，就可以知道)</li>
+</ol>
+</li>
+<li>教资考试是过一门就少一门，一门考过后，会有一个时效期，在这个时效期内，如果你其它科目没有考过，这门考试是不用在报名时一同参考，简而言之就是你科一过了后，在时效期内，科二要是没过，在后续过程中不用再报名考科一考试。</li>
+<li>笔试通过后，面试，面试完成后还会有一个资格验证，只有资格验证通过了你才能拿到教资资格证</li>
+<li>资格验证在笔试、面试成绩通过之外，还要求普通话等级证书，一般来讲，除了语文等一些科目，普通话二乙证书即可。</li>
+<li>普通话证书基本上每月都可以报名考试，所以一般在资格验证之前考过相应的等级就行。</li>
+</ol>
+<hr>
+<h1 id="How"><a href="#How" class="headerlink" title="How"></a>How</h1><p>这里主要是围绕怎么报名，怎么备考、怎么查分、怎么复核等</p>
+<hr>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><div class="post-copyright__author_img"><img class="post-copyright__author_img_front" src="/img/logo.png"></div><div class="post-copyright__author_name">Kuiq  Wang</div><div class="post-copyright__author_desc"></div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">wang's bolg</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2025/04/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/Nextcloud%E5%AE%89%E8%A3%85%E4%B8%8Ehttps%E5%90%AF%E7%94%A8/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Nextcloud安装与https启用</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="top-group"><div class="sayhi" id="sayhi" onclick="sco.changeWittyWord()"></div></div></div><div class="avatar"><img alt="头像" src="/img/logo.png"></div><div class="description"></div><div class="bottom-group"><span class="left"><div class="name">Kuiq  Wang</div><div class="desc">人生一梦</div></span><div class="social-icons is-center"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fas fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1%E3%80%81What-%EF%BC%9A%E4%BB%80%E4%B9%88%E6%98%AF%E6%95%99%E8%B5%84"><span class="toc-text">1、What ：什么是教资?</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%99%E8%B5%84%EF%BC%9A%E5%85%A8%E7%A7%B0%E6%95%99%E5%B8%88%E8%B5%84%E6%A0%BC%E8%AF%81"><span class="toc-text">教资：全称教师资格证</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E5%91%98%E8%AF%B4"><span class="toc-text">程序员说</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%99%E8%B5%84%E8%80%83%E8%AF%95%E7%9B%B8%E5%85%B3"><span class="toc-text">教资考试相关</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#How"><span class="toc-text">How</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fas fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/2025/04/27/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%80%83%E8%AF%81/%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E6%95%99%E8%B5%84%E8%80%83%E8%AF%95%E7%BB%8F%E9%AA%8C/" title="一个程序员的教资考试经验"><div class="thumbnail"><img alt="一个程序员的教资考试经验" src="https://www.notion.so/images/page-cover/met_emanuel_leutze.jpg"></div><div class="content"><span class="title" href="/2025/04/27/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%80%83%E8%AF%81/%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E6%95%99%E8%B5%84%E8%80%83%E8%AF%95%E7%BB%8F%E9%AA%8C/" title="一个程序员的教资考试经验">一个程序员的教资考试经验</span><span class="categories" href="/2025/04/27/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%80%83%E8%AF%81/%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E6%95%99%E8%B5%84%E8%80%83%E8%AF%95%E7%BB%8F%E9%AA%8C/">考证</span></div></a><a class="aside-list-item" href="/2025/04/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/Nextcloud%E5%AE%89%E8%A3%85%E4%B8%8Ehttps%E5%90%AF%E7%94%A8/" title="Nextcloud安装与https启用"><div class="thumbnail"><img alt="Nextcloud安装与https启用" src="https://www.notion.so/images/page-cover/webb4.jpg"></div><div class="content"><span class="title" href="/2025/04/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/Nextcloud%E5%AE%89%E8%A3%85%E4%B8%8Ehttps%E5%90%AF%E7%94%A8/" title="Nextcloud安装与https启用">Nextcloud安装与https启用</span><span class="categories" href="/2025/04/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/Nextcloud%E5%AE%89%E8%A3%85%E4%B8%8Ehttps%E5%90%AF%E7%94%A8/">运维组件</span></div></a></div></div></div></div></main><footer id="footer"><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2023 - 2025 By&nbsp;<a class="footer-bar-link" href="/"><img class="author-avatar" src="/img/pwa/favicon.png">Kuiq  Wang</a></div><div class="beian-group"><a class="footer-bar-link" href="https://hexo.io/">框架：Hexo</a><a class="footer-bar-link" href="https://github.com/everfu/hexo-theme-solitude">主题：Solitude</a></div></div></div></div></footer></div><!-- right_menu--><!-- inject body--><div><script src="/js/utils.js?v=3.0.15"></script><script src="/js/main.js?v=3.0.15"></script><script src="/js/third_party/waterfall.min.js?v=3.0.15"></script><script src="https://fastly.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script src="/js/tw_cn.js?v=3.0.15"></script><script src="https://fastly.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://fastly.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div class="js-pjax"></div></div><!-- pjax--><script>const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- google adsense--><!-- search--><!-- music--></body></html>
+        <script>
+            const posts = ["2025/04/27/日常总结/考证/一个程序员的教资考试经验/","2025/04/26/日常总结/运维/Nextcloud安装与https启用/"];
+            function toRandomPost() {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
+            }
+        </script>
