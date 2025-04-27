@@ -2,7 +2,7 @@
 <search>
   <entry>
     <title>Nextcloud安装与https启用</title>
-    <url>/2025/04/25/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/Nextcloud%E5%AE%89%E8%A3%85%E4%B8%8Ehttps%E5%90%AF%E7%94%A8/</url>
+    <url>/2025/04/26/%E6%97%A5%E5%B8%B8%E6%80%BB%E7%BB%93/%E8%BF%90%E7%BB%B4/Nextcloud%E5%AE%89%E8%A3%85%E4%B8%8Ehttps%E5%90%AF%E7%94%A8/</url>
     <content><![CDATA[<h1 id="Nextcloud安装与https启用"><a href="#Nextcloud安装与https启用" class="headerlink" title="Nextcloud安装与https启用"></a>Nextcloud安装与https启用</h1><blockquote>
 <p>最近升级了家里的服务器，结合这阵在公司私有网盘知识库的构建落地，有了Nextcloud的具体实施经验，所以在自己本地的服务器小主机上也引入了该服务。本文也由此而来，为有类似需求的网友带来一些帮助。本文的重点会是https的启用，Nextcloud的安装与部署采用的是Docker模式，所以只要有相关环境，会相对简单。</p>
 </blockquote>
